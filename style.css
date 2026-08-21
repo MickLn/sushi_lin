@@ -407,21 +407,38 @@ img { display: block; max-width: 100%; }
   background: #FFFFFF;
   color: var(--indigo-dark);
   border: 1.5px solid var(--sakura-border-strong);
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 6px 20px rgba(30, 36, 77, 0.18);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 99;
+  z-index: 190;
+  cursor: pointer;
   opacity: 0;
   visibility: hidden;
   transform: translateY(20px);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1), visibility 0.4s ease, bottom 0.65s cubic-bezier(0.22, 1, 0.36, 1), transform 0.55s cubic-bezier(0.22, 1, 0.36, 1), background 0.25s ease, box-shadow 0.25s ease;
 }
 
 .btn-scroll-top.visible {
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
+}
+
+/* Opacité réduite dans la section footer pour entrevoir le texte */
+.btn-scroll-top.visible.in-footer,
+.btn-scroll-top.in-footer {
+  opacity: 0.35 !important;
+  background: rgba(255, 255, 255, 0.7) !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1) !important;
+}
+
+.btn-scroll-top.visible.in-footer:hover,
+.btn-scroll-top.in-footer:hover {
+  opacity: 1 !important;
+  background: #FFFFFF !important;
 }
 
 .btn-scroll-top:hover {
@@ -1602,12 +1619,12 @@ img { display: block; max-width: 100%; }
 }
 
 /* ==========================================================================
-   FOOTER PREMIUM SUSHI LIN (PLEINE LARGEUR & RESPONSIVE CENTRÉ SUR MOBILE)
+   FOOTER PREMIUM SUSHI LIN (HAUTEUR OPTIMISÉE & SANS VIDE EXCESSIF)
    ========================================================================== */
 .footer {
   background: var(--indigo-dark);
   color: #FFFFFF;
-  padding: 60px 24px 110px;
+  padding: 48px 24px 36px;
   position: relative;
   z-index: 1;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
@@ -1615,7 +1632,7 @@ img { display: block; max-width: 100%; }
 
 .footer-inner {
   max-width: var(--max-width);
-  margin: 0 auto 44px;
+  margin: 0 auto 36px;
   display: grid;
   grid-template-columns: 1fr 1fr 1.25fr;
   gap: 48px;
@@ -1685,9 +1702,8 @@ img { display: block; max-width: 100%; }
   display: inline-block;
 }
 
-/* Pink bar removed per user request */
 .footer-section-title::after {
-  display: none;
+  display: none !important;
 }
 
 /* 3. MILIEU: NAVIGATION (3 ONGLETS) */
@@ -1741,7 +1757,7 @@ img { display: block; max-width: 100%; }
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
 }
 
 .footer-info-item {
@@ -1754,8 +1770,8 @@ img { display: block; max-width: 100%; }
 }
 
 .footer-info-icon {
-  width: 26px;
-  height: 26px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background: rgba(255, 128, 171, 0.15);
   color: var(--sakura-primary);
@@ -1766,15 +1782,15 @@ img { display: block; max-width: 100%; }
 }
 
 .footer-info-icon svg {
-  width: 14px;
-  height: 14px;
+  width: 15px;
+  height: 15px;
 }
 
 /* 5. BAS DU FOOTER & MENTIONS LÉGALES */
 .footer-bottom {
   max-width: var(--max-width);
   margin: 0 auto;
-  padding-top: 24px;
+  padding-top: 22px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -1921,7 +1937,7 @@ img { display: block; max-width: 100%; }
    ALIGNEMENT CENTRÉ EN VERSION MOBILE
    ========================================================================== */
 @media (max-width: 960px) {
-  /* BOUTON SCROLL TO TOP : se déplace au-dessus du panier flottant avec animation fluide */
+  /* BOUTON SCROLL TO TOP : espace de 30px au-dessus de la barre du panier */
   .btn-scroll-top {
     bottom: 20px;
     right: 18px;
@@ -1929,20 +1945,20 @@ img { display: block; max-width: 100%; }
 
   .btn-scroll-top.has-cart-bar,
   body:has(.floating-cart-bar.visible) .btn-scroll-top {
-    bottom: 102px !important;
+    bottom: 126px !important;
   }
 
-  /* FOOTER MOBILE AÉRÉ ET CENTRÉ */
+  /* FOOTER MOBILE AÉRÉ, CENTRÉ SANS VIDE INUTILE */
   .footer {
-    padding: 56px 20px 140px;
+    padding: 44px 20px 48px;
     text-align: center;
   }
 
   .footer-inner {
     grid-template-columns: 1fr;
-    gap: 48px;
+    gap: 44px;
     justify-items: center;
-    margin-bottom: 48px;
+    margin-bottom: 36px;
   }
 
   /* 1. Logo & Coordonnées */
@@ -1950,7 +1966,7 @@ img { display: block; max-width: 100%; }
     justify-self: center;
     align-items: center;
     text-align: center;
-    gap: 16px;
+    gap: 14px;
   }
 
   .footer-brand-logo {
@@ -1983,7 +1999,7 @@ img { display: block; max-width: 100%; }
   .footer-section-title {
     text-align: center;
     margin-bottom: 20px;
-    font-size: 14px;
+    font-size: 13.5px;
     letter-spacing: 1.5px;
   }
 
@@ -1994,7 +2010,7 @@ img { display: block; max-width: 100%; }
   .footer-nav-list {
     align-items: center;
     text-align: center;
-    gap: 18px;
+    gap: 16px;
     width: 100%;
   }
 
@@ -2003,7 +2019,7 @@ img { display: block; max-width: 100%; }
     align-items: center;
     justify-content: center;
     position: relative;
-    padding: 4px 26px;
+    padding: 3px 26px;
     font-size: 15px;
     text-align: center;
   }
@@ -2018,7 +2034,7 @@ img { display: block; max-width: 100%; }
     transform: none;
   }
 
-  /* 3. Engagements & Services (Sans barre rose, texte centré sur plusieurs lignes) */
+  /* 3. Engagements & Services (Sans barre rose, pictos centrés avec padding confortable, texte multi-lignes centré) */
   .footer-col-right {
     justify-self: center;
     max-width: 100%;
@@ -2030,7 +2046,7 @@ img { display: block; max-width: 100%; }
   .footer-info-list {
     align-items: center;
     text-align: center;
-    gap: 24px;
+    gap: 26px;
     width: 100%;
   }
 
@@ -2041,10 +2057,10 @@ img { display: block; max-width: 100%; }
     justify-content: center;
     text-align: center;
     gap: 10px;
-    max-width: 380px;
+    max-width: 360px;
     margin: 0 auto;
     font-size: 13.5px;
-    line-height: 1.55;
+    line-height: 1.5;
   }
 
   .footer-info-item span {
@@ -2053,13 +2069,26 @@ img { display: block; max-width: 100%; }
   }
 
   .footer-info-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: rgba(255, 128, 171, 0.18);
+    color: var(--sakura-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     flex-shrink: 0;
     margin: 0 auto;
   }
 
+  .footer-info-icon svg {
+    width: 16px;
+    height: 16px;
+  }
+
   /* 4. Bas de page */
   .footer-bottom {
-    padding-top: 28px;
+    padding-top: 24px;
   }
 
   .footer-bottom-inner {
@@ -2067,7 +2096,7 @@ img { display: block; max-width: 100%; }
     align-items: center;
     text-align: center;
     justify-content: center;
-    gap: 16px;
+    gap: 14px;
   }
 
   .footer-copyright {

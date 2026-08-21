@@ -1209,6 +1209,15 @@ if (btnScrollTop) {
     } else {
       btnScrollTop.classList.remove('visible');
     }
+
+    // Détection immédiate du footer pour baisser l'opacité
+    const footerEl = document.getElementById('footer-site') || document.querySelector('.footer');
+    if (footerEl) {
+      const footerRect = footerEl.getBoundingClientRect();
+      // Dès que le haut du footer entre dans l'écran
+      const isOverFooter = footerRect.top < (window.innerHeight - 20);
+      btnScrollTop.classList.toggle('in-footer', isOverFooter);
+    }
   }, { passive: true });
 
   btnScrollTop.addEventListener('click', () => {
