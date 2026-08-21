@@ -663,6 +663,7 @@ function updateCartBarVisibility() {
 
   if (totalItemsCount === 0 || !appLayout) {
     cartBar.classList.remove('visible');
+    if (btnScrollTop) btnScrollTop.classList.remove('has-cart-bar');
     return;
   }
 
@@ -671,10 +672,10 @@ function updateCartBarVisibility() {
   const isPastHero = rect.top < window.innerHeight * 0.75;
   const isInsidePinkZone = rect.bottom > (window.innerHeight - 10);
 
-  if (isPastHero && isInsidePinkZone) {
-    cartBar.classList.add('visible');
-  } else {
-    cartBar.classList.remove('visible');
+  const isCartBarVisible = isPastHero && isInsidePinkZone;
+  cartBar.classList.toggle('visible', isCartBarVisible);
+  if (btnScrollTop) {
+    btnScrollTop.classList.toggle('has-cart-bar', isCartBarVisible);
   }
 }
 

@@ -1927,41 +1927,69 @@ img { display: block; max-width: 100%; }
    ALIGNEMENT CENTRÉ EN VERSION MOBILE
    ========================================================================== */
 @media (max-width: 960px) {
+  /* BOUTON SCROLL TO TOP : se déplace au-dessus du panier flottant avec animation fluide */
+  .btn-scroll-top {
+    bottom: 20px;
+    right: 18px;
+  }
+
+  .btn-scroll-top.has-cart-bar,
+  body:has(.floating-cart-bar.visible) .btn-scroll-top {
+    bottom: 102px !important;
+  }
+
+  /* FOOTER MOBILE AÉRÉ ET CENTRÉ */
   .footer {
-    padding: 48px 20px 110px;
+    padding: 56px 20px 140px;
     text-align: center;
   }
 
   .footer-inner {
     grid-template-columns: 1fr;
-    gap: 36px;
+    gap: 48px;
     justify-items: center;
+    margin-bottom: 48px;
   }
 
+  /* 1. Logo & Coordonnées */
   .footer-col-left {
     justify-self: center;
     align-items: center;
     text-align: center;
+    gap: 16px;
   }
 
   .footer-brand-logo {
     text-align: center;
+    margin-bottom: 2px;
+  }
+
+  .footer-logo-title {
+    font-size: 26px;
+    letter-spacing: 4px;
   }
 
   .footer-address,
   .footer-phone-link {
     justify-content: center;
     text-align: center;
+    font-size: 13.5px;
+    gap: 10px;
+    line-height: 1.5;
   }
 
+  /* 2. Navigation (Centrée au pixel près) */
   .footer-col-nav {
     justify-self: center;
     align-items: center;
     text-align: center;
+    width: 100%;
   }
 
   .footer-section-title {
     text-align: center;
+    margin-bottom: 22px;
+    font-size: 13.5px;
   }
 
   .footer-section-title::after {
@@ -1972,19 +2000,33 @@ img { display: block; max-width: 100%; }
   .footer-nav-list {
     align-items: center;
     text-align: center;
+    gap: 18px;
+    width: 100%;
   }
 
   .footer-nav-link {
+    display: inline-flex;
+    align-items: center;
     justify-content: center;
+    text-align: center;
+    font-size: 15px;
+    gap: 10px;
+    padding: 4px 0;
+  }
+
+  .footer-nav-link svg {
+    margin: 0;
   }
 
   .footer-nav-link:hover {
     transform: none;
   }
 
+  /* 3. Engagements & Services (Pictos alignés horizontalement au texte) */
   .footer-col-right {
     justify-self: center;
     max-width: 100%;
+    width: 100%;
     align-items: center;
     text-align: center;
   }
@@ -1992,14 +2034,31 @@ img { display: block; max-width: 100%; }
   .footer-info-list {
     align-items: center;
     text-align: center;
+    gap: 20px;
+    width: 100%;
   }
 
   .footer-info-item {
-    flex-direction: column;
-    justify-content: center;
+    display: flex;
+    flex-direction: row;
     align-items: center;
-    text-align: center;
-    gap: 8px;
+    justify-content: center;
+    text-align: left;
+    gap: 14px;
+    max-width: 370px;
+    margin: 0 auto;
+    font-size: 13.5px;
+    line-height: 1.45;
+  }
+
+  .footer-info-icon {
+    flex-shrink: 0;
+    margin: 0;
+  }
+
+  /* 4. Bas de page */
+  .footer-bottom {
+    padding-top: 28px;
   }
 
   .footer-bottom-inner {
@@ -2007,12 +2066,19 @@ img { display: block; max-width: 100%; }
     align-items: center;
     text-align: center;
     justify-content: center;
-    gap: 12px;
+    gap: 16px;
+  }
+
+  .footer-copyright {
+    font-size: 12.5px;
   }
 
   .footer-legal-links {
     justify-content: center;
     text-align: center;
+    gap: 12px;
+    font-size: 12.5px;
+    line-height: 1.6;
   }
 }
 
