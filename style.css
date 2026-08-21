@@ -805,7 +805,7 @@ img { display: block; max-width: 100%; }
   margin: 0 auto;
   height: 100%;
   min-height: 100%;
-  padding-top: calc(var(--header-height) + var(--banner-height) + 20px);
+  padding-top: calc(var(--banner-height) + 24px);
   padding-bottom: calc(28px + var(--safe-bottom));
   padding-left: 24px;
   padding-right: 24px;
@@ -3000,7 +3000,7 @@ img { display: block; max-width: 100%; }
     background: #FFFFFF;
   }
   
-  .hero-top-nav { top: 0 !important; font-size: 12.5px; gap: 12px; letter-spacing: 2px; margin-top: 0; }
+  .hero-top-nav { top: 0 !important; font-size: 12.5px; gap: 12px; letter-spacing: 2.2px; margin-top: 6px; }
   .hero-main-title { font-size: 48px; letter-spacing: 6px; }
   .hero-main-sub { font-size: 14.5px; }
   .hero-badge-tagline { font-size: 12px; padding: 6px 14px; flex-direction: column; gap: 4px; }

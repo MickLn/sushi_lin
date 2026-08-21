@@ -156,7 +156,7 @@ async function loadMenuData() {
                 available: typeof override.available === 'boolean' ? override.available : item.available,
                 pieces: override.pieces !== undefined ? override.pieces : item.pieces,
                 desc: override.desc !== undefined ? override.desc : item.desc,
-                img: override.img || item.img,
+                img: item.img || override.img,
                 cat: override.cat || item.cat
               };
             }
@@ -511,7 +511,7 @@ function createProductCard(item) {
   const allergens = getItemAllergens(item);
 
   const mediaHtml = item.img
-    ? `<img class="product-image" src="${item.img}" alt="${item.name}" loading="lazy" decoding="async" onerror="this.style.display='none'">`
+    ? `<img class="product-image" src="${item.img}" alt="${item.name}" loading="lazy" decoding="async" onerror="if(!this.dataset.retried){this.dataset.retried='1'; const p=this.getAttribute('src'); const f=p.split('/').pop(); this.src='img/products/'+(f[0]===f[0].toUpperCase()?f.toLowerCase():f.toUpperCase());}else{this.style.display='none';}">`
     : getCategorySvgIcon(item.cat);
 
   const allergensCardHtml = allergens.length > 0
