@@ -63,7 +63,7 @@
     },
     {
       "id": "boissons",
-      "name": "Boissons & Vins",
+      "name": "Boissons & vins",
       "desc": "Softs, thés japonais, bières, vins sélectionnés et champagnes",
       "banner": "img/categories/boissons.jpg"
     }
@@ -78,9 +78,7 @@
       "price": 2.5,
       "img": "img/products/1.png",
       "desc": "",
-      "available": true,
-      "subcat": "soupes-salades",
-      "subcatName": "Soupes & salades fraîches"
+      "available": true
     },
     {
       "id": "entrees-2",
@@ -91,9 +89,7 @@
       "price": 2.5,
       "img": "img/products/2.png",
       "desc": "",
-      "available": true,
-      "subcat": "soupes-salades",
-      "subcatName": "Soupes & salades fraîches"
+      "available": true
     },
     {
       "id": "entrees-b2",
@@ -104,9 +100,7 @@
       "price": 4.5,
       "img": "img/products/b2.png",
       "desc": "",
-      "available": true,
-      "subcat": "soupes-salades",
-      "subcatName": "Soupes & salades fraîches"
+      "available": true
     },
     {
       "id": "entrees-b7",
@@ -117,9 +111,7 @@
       "price": 8.9,
       "img": "img/products/b7.png",
       "desc": "",
-      "available": true,
-      "subcat": "soupes-salades",
-      "subcatName": "Soupes & salades fraîches"
+      "available": true
     },
     {
       "id": "entrees-b9",
@@ -130,9 +122,7 @@
       "price": 4.2,
       "img": "img/products/b9.png",
       "desc": "",
-      "available": true,
-      "subcat": "soupes-salades",
-      "subcatName": "Soupes & salades fraîches"
+      "available": true
     },
     {
       "id": "entrees-b11",
@@ -143,9 +133,7 @@
       "price": 15.5,
       "img": "img/products/b11.png",
       "desc": "",
-      "available": true,
-      "subcat": "soupes-salades",
-      "subcatName": "Soupes & salades fraîches"
+      "available": true
     },
     {
       "id": "entrees-85",
@@ -156,9 +144,7 @@
       "price": 6.0,
       "img": "img/products/85.png",
       "desc": "",
-      "available": true,
-      "subcat": "chaudes-nems",
-      "subcatName": "Raviolis gyoza, nems & entrées chaudes"
+      "available": true
     },
     {
       "id": "entrees-b3",
@@ -169,9 +155,7 @@
       "price": 10.9,
       "img": "img/products/b3.png",
       "desc": "",
-      "available": true,
-      "subcat": "chaudes-nems",
-      "subcatName": "Raviolis gyoza, nems & entrées chaudes"
+      "available": true
     },
     {
       "id": "entrees-b4",
@@ -182,9 +166,7 @@
       "price": 8.0,
       "img": "img/products/b4.png",
       "desc": "",
-      "available": true,
-      "subcat": "chaudes-nems",
-      "subcatName": "Raviolis gyoza, nems & entrées chaudes"
+      "available": true
     },
     {
       "id": "entrees-b5",
@@ -195,9 +177,7 @@
       "price": 5.5,
       "img": "img/products/b5.png",
       "desc": "",
-      "available": true,
-      "subcat": "chaudes-nems",
-      "subcatName": "Raviolis gyoza, nems & entrées chaudes"
+      "available": true
     },
     {
       "id": "entrees-b6",
@@ -208,9 +188,7 @@
       "price": 7.0,
       "img": "img/products/b6.png",
       "desc": "",
-      "available": true,
-      "subcat": "chaudes-nems",
-      "subcatName": "Raviolis gyoza, nems & entrées chaudes"
+      "available": true
     },
     {
       "id": "entrees-b8",
@@ -221,9 +199,7 @@
       "price": 9.5,
       "img": "img/products/b8.png",
       "desc": "",
-      "available": true,
-      "subcat": "chaudes-nems",
-      "subcatName": "Raviolis gyoza, nems & entrées chaudes"
+      "available": true
     },
     {
       "id": "entrees-b10",
@@ -234,9 +210,7 @@
       "price": 8.9,
       "img": "img/products/b10.png",
       "desc": "",
-      "available": true,
-      "subcat": "chaudes-nems",
-      "subcatName": "Raviolis gyoza, nems & entrées chaudes"
+      "available": true
     },
     {
       "id": "entrees-3",
@@ -247,9 +221,7 @@
       "price": 2.0,
       "img": "img/products/3.png",
       "desc": "",
-      "available": true,
-      "subcat": "riz",
-      "subcatName": "Riz & accompagnements"
+      "available": true
     },
     {
       "id": "entrees-4",
@@ -260,9 +232,7 @@
       "price": 2.5,
       "img": "img/products/4.png",
       "desc": "",
-      "available": true,
-      "subcat": "riz",
-      "subcatName": "Riz & accompagnements"
+      "available": true
     },
     {
       "id": "entrees-5",
@@ -273,9 +243,7 @@
       "price": 5.0,
       "img": "img/products/5.png",
       "desc": "",
-      "available": true,
-      "subcat": "riz",
-      "subcatName": "Riz & accompagnements"
+      "available": true
     },
     {
       "id": "menus-brochettes-a",

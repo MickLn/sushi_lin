@@ -203,13 +203,13 @@ function renderCategoryNavigation() {
 
   const allCount = MENU_DATA.items.length;
 
-  // 1. Sidebar Option "Toute la Carte"
+  // 1. Sidebar Option "Toute la carte"
   if (sidebarCatList) {
     const allLink = document.createElement('button');
     allLink.className = `sidebar-link ${selectedCategory === 'all' ? 'active' : ''}`;
     allLink.id = 'sidebar-link-all';
     allLink.innerHTML = `
-      <span>Toute la Carte</span>
+      <span>Toute la carte</span>
       <span class="sidebar-count">${allCount}</span>
     `;
     allLink.addEventListener('click', () => selectCategoryFilter('all'));
