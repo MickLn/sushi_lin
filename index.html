@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="Sushi Lin – Restaurant Japonais aux Clayes-sous-Bois. Commandez vos sushis, makis et rolls à emporter avec -10% de réduction immédiate.">
+  <title>Sushi Lin – Restaurant Japonais & Vente à Emporter</title>
+  
+  <!-- Typographies: Shippori Mincho (Logo), Fraunces (Titres Produits), Source Sans 3 (Texte) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Source+Sans+3:wght@400;500;600;700&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=20260821e">
+</head>
+<body>
+
+  <!-- TOP ANNOUNCEMENT BAR — Cachée sur le Hero, apparaît au défilement -->
+  <aside class="top-banner banner-hidden" id="top-banner" aria-label="Annonce">
+    <div class="top-banner-inner">
+      <p class="banner-text"><strong>–10% de réduction</strong> immédiate sur toutes vos commandes à emporter</p>
+    </div>
+  </aside>
+
+  <!-- HEADER — Caché sur le Hero, apparaît au défilement -->
+  <header class="header header-hidden" id="header">
+    <div class="header-inner">
+      <a href="#hero-section" class="header-brand" aria-label="Accueil Sushi Lin">
+        <div class="brand-text">
+          <div class="brand-title">SUSHI LIN</div>
+          <div class="brand-subtitle">Restaurant Japonais</div>
+        </div>
+      </a>
+
+      <div class="header-actions">
+        <button class="header-btn btn-account btn-icon-only" id="btn-account" aria-label="Mon Compte">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </button>
+
+        <button class="header-btn btn-cart-trigger" id="btn-cart-header" aria-label="Voir le panier">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          <span class="cart-badge-count" id="header-cart-count">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+
+  <!-- HERO PLEINE PAGE (100VH) - FOND PHOTO ACCUEIL & TITRE SUSHI LIN CENTRÉ -->
+  <section class="fullscreen-hero" id="hero-section">
+    <div class="hero-fullscreen-bg" style="background-image: url('img/fond-accueil.jpg');"></div>
+    <div class="hero-sakura-overlay"></div>
+
+    <div class="hero-fullscreen-container">
+      
+      <!-- HAUT DE L'AFFICHE / NAVIGATION : INFOS & HORAIRES + RÉSERVER -->
+      <div class="hero-top-nav">
+        <a href="#restaurant-info" class="hero-top-link">Infos & Horaires</a>
+        <span class="hero-top-dash"></span>
+        <a href="reservation.html" class="hero-top-link highlight">Réserver</a>
+      </div>
+
+      <!-- TITRE PRINCIPAL SUSHI LIN CENTRÉ AU MILIEU -->
+      <div class="hero-center-content">
+        <h1 class="hero-main-title">SUSHI LIN</h1>
+
+        <!-- CTA BOUTON "COMMANDER À EMPORTER" CENTRÉ -->
+        <div class="hero-cta-wrapper">
+          <a href="#menu-container" class="hero-order-cta" id="hero-order-cta">
+            <span class="cta-text">Commander à emporter</span>
+            <span class="cta-line"></span>
+            <div class="cta-arrow-circle">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <!-- CALLIGRAPHIE JAPONAISE VERTICALE À DROITE -->
+      <aside class="hero-kanji-block" aria-hidden="true">
+        <div class="kanji-text">絶品お料理</div>
+        <div class="kanji-line"></div>
+      </aside>
+
+    </div>
+  </section>
+
+  <!-- MOBILE CATEGORIES NAV — Apparaît après le Hero (mobile/tablette uniquement) -->
+  <nav class="mobile-categories-nav" id="mobile-categories-nav" aria-label="Navigation des catégories sur mobile">
+    <div class="categories-scroll" id="mobile-cat-nav-inner">
+      <!-- Injected by JS -->
+    </div>
+  </nav>
+
+  <!-- TWO-COLUMN APPLICATION LAYOUT (Sidebar Menu on the Left + Product Sections on the Right) -->
+  <div class="app-layout">
+    
+    <!-- STICKY SIDEBAR NAVIGATION (Desktop) -->
+    <aside class="sidebar-nav" id="sidebar-nav" aria-label="Menu des catégories">
+      <div class="sidebar-nav-inner">
+        <nav class="sidebar-menu" id="sidebar-cat-list">
+          <!-- Injected by JS: Vertical Category Links with smooth scroll fade -->
+        </nav>
+        <div class="sidebar-jump-block">
+          <a href="reservation.html" class="sidebar-jump-btn" aria-label="Accéder à la réservation de table">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <span>Réserver une Table</span>
+          </a>
+          <a href="#restaurant-info" class="sidebar-jump-btn" aria-label="Accéder directement aux informations et horaires">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+            <span>Infos & Horaires</span>
+          </a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN PRODUCT CONTAINER -->
+    <main class="main-content" id="main-content">
+      <div class="menu-wrapper" id="menu-container">
+        <div class="loading-box" id="loading-state">
+          <div class="spinner"></div>
+          <p>Préparation de la carte...</p>
+        </div>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- RESTAURANT INFOS & MAP -->
+  <section class="restaurant-info" id="restaurant-info">
+    <div class="info-container">
+      <div class="info-card">
+        <div class="card-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <h3>Horaires d'Ouverture</h3>
+        <p class="card-highlight">Ouvert 7 jours sur 7</p>
+        <p>Midi : 12h00 – 14h30<br>Soir : 18h30 – 22h00</p>
+      </div>
+
+      <div class="info-card">
+        <div class="card-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <h3>Adresse & Accès</h3>
+        <p class="card-highlight">32 Rue des Dames</p>
+        <p>78340 Les Clayes-sous-Bois</p>
+        <a href="https://goo.gl/maps/gdgPWQZ2CxFZTC1a7" target="_blank" rel="noopener" class="card-link">
+          Ouvrir dans Google Maps →
+        </a>
+      </div>
+
+      <div class="info-card">
+        <div class="card-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.36 13 19.79 19.79 0 0 1 1.27 4.38 2 2 0 0 1 3.25 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        </div>
+        <h3>Commandes téléphoniques</h3>
+        <p class="card-highlight">01 30 79 00 88</p>
+        <p>Service continu pendant les heures d'ouverture</p>
+        <a href="tel:0130790088" class="card-link">Appeler directement →</a>
+      </div>
+    </div>
+
+    <div class="map-box">
+      <iframe
+        src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d2208.733396124783!2d1.9707137786758155!3d48.82690184803181!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3Aa59b0dc792cbeb08!2sSushi%20Lin%20OUVERT%20%C3%80%20EMPORTER!5e0!3m2!1sfr!2sfr!4v1592071245028!5m2!1sfr!2sfr"
+        width="100%" height="280" style="border:0;" allowfullscreen="" loading="lazy"
+        title="Localisation Sushi Lin"></iframe>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div class="brand-title">SUSHI LIN</div>
+        <p>Restaurant de spécialités japonaises artisanales. Sushis, Makis, Sashimis et Yakitoris préparés avec des produits frais.</p>
+      </div>
+      <div class="footer-col">
+        <h4 class="footer-col-title">Accès rapide</h4>
+        <ul class="footer-links">
+          <li><a href="#menu-container">Carte & menu</a></li>
+          <li><a href="reservation.html">Réserver une table</a></li>
+          <li><a href="#restaurant-info">Infos & horaires</a></li>
+          <li><a href="admin.html">Espace restaurant</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 SUSHI LIN · Tous droits réservés · 32 Rue des Dames, 78340 Les Clayes-sous-Bois</p>
+    </div>
+  </footer>
+
+  <!-- FLOATING BOTTOM CART BAR (MOBILE ONLY) -->
+  <aside class="floating-cart-bar" id="cart-bar" aria-label="Résumé de votre commande">
+    <div class="floating-cart-content">
+      <div class="floating-cart-left">
+        <div class="floating-cart-count" id="cart-count">0 article</div>
+        <div class="floating-cart-price-block">
+          <span class="floating-cart-original" id="cart-original"></span>
+          <span class="floating-cart-total" id="cart-total">0,00 €</span>
+        </div>
+      </div>
+      <button class="floating-cart-btn" id="cart-cta" aria-label="Ouvrir le panier">
+        <span>Voir le panier</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+  </aside>
+
+  <!-- CART SIDE DRAWER / BOTTOM SHEET -->
+  <div class="cart-backdrop" id="cart-overlay" aria-hidden="true"></div>
+  <aside class="cart-panel" id="cart-drawer" role="dialog" aria-modal="true" aria-label="Votre commande en cours">
+    <div class="panel-header">
+      <div class="panel-header-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <h2>Votre Panier</h2>
+      </div>
+      <div class="panel-header-actions">
+        <button class="btn-clear-cart" id="btn-clear-cart" title="Vider tout le panier" aria-label="Vider le panier">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          <span>Vider</span>
+        </button>
+        <button class="panel-close-btn" id="cart-close" aria-label="Fermer le panier">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="panel-body" id="cart-drawer-body">
+      <!-- Injected by JS -->
+    </div>
+
+    <div class="panel-footer" id="cart-drawer-footer">
+      <div class="order-customization">
+        <div class="form-group">
+          <label for="sauce-choice">Choix des sauces</label>
+          <select id="sauce-choice" class="custom-select">
+            <option value="Sauce sucrée">Sauce sucrée</option>
+            <option value="Sauce salée">Sauce salée</option>
+            <option value="Sauce sucrée & salée">Sauce sucrée & salée</option>
+            <option value="Sans sauce">Sans sauce</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="baguettes-choice">Paires de baguettes</label>
+          <select id="baguettes-choice" class="custom-select">
+            <option value="1">1 paire</option>
+            <option value="2">2 paires</option>
+            <option value="3">3 paires</option>
+            <option value="4">4 paires</option>
+            <option value="0">Sans baguette</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="pickup-time">Horaire de retrait</label>
+          <select id="pickup-time" class="custom-select">
+            <option value="Dès que possible (~20 min)">Dès que possible (~20 min)</option>
+          </select>
+        </div>
+
+        <div class="form-group full-width">
+          <label for="comment-order">Remarques ou allergies (facultatif)</label>
+          <input type="text" id="comment-order" class="custom-input" placeholder="Ex: Sans wasabi, gingembre en plus...">
+        </div>
+      </div>
+
+      <div class="order-summary-box">
+        <div class="summary-line">
+          <span>Sous-total</span>
+          <span id="summary-subtotal">0,00 €</span>
+        </div>
+        <div class="summary-line discount-line">
+          <span class="discount-badge-text">Remise à emporter (–10%)</span>
+          <span id="summary-discount" class="discount-value">–0,00 €</span>
+        </div>
+        <div class="summary-line total-line">
+          <span>Total à régler</span>
+          <span id="summary-total">0,00 €</span>
+        </div>
+      </div>
+
+      <button class="btn-submit-order" id="btn-checkout" disabled>
+        <span>Valider la commande</span>
+      </button>
+      <p class="order-reassurance">Paiement sur place lors du retrait (CB, Espèces, Titres Restaurant).</p>
+    </div>
+  </aside>
+
+  <!-- PRODUCT DETAIL MODAL -->
+  <div class="modal-backdrop" id="modal-overlay" aria-hidden="true"></div>
+  <div class="product-modal" id="item-modal" role="dialog" aria-modal="true" aria-label="Détails du produit">
+    <button class="modal-close-icon" id="modal-close" aria-label="Fermer">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="product-modal-content" id="modal-body">
+      <!-- Injected by JS -->
+    </div>
+  </div>
+
+  <!-- AUTH MODAL (CONNEXION, INSCRIPTION & ESPACE CLIENT) -->
+  <div class="modal-backdrop" id="auth-overlay" aria-hidden="true"></div>
+  <div class="auth-modal" id="auth-modal" role="dialog" aria-modal="true" aria-label="Espace Client et Connexion">
+    <button class="modal-close-icon" id="auth-close" aria-label="Fermer">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="auth-modal-content" id="auth-modal-content">
+      
+      <!-- ÉCRAN NON CONNECTÉ -->
+      <div id="auth-guest-view">
+        <div class="auth-header">
+          <div class="auth-icon-badge">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+          <h2>Espace client Sushi Lin</h2>
+          <p>Connectez-vous pour mémoriser vos coordonnées et commander plus rapidement.</p>
+        </div>
+
+        <div class="auth-tabs">
+          <button class="auth-tab-btn active" id="tab-login" onclick="switchAuthTab('login')">Connexion</button>
+          <button class="auth-tab-btn" id="tab-register" onclick="switchAuthTab('register')">Créer un compte</button>
+        </div>
+
+        <!-- BOUTON COMPTE DE TEST EN 1 CLIC -->
+        <div style="margin-bottom: 16px;">
+          <button type="button" onclick="loginWithTestAccount()" style="width: 100%; padding: 10px 14px; background: var(--sakura-bg-soft); border: 1.5px dashed var(--sakura-border-strong); border-radius: var(--radius-md); font-family: var(--font-heading); font-size: 13px; font-weight: 800; color: var(--indigo-dark); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease;">
+            <span>⚡ Se connecter avec le compte test (Mickaël)</span>
+          </button>
+        </div>
+
+        <!-- LOGIN FORM -->
+        <form class="auth-form" id="form-login" onsubmit="handleAuthSubmit(event, 'login')">
+          <div class="form-group">
+            <label for="login-phone">Numéro de téléphone ou email</label>
+            <input type="text" id="login-phone" class="custom-input" placeholder="06 12 34 56 78 ou client@test.fr" required>
+          </div>
+          <div class="form-group">
+            <label for="login-password">Mot de passe</label>
+            <input type="password" id="login-password" class="custom-input" placeholder="••••••••" required>
+          </div>
+          <button type="submit" class="btn-auth-submit">Se connecter</button>
+        </form>
+
+        <!-- REGISTER FORM -->
+        <form class="auth-form" id="form-register" style="display: none;" onsubmit="handleAuthSubmit(event, 'register')">
+          <div class="form-group">
+            <label for="reg-name">Nom complet</label>
+            <input type="text" id="reg-name" class="custom-input" placeholder="Ex: Mickaël Lin" required>
+          </div>
+          <div class="form-group">
+            <label for="reg-phone">Numéro de téléphone</label>
+            <input type="tel" id="reg-phone" class="custom-input" placeholder="06 12 34 56 78" required>
+          </div>
+          <div class="form-group">
+            <label for="reg-email">Adresse email</label>
+            <input type="email" id="reg-email" class="custom-input" placeholder="exemple@gmail.com" required>
+          </div>
+          <div class="form-group">
+            <label for="reg-password">Créer un mot de passe</label>
+            <input type="password" id="reg-password" class="custom-input" placeholder="Minimum 6 caractères" required minlength="6">
+          </div>
+          <button type="submit" class="btn-auth-submit">Créer mon compte</button>
+        </form>
+
+        <div class="auth-features-box">
+          <div class="auth-feature-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Historique de vos commandes pour réordonner en 1 clic</span>
+          </div>
+          <div class="auth-feature-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Sauvegarde de vos préférences et coordonnées</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ÉCRAN CONNECTÉ : PROFIL CLIENT -->
+      <div id="auth-logged-view" style="display: none;">
+        <div class="auth-header" style="margin-bottom: 20px;">
+          <div class="auth-icon-badge" style="background: linear-gradient(135deg, var(--sakura-primary) 0%, var(--sakura-vibrant) 100%); color: #fff;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+          <h2 id="logged-user-name">Mon compte</h2>
+          <p id="logged-user-contact">client@test.fr</p>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+          <h3 style="font-family: var(--font-heading); font-size: 15px; font-weight: 800; color: var(--indigo-dark); margin-bottom: 10px;">Vos 5 dernières commandes :</h3>
+          <div id="logged-user-orders" class="user-orders-scroll-box">
+            <!-- Injected by JS -->
+          </div>
+        </div>
+
+        <button type="button" onclick="handleUserLogout()" style="width: 100%; padding: 12px; background: #FFF0F0; border: 1.5px solid #FFCDD2; border-radius: var(--radius-md); color: #D32F2F; font-family: var(--font-heading); font-size: 13.5px; font-weight: 800; cursor: pointer; transition: all 0.2s ease;">
+          Se déconnecter
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div class="toast-notification" id="toast" role="alert" aria-live="polite"></div>  <!-- POPUP FERMETURE EXCEPTIONNELLE -->
+  <div class="closure-modal-backdrop" id="closure-modal-backdrop" aria-hidden="true">
+    <div class="closure-modal-card" role="alertdialog" aria-modal="true" aria-labelledby="closure-modal-title">
+      <div class="closure-icon-wrap">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
+      <h3 class="closure-title" id="closure-modal-title">Information Restaurant</h3>
+      <p class="closure-msg" id="closure-modal-msg">Le restaurant est actuellement exceptionnellement fermé.</p>
+      <button class="closure-btn-dismiss" id="closure-btn-dismiss">J'ai compris</button>
+    </div>
+  </div>
+
+  <!-- BOUTON RETOUR EN HAUT -->
+  <button class="btn-scroll-top" id="btn-scroll-top" aria-label="Remonter en haut de la page" title="Haut de page">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+  </button>
+
+  <!-- SCRIPTS -->
+  <script src="app.js"></script>
+</body>
+</html>

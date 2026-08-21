@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Espace Gérant — Sushi Lin</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin.css?v=20260821d">
+</head>
+<body>
+
+  <!-- LOGIN PIN SCREEN -->
+  <div class="pin-screen" id="pin-screen">
+    <div class="pin-card">
+      <div class="pin-logo">
+        <div class="pin-crest">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+        </div>
+        <h1>Espace Gérant</h1>
+        <p>Sushi Lin · Accès sécurisé</p>
+      </div>
+
+      <form class="pin-form" onsubmit="handlePinLogin(event)">
+        <label for="admin-pin-input">Entrez votre code PIN :</label>
+        <div class="pin-input-wrap">
+          <input type="password" id="admin-pin-input" maxlength="6" placeholder="••••" autocomplete="current-password" autofocus required>
+        </div>
+        <button type="submit" class="btn-pin-submit">Accéder au tableau de bord</button>
+        <p class="pin-hint">Code PIN par défaut : <strong>1234</strong></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- MAIN ADMIN DASHBOARD -->
+  <div class="admin-app" id="admin-app" style="display: none;">
+    
+    <!-- ADMIN HEADER -->
+    <header class="admin-header">
+      <div class="admin-header-left">
+        <div class="admin-brand">
+          <div class="admin-brand-crest">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          </div>
+          <div>
+            <h2>Sushi Lin</h2>
+            <span class="admin-badge">Panneau d'administration</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-header-actions">
+        <a href="index.html" target="_blank" class="btn-preview-site">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          <span>Voir le site client</span>
+        </a>
+
+        <button class="btn-save-global" onclick="saveAllChanges()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          <span>Enregistrer les modifications</span>
+        </button>
+
+        <button class="btn-logout" onclick="handleLogout()" title="Déconnexion">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- ADMIN BODY LAYOUT -->
+    <div class="admin-layout">
+      
+      <!-- ADMIN SIDEBAR TABS -->
+      <aside class="admin-nav">
+        <button class="admin-nav-item active" onclick="switchAdminTab('orders')" id="nav-tab-orders">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          <span>Commandes & réservations</span>
+          <span class="nav-count" id="total-orders-count" style="background: var(--sakura-vibrant); color: #fff;">0</span>
+        </button>
+
+        <button class="admin-nav-item" onclick="switchAdminTab('products')" id="nav-tab-products">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <span>Produits & prix</span>
+          <span class="nav-count" id="total-products-count">235</span>
+        </button>
+
+        <button class="admin-nav-item" onclick="switchAdminTab('hours')" id="nav-tab-hours">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span>Horaires & fermetures</span>
+        </button>
+
+        <button class="admin-nav-item" onclick="switchAdminTab('restaurant')" id="nav-tab-restaurant">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <span>Coordonnées & offres</span>
+        </button>
+
+        <div class="admin-nav-footer">
+          <button class="btn-export-json" onclick="exportMenuJsonFile()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Télécharger menu.json</span>
+          </button>
+        </div>
+      </aside>
+
+      <!-- ADMIN CONTENT AREA -->
+      <main class="admin-main">
+
+        <!-- TAB 0: COMMANDES & RÉSERVATIONS EN DIRECT -->
+        <section class="admin-tab-pane active" id="pane-orders">
+          <div class="pane-header">
+            <div>
+              <h2>Commandes & réservations en direct</h2>
+              <p>Suivez en temps réel les commandes des clients et les réservations de tables.</p>
+            </div>
+            
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+              <button class="btn-add-product" onclick="generateTestOrder()" style="background: var(--indigo); color: #fff;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <span>Simuler une commande test</span>
+              </button>
+              <button onclick="clearAllOrders()" style="background: #FFF0F0; color: #D32F2F; border: 1.5px solid #FFCDD2; padding: 10px 16px; border-radius: var(--radius-md); font-weight: 700; cursor: pointer; font-size: 13px;">
+                <span>Vider l'historique</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- SUBTABS: COMMANDES / RÉSERVATIONS -->
+          <div class="admin-subtabs-nav">
+            <button class="btn-subtab active" id="subtab-btn-orders" onclick="switchOrdersSubtab('orders')">
+              <span>Commandes à emporter</span>
+              <span class="badge-count" id="badge-subtab-orders">0</span>
+            </button>
+            <button class="btn-subtab" id="subtab-btn-res" onclick="switchOrdersSubtab('res')">
+              <span>Réservations de tables</span>
+              <span class="badge-count" id="badge-subtab-res">0</span>
+            </button>
+          </div>
+
+          <!-- LISTE DES COMMANDES -->
+          <div id="admin-orders-list">
+            <!-- Rendu par JS -->
+          </div>
+
+          <!-- LISTE DES RÉSERVATIONS -->
+          <div id="admin-res-list" style="display: none;">
+            <!-- Rendu par JS -->
+          </div>
+        </section>
+
+        <!-- TAB 1: GESTION DES PRODUITS & PRIX -->
+        <section class="admin-tab-pane" id="pane-products">
+          <div class="pane-header">
+            <div>
+              <h2>Gestion des produits & prix</h2>
+              <p>Modifiez instantanément les prix des plats et activez/désactivez les ruptures de stock.</p>
+            </div>
+            
+            <button class="btn-add-product" onclick="openAddProductModal()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              <span>Ajouter un plat</span>
+            </button>
+          </div>
+
+          <!-- FILTERS & SEARCH -->
+          <div class="admin-toolbar">
+            <div class="search-box">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="admin-search-input" placeholder="Rechercher un plat (ex: Saumon, Maki, Gyoza...)" oninput="filterAdminProducts()">
+            </div>
+
+            <div class="category-filter">
+              <select id="admin-category-select" onchange="filterAdminProducts()">
+                <option value="all">Toutes les catégories</option>
+                <!-- Populated by JS -->
+              </select>
+            </div>
+          </div>
+
+          <!-- PRODUCTS TABLE / LIST -->
+          <div class="products-table-wrap">
+            <table class="products-table">
+              <thead>
+                <tr>
+                  <th style="width: 50px;">Photo</th>
+                  <th>Nom du plat</th>
+                  <th>Catégorie</th>
+                  <th>Pièces / format</th>
+                  <th style="width: 140px;">Prix (€)</th>
+                  <th style="width: 130px;">Disponibilité</th>
+                  <th style="width: 110px; text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="admin-products-tbody">
+                <!-- Injected by JS -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- TAB 2: HORAIRES & FERMETURES -->
+        <section class="admin-tab-pane" id="pane-hours">
+          <div class="pane-header">
+            <div>
+              <h2>Horaires d'ouverture & fermetures</h2>
+              <p>Configurez le statut en direct du restaurant et les périodes de fermeture exceptionnelle.</p>
+            </div>
+          </div>
+
+          <div class="admin-cards-grid">
+            
+            <!-- STATUS EN DIRECT -->
+            <div class="admin-card">
+              <div class="card-head">
+                <span class="card-icon-tag" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#10B981;"></span>
+                <h3>Statut actuel du restaurant</h3>
+              </div>
+              <div class="card-body">
+                <div class="form-radio-group">
+                  <label class="radio-card">
+                    <input type="radio" name="restaurant-status" value="open" checked id="status-open-radio">
+                    <div class="radio-content">
+                      <strong>Ouvert normalement</strong>
+                      <span>Le restaurant accepte les commandes aux horaires habituels.</span>
+                    </div>
+                  </label>
+
+                  <label class="radio-card">
+                    <input type="radio" name="restaurant-status" value="closed-exceptional" id="status-closed-radio">
+                    <div class="radio-content">
+                      <strong style="color: #E11D48;">Fermeture exceptionnelle / congés</strong>
+                      <span>Affiche une bannière d'alerte sur le site et désactive les commandes.</span>
+                    </div>
+                  </label>
+                </div>
+
+                <div class="form-field mt-16" id="exceptional-msg-field">
+                  <label for="exceptional-msg-input">Message de fermeture personnalisé à afficher aux clients :</label>
+                  <input type="text" id="exceptional-msg-input" class="admin-input" placeholder="Ex: Restaurant fermé pour congés annuels du 1er au 15 août. Réouverture le 16 août !">
+                </div>
+              </div>
+            </div>
+
+            <!-- HORAIRES REGULIERS -->
+            <div class="admin-card">
+              <div class="card-head">
+                <span class="card-icon-tag">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                </span>
+                <h3>Horaires habituels (7j/7)</h3>
+              </div>
+              <div class="card-body">
+                <div class="form-field">
+                  <label for="schedule-text-input">Texte récapitulatif des horaires :</label>
+                  <input type="text" id="schedule-text-input" class="admin-input" value="7j/7 : 12h00 – 14h30 & 18h30 – 22h00">
+                </div>
+
+                <div class="time-slots-grid mt-16">
+                  <div class="time-slot-box">
+                    <h4>Service du midi</h4>
+                    <div class="time-inputs-row">
+                      <div>
+                        <label>Ouverture</label>
+                        <input type="time" id="midi-start" class="admin-input" value="12:00">
+                      </div>
+                      <span>à</span>
+                      <div>
+                        <label>Fermeture</label>
+                        <input type="time" id="midi-end" class="admin-input" value="14:30">
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="time-slot-box">
+                    <h4>Service du soir</h4>
+                    <div class="time-inputs-row">
+                      <div>
+                        <label>Ouverture</label>
+                        <input type="time" id="soir-start" class="admin-input" value="18:30">
+                      </div>
+                      <span>à</span>
+                      <div>
+                        <label>Fermeture</label>
+                        <input type="time" id="soir-end" class="admin-input" value="22:00">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- TAB 3: COORDONNEES & OFFRES -->
+        <section class="admin-tab-pane" id="pane-restaurant">
+          <div class="pane-header">
+            <div>
+              <h2>Coordonnées & offres spéciales</h2>
+              <p>Mettez à jour les coordonnées du restaurant, le numéro WhatsApp et la remise à emporter.</p>
+            </div>
+          </div>
+
+          <div class="admin-cards-grid">
+            
+            <div class="admin-card">
+              <div class="card-head">
+                <span class="card-icon-tag">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                </span>
+                <h3>Remise à emporter</h3>
+              </div>
+              <div class="card-body">
+                <div class="form-field">
+                  <label for="discount-input">Pourcentage de réduction à emporter (%) :</label>
+                  <div class="input-unit-wrap">
+                    <input type="number" id="discount-input" class="admin-input" value="10" min="0" max="50">
+                    <span class="input-unit">%</span>
+                  </div>
+                  <span class="field-hint">Cette remise est automatiquement calculée sur chaque plat et déduite du panier.</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="admin-card">
+              <div class="card-head">
+                <span class="card-icon-tag">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.36 13 19.79 19.79 0 0 1 1.27 4.38 2 2 0 0 1 3.25 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                </span>
+                <h3>Téléphone & WhatsApp</h3>
+              </div>
+              <div class="card-body">
+                <div class="form-field">
+                  <label for="phone-display-input">Numéro affiché sur le site :</label>
+                  <input type="text" id="phone-display-input" class="admin-input" value="01 30 79 00 88">
+                </div>
+
+                <div class="form-field mt-16">
+                  <label for="whatsapp-number-input">Numéro WhatsApp recevant les commandes (format international) :</label>
+                  <input type="text" id="whatsapp-number-input" class="admin-input" value="33130790088">
+                  <span class="field-hint">Ex: 33130790088 ou 33612345678 (sans le 0 initial et sans espace).</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="admin-card full-width">
+              <div class="card-head">
+                <span class="card-icon-tag">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                </span>
+                <h3>Adresse & Google Maps</h3>
+              </div>
+              <div class="card-body">
+                <div class="form-field">
+                  <label for="address-input">Adresse physique :</label>
+                  <input type="text" id="address-input" class="admin-input" value="32 Rue des Dames, 78340 Les Clayes-sous-Bois">
+                </div>
+
+                <div class="form-field mt-16">
+                  <label for="maps-link-input">Lien Google Maps :</label>
+                  <input type="url" id="maps-link-input" class="admin-input" value="https://goo.gl/maps/gdgPWQZ2CxFZTC1a7">
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+      </main>
+
+    </div>
+  </div>
+
+  <!-- MODAL: EDIT / ADD PRODUCT -->
+  <div class="admin-modal-backdrop" id="product-modal-backdrop" aria-hidden="true"></div>
+  <div class="admin-modal" id="admin-product-modal" role="dialog" aria-modal="true">
+    <div class="admin-modal-head">
+      <h3 id="modal-product-title">Modifier le Produit</h3>
+      <button class="btn-modal-close" onclick="closeProductModal()">✕</button>
+    </div>
+    <form class="admin-modal-body" onsubmit="handleSaveProductForm(event)">
+      <input type="hidden" id="form-product-id">
+
+      <div class="form-field">
+        <label for="form-product-name">Nom du plat :</label>
+        <input type="text" id="form-product-name" class="admin-input" required>
+      </div>
+
+      <div class="form-row mt-12">
+        <div class="form-field">
+          <label for="form-product-cat">Catégorie :</label>
+          <select id="form-product-cat" class="admin-input" required>
+            <!-- Injected by JS -->
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label for="form-product-price">Prix (€) :</label>
+          <input type="number" step="0.10" min="0" id="form-product-price" class="admin-input" required>
+        </div>
+      </div>
+
+      <div class="form-row mt-12">
+        <div class="form-field">
+          <label for="form-product-pieces">Quantité / Format bouteille (ex : 6 pièces, 75 cl, 33 cl) :</label>
+          <input type="text" id="form-product-pieces" class="admin-input" placeholder="Ex: 6 pièces, 75 cl, 33 cl, 2 pièces...">
+        </div>
+
+        <div class="form-field">
+          <label for="form-product-img">URL de l'image (facultatif) :</label>
+          <input type="text" id="form-product-img" class="admin-input" placeholder="https://...">
+        </div>
+      </div>
+
+      <div class="form-field mt-12">
+        <label for="form-product-desc">Description / Ingrédients (facultatif) :</label>
+        <textarea id="form-product-desc" class="admin-input" rows="3" placeholder="Ingrédients et détails du plat..."></textarea>
+      </div>
+
+      <div class="form-field mt-12">
+        <label class="checkbox-label">
+          <input type="checkbox" id="form-product-available" checked>
+          <span>Plat disponible à la commande (En stock)</span>
+        </label>
+      </div>
+
+      <div class="admin-modal-actions mt-20">
+        <button type="button" class="btn-secondary-admin" onclick="closeProductModal()">Annuler</button>
+        <button type="submit" class="btn-primary-admin">Enregistrer le plat</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div class="admin-toast" id="admin-toast"></div>
+
+  <script src="admin.js?v=20260821d"></script>
+</body>
+</html>
