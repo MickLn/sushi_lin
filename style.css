@@ -1770,20 +1770,29 @@ img { display: block; max-width: 100%; }
 }
 
 .footer-info-icon {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
   border-radius: 50%;
-  background: rgba(255, 128, 171, 0.15);
+  background: rgba(255, 128, 171, 0.2);
   color: var(--sakura-primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   flex-shrink: 0;
+  box-sizing: border-box;
+  padding: 0 !important;
+  margin: 0 auto;
+  line-height: 0;
 }
 
 .footer-info-icon svg {
-  width: 15px;
-  height: 15px;
+  width: 16px;
+  height: 16px;
+  display: block;
+  flex-shrink: 0;
+  margin: 0 auto;
 }
 
 /* 5. BAS DU FOOTER & MENTIONS LÉGALES */
@@ -1807,8 +1816,11 @@ img { display: block; max-width: 100%; }
 .footer-legal-links {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
+  justify-content: center;
+  flex-wrap: nowrap;
+  gap: 8px;
+  white-space: nowrap;
+  font-size: 12px;
 }
 
 .footer-legal-links a {
@@ -2069,22 +2081,30 @@ img { display: block; max-width: 100%; }
   }
 
   .footer-info-icon {
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    background: rgba(255, 128, 171, 0.18);
-    color: var(--sakura-primary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    margin: 0 auto;
-  }
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 128, 171, 0.2);
+  color: var(--sakura-primary);
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  padding: 0 !important;
+  margin: 0 auto;
+  line-height: 0;
+}
 
   .footer-info-icon svg {
-    width: 16px;
-    height: 16px;
-  }
+  width: 16px;
+  height: 16px;
+  display: block;
+  flex-shrink: 0;
+  margin: 0 auto;
+}
 
   /* 4. Bas de page */
   .footer-bottom {
@@ -2104,12 +2124,14 @@ img { display: block; max-width: 100%; }
   }
 
   .footer-legal-links {
-    justify-content: center;
-    text-align: center;
-    gap: 12px;
-    font-size: 12.5px;
-    line-height: 1.6;
-  }
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: nowrap;
+  gap: 8px;
+  white-space: nowrap;
+  font-size: 12px;
+}
 }
 
 
