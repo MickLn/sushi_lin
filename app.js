@@ -150,6 +150,7 @@ async function loadMenuData() {
             if (override) {
               return {
                 ...item,
+                code: override.code !== undefined ? override.code : item.code,
                 name: override.name || item.name,
                 price: typeof override.price === 'number' ? override.price : item.price,
                 available: typeof override.available === 'boolean' ? override.available : item.available,

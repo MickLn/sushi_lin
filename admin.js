@@ -104,6 +104,7 @@ async function loadAdminData() {
             if (override) {
               return {
                 ...item,
+                code: override.code !== undefined ? override.code : item.code,
                 name: override.name || item.name,
                 price: typeof override.price === 'number' ? override.price : item.price,
                 available: typeof override.available === 'boolean' ? override.available : item.available,
@@ -203,8 +204,13 @@ function renderProductsTable(items) {
       ? `<img src="${item.img}" class="table-img-thumb" alt="${item.name}" onerror="this.outerHTML='<div class=\\'table-img-placeholder\\'></div>'">`
       : `<div class="table-img-placeholder"></div>`;
 
+    const itemCode = item.code || (item.id ? item.id.replace(/^[a-z]+-/, '').toUpperCase() : '—');
+
     tr.innerHTML = `
       <td>${thumbHtml}</td>
+      <td style="text-align: center;">
+        <span class="table-code-badge">${itemCode}</span>
+      </td>
       <td>
         <div class="table-product-name">${item.name}</div>
         ${item.desc ? `<div class="table-product-desc" title="${item.desc}">${item.desc}</div>` : ''}
@@ -244,9 +250,15 @@ function filterAdminProducts() {
   const catVal = adminCategorySelect.value;
 
   const filtered = ADMIN_MENU.items.filter(item => {
+    const codeVal = (item.code || item.id || '').toString().toLowerCase().trim();
+    const nameVal = (item.name || '').toLowerCase();
+    const descVal = (item.desc || '').toLowerCase();
+
     const matchesSearch = !searchVal || 
-      item.name.toLowerCase().includes(searchVal) || 
-      (item.desc && item.desc.toLowerCase().includes(searchVal));
+      codeVal === searchVal ||
+      codeVal.includes(searchVal) ||
+      nameVal.includes(searchVal) || 
+      descVal.includes(searchVal);
     const matchesCat = catVal === 'all' || item.cat === catVal;
     return matchesSearch && matchesCat;
   });
@@ -284,6 +296,8 @@ function toggleProductStock(itemId) {
 function openAddProductModal() {
   modalProductTitle.textContent = 'Ajouter un nouveau plat';
   document.getElementById('form-product-id').value = '';
+  const codeField = document.getElementById('form-product-code');
+  if (codeField) codeField.value = '';
   document.getElementById('form-product-name').value = '';
   document.getElementById('form-product-price').value = '';
   document.getElementById('form-product-pieces').value = '';
@@ -301,6 +315,8 @@ function openEditProductModal(itemId) {
 
   modalProductTitle.textContent = `Modifier : ${item.name}`;
   document.getElementById('form-product-id').value = item.id;
+  const codeField = document.getElementById('form-product-code');
+  if (codeField) codeField.value = item.code || '';
   document.getElementById('form-product-name').value = item.name;
   document.getElementById('form-product-cat').value = item.cat;
   document.getElementById('form-product-price').value = item.price.toFixed(2);
@@ -321,6 +337,8 @@ function closeProductModal() {
 function handleSaveProductForm(e) {
   e.preventDefault();
   const id = document.getElementById('form-product-id').value;
+  const codeField = document.getElementById('form-product-code');
+  const code = codeField ? codeField.value.trim() : '';
   const name = document.getElementById('form-product-name').value.trim();
   const cat = document.getElementById('form-product-cat').value;
   const price = parseFloat(document.getElementById('form-product-price').value);
@@ -338,6 +356,7 @@ function handleSaveProductForm(e) {
     // Edit existing
     const item = ADMIN_MENU.items.find(i => i.id === id);
     if (item) {
+      if (code) item.code = code;
       item.name = name;
       item.cat = cat;
       item.price = price;
@@ -351,6 +370,7 @@ function handleSaveProductForm(e) {
     const newId = `custom_${Date.now()}`;
     ADMIN_MENU.items.push({
       id: newId,
+      code: code || '',
       name,
       cat,
       price,
