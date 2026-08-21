@@ -1601,65 +1601,321 @@ img { display: block; max-width: 100%; }
   box-shadow: var(--shadow-card);
 }
 
-/* --- FOOTER --- */
+/* ==========================================================================
+   FOOTER PREMIUM SUSHI LIN (3 COLONNES ÉPURÉES & ENGAGEMENTS QUALITÉ)
+   ========================================================================== */
 .footer {
   background: var(--indigo-dark);
   color: #FFFFFF;
-  padding: 48px 20px 100px;
+  padding: 56px 24px 110px;
   position: relative;
   z-index: 1;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .footer-inner {
   max-width: var(--max-width);
-  margin: 0 auto 32px;
-  display: flex;
-  justify-content: space-between;
+  margin: 0 auto 40px;
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr 1.4fr;
+  gap: 40px;
   align-items: flex-start;
-  flex-wrap: wrap;
-  gap: 24px;
 }
 
-.footer-brand {
-  max-width: 400px;
-}
-
-.footer-brand .brand-title {
-  font-size: 22px;
-  color: var(--sakura-primary);
-  margin-bottom: 8px;
-}
-
-.footer-brand p {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.footer-links {
+/* 1. GAUCHE: LOGO & IDENTITÉ */
+.footer-col-left {
   display: flex;
-  gap: 20px;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.footer-brand-logo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-decoration: none;
+}
+
+.footer-logo-title {
+  font-family: var(--font-logo);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: var(--sakura-primary);
+  line-height: 1;
+  transition: color 0.2s ease;
+}
+
+.footer-brand-logo:hover .footer-logo-title {
+  color: #FFFFFF;
+}
+
+.footer-logo-sub {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  letter-spacing: 0.5px;
+}
+
+.footer-address,
+.footer-phone-link {
+  display: inline-flex;
   align-items: center;
-  flex-wrap: wrap;
-}
-
-.footer-links a, .footer-btn {
+  gap: 8px;
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.8);
-  transition: color 0.2s;
+  color: rgba(255, 255, 255, 0.85);
+  margin-top: 2px;
+  text-decoration: none;
+  transition: color 0.2s ease;
 }
 
-.footer-links a:hover, .footer-btn:hover {
+.footer-address svg,
+.footer-phone-link svg {
+  color: var(--sakura-primary);
+  flex-shrink: 0;
+}
+
+.footer-phone-link:hover {
   color: var(--sakura-primary);
 }
 
+/* 2. TITRES DE SECTIONS */
+.footer-section-title {
+  font-family: var(--font-heading);
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: #FFFFFF;
+  margin-bottom: 16px;
+  position: relative;
+  display: inline-block;
+}
+
+.footer-section-title::after {
+  content: ;
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 20px;
+  height: 2px;
+  background: var(--sakura-primary);
+  border-radius: 2px;
+}
+
+/* 3. MILIEU: NAVIGATION (3 ONGLETS) */
+.footer-nav-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.footer-nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-heading);
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  padding: 3px 0;
+}
+
+.footer-nav-link svg {
+  color: var(--sakura-primary);
+  transition: transform 0.2s ease;
+}
+
+.footer-nav-link:hover {
+  color: var(--sakura-primary);
+  transform: translateX(4px);
+}
+
+.footer-nav-link:hover svg {
+  transform: scale(1.15);
+}
+
+/* 4. DROITE: ENGAGEMENTS & INFOS */
+.footer-info-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.footer-info-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.45;
+}
+
+.footer-info-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(255, 128, 171, 0.15);
+  color: var(--sakura-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* 5. BAS DU FOOTER & MENTIONS LÉGALES */
 .footer-bottom {
   max-width: var(--max-width);
   margin: 0 auto;
   padding-top: 24px;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.footer-bottom-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.5);
-  text-align: center;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.footer-legal-links {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.footer-legal-links a {
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.footer-legal-links a:hover {
+  color: var(--sakura-primary);
+  text-decoration: underline;
+}
+
+.footer-legal-sep {
+  color: rgba(255, 255, 255, 0.25);
+}
+
+/* MODAL MENTIONS LÉGALES & RGPD */
+.legal-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 18, 45, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.legal-modal-backdrop.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.legal-modal-card {
+  background: #FFFFFF;
+  border-radius: var(--radius-xl);
+  border: 1.5px solid var(--sakura-border);
+  padding: 32px;
+  max-width: 640px;
+  width: 100%;
+  max-height: 82vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+  transform: translateY(20px);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.legal-modal-backdrop.open .legal-modal-card {
+  transform: translateY(0);
+}
+
+.legal-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1.5px solid var(--sakura-border);
+}
+
+.legal-modal-header h3 {
+  font-family: var(--font-heading);
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--indigo-dark);
+}
+
+.legal-modal-close-btn {
+  background: var(--sakura-bg-soft);
+  border: 1px solid var(--sakura-border);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--indigo-dark);
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.legal-modal-close-btn:hover {
+  background: var(--sakura-border);
+  transform: scale(1.05);
+}
+
+.legal-modal-body {
+  overflow-y: auto;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  padding-right: 8px;
+}
+
+.legal-modal-body h4 {
+  font-family: var(--font-heading);
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--indigo-dark);
+  margin: 16px 0 6px 0;
+}
+
+.legal-modal-body p {
+  margin-bottom: 10px;
+}
+
+@media (max-width: 960px) {
+  .footer-inner {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .footer-bottom-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
 }
 
 /* --- FLOATING BOTTOM CART BAR (Floating Pill Bar spacieuse et élégante) --- */

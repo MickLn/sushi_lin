@@ -1318,3 +1318,63 @@ loadMenuData();
 updateUserAccountUI();
 setTimeout(checkClosurePopup, 500);
 
+
+// ---- MODAL MENTIONS LÉGALES & RGPD & CGV ----
+function openLegalModal(type) {
+  const backdrop = document.getElementById('legal-modal-backdrop');
+  const title = document.getElementById('legal-modal-title');
+  const content = document.getElementById('legal-modal-content');
+  if (!backdrop || !title || !content) return;
+
+  if (type === 'mentions') {
+    title.textContent = 'Mentions Légales';
+    content.innerHTML = `
+      <h4>1. Présentation de l'établissement</h4>
+      <p><strong>Raison sociale :</strong> SUSHI LIN</p>
+      <p><strong>Adresse :</strong> 32 Rue des Dames, 78340 Les Clayes-sous-Bois, France</p>
+      <p><strong>Téléphone direct :</strong> 01 30 45 28 48</p>
+      <p><strong>Activité :</strong> Restauration japonaise sur place, à emporter et service traiteur.</p>
+      
+      <h4>2. Hébergement du site</h4>
+      <p>Le présent site internet est hébergé sur une infrastructure sécurisée conforme aux standards européens.</p>
+
+      <h4>3. Propriété intellectuelle</h4>
+      <p>L'ensemble des éléments visuels, textuels, photographies et charte graphique constituent des œuvres protégées par le Code de la Propriété Intellectuelle. Toute reproduction non autorisée est strictement interdite.</p>
+    `;
+  } else if (type === 'rgpd') {
+    title.textContent = 'Politique de Confidentialité (RGPD)';
+    content.innerHTML = `
+      <h4>1. Données collectées</h4>
+      <p>Dans le cadre des commandes à emporter et réservations de tables, les données strictement nécessaires au traitement sont collectées : nom, prénom, numéro de téléphone, adresse e-mail.</p>
+
+      <h4>2. Finalité des traitements</h4>
+      <p>Vos coordonnées sont uniquement utilisées pour confirmer, préparer et assurer le suivi de votre commande ou réservation. Aucune donnée n'est vendue ni cédée à des tiers.</p>
+
+      <h4>3. Durée de conservation et droits</h4>
+      <p>Conformément au Règlement Général sur la Protection des Données (RGPD), vous disposez d'un droit d'accès, de rectification et de suppression de vos données personnelles sur simple demande auprès du restaurant.</p>
+    `;
+  } else if (type === 'cgv') {
+    title.textContent = 'Conditions Générales de Vente (CGV)';
+    content.innerHTML = `
+      <h4>1. Commandes et préparation</h4>
+      <p>Tous nos plats sont préparés artisanalement à la minute. En cas de forte affluence, un délai indicatif de préparation vous est communiqué.</p>
+
+      <h4>2. Prix et règlement</h4>
+      <p>Les prix indiqués sur notre carte sont exprimés en euros TTC. Le paiement s'effectue au retrait du panier ou à table par Carte Bancaire, Apple/Google Pay, Titres-restaurant ou espèces.</p>
+
+      <h4>3. Rétractation et réclamations</h4>
+      <p>Conformément à l'article L.221-28 du Code de la consommation, le droit de rétractation ne peut être exercé pour les denrées alimentaires périssables préparées à la commande.</p>
+    `;
+  }
+
+  backdrop.classList.add('open');
+  backdrop.setAttribute('aria-hidden', 'false');
+}
+
+function closeLegalModal() {
+  const backdrop = document.getElementById('legal-modal-backdrop');
+  if (backdrop) {
+    backdrop.classList.remove('open');
+    backdrop.setAttribute('aria-hidden', 'true');
+  }
+}
