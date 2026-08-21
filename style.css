@@ -901,11 +901,13 @@ img { display: block; max-width: 100%; }
   display: none;
 }
 
-/* CTA "COMMANDER À EMPORTER" */
+/* CTA "COMMANDER À EMPORTER" (Élevé au niveau du repère sur Desktop) */
 .hero-cta-wrapper {
   display: flex;
   justify-content: center;
-  margin-top: 14px;
+  margin-top: 0;
+  margin-bottom: 64px;
+  z-index: 10;
 }
 
 .hero-order-cta {
@@ -2933,7 +2935,7 @@ img { display: block; max-width: 100%; }
   
   .hero-main-title { font-size: 68px; letter-spacing: 10px; }
   .hero-kanji-block { display: none; }
-  .hero-cta-wrapper { margin-top: 0 !important; margin-bottom: 8px; }
+  .hero-cta-wrapper { margin-top: 0 !important; margin-bottom: 8px !important; }
 }
 
 @media (max-width: 768px) {
@@ -3005,7 +3007,7 @@ img { display: block; max-width: 100%; }
   .hero-main-sub { font-size: 14.5px; }
   .hero-badge-tagline { font-size: 12px; padding: 6px 14px; flex-direction: column; gap: 4px; }
   .tagline-dot { display: none; }
-  .hero-cta-wrapper { margin-top: 0 !important; margin-bottom: 8px; }
+  .hero-cta-wrapper { margin-top: 0 !important; margin-bottom: 8px !important; }
   
   .cta-text { font-size: 16px; }
   .cta-line { width: 30px; }
