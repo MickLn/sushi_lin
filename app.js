@@ -1319,7 +1319,7 @@ updateUserAccountUI();
 setTimeout(checkClosurePopup, 500);
 
 
-// ---- MODAL MENTIONS LÉGALES & RGPD & CGV ----
+// ---- MODAL MENTIONS LÉGALES & RGPD & CGV (CONFORME SUSHI LIN) ----
 function openLegalModal(type) {
   const backdrop = document.getElementById('legal-modal-backdrop');
   const title = document.getElementById('legal-modal-title');
@@ -1329,41 +1329,77 @@ function openLegalModal(type) {
   if (type === 'mentions') {
     title.textContent = 'Mentions Légales';
     content.innerHTML = `
-      <h4>1. Présentation de l'établissement</h4>
-      <p><strong>Raison sociale :</strong> SUSHI LIN</p>
-      <p><strong>Adresse :</strong> 32 Rue des Dames, 78340 Les Clayes-sous-Bois, France</p>
-      <p><strong>Téléphone direct :</strong> 01 30 45 28 48</p>
-      <p><strong>Activité :</strong> Restauration japonaise sur place, à emporter et service traiteur.</p>
-      
-      <h4>2. Hébergement du site</h4>
-      <p>Le présent site internet est hébergé sur une infrastructure sécurisée conforme aux standards européens.</p>
+      <h4>1. Éditeur du site & Établissement</h4>
+      <p>Le présent site internet est exploité sous le nom commercial :</p>
+      <p><strong>Raison commerciale :</strong> SUSHI LIN (SUSHI LIN II)</p>
+      <p><strong>Adresse de l'établissement :</strong> 32 Rue des Dames, 78340 Les Clayes-sous-Bois, France</p>
+      <p><strong>Téléphone direct :</strong> <a href="tel:0130452848" style="color: var(--sakura-vibrant); font-weight: 700;">01 30 45 28 48</a></p>
+      <p><strong>Activité :</strong> Restauration japonaise traditionnelle sur place, vente à emporter et service traiteur.</p>
+
+      <h4>2. Hébergement</h4>
+      <p>Le site est hébergé par :<br>
+      <strong>LWS (Ligne Web Services)</strong><br>
+      2 Rue Jules Ferry, 88190 Golbey, France<br>
+      Site web : <a href="https://www.lws.fr" target="_blank" rel="noopener noreferrer" style="color: var(--sakura-vibrant);">https://www.lws.fr</a></p>
 
       <h4>3. Propriété intellectuelle</h4>
-      <p>L'ensemble des éléments visuels, textuels, photographies et charte graphique constituent des œuvres protégées par le Code de la Propriété Intellectuelle. Toute reproduction non autorisée est strictement interdite.</p>
+      <p>L’ensemble du contenu présent sur ce site (textes, graphismes, photographies, logos, icônes, logiciels et mise en page) est la propriété exclusive de <strong>SUSHI LIN</strong>, sauf mention contraire.</p>
+      <p>Toute reproduction, distribution, modification, adaptation ou publication, même partielle, est strictement interdite sans l’autorisation écrite préalable de SUSHI LIN.</p>
+
+      <h4>4. Responsabilité</h4>
+      <p>SUSHI LIN met tout en œuvre pour assurer la fiabilité et l’exactitude des informations publiées (prix, disponibilité, horaires), mais ne saurait être tenue responsable d’éventuelles omissions ou d'erreurs indépendantes de sa volonté.</p>
     `;
   } else if (type === 'rgpd') {
-    title.textContent = 'Politique de Confidentialité (RGPD)';
+    title.textContent = 'Politique de Confidentialité & Cookies (RGPD)';
     content.innerHTML = `
-      <h4>1. Données collectées</h4>
-      <p>Dans le cadre des commandes à emporter et réservations de tables, les données strictement nécessaires au traitement sont collectées : nom, prénom, numéro de téléphone, adresse e-mail.</p>
+      <h4>1. Responsable du traitement des données</h4>
+      <p>Le responsable du traitement des données personnelles est l'établissement <strong>SUSHI LIN</strong>, situé au 32 Rue des Dames, 78340 Les Clayes-sous-Bois.</p>
 
-      <h4>2. Finalité des traitements</h4>
-      <p>Vos coordonnées sont uniquement utilisées pour confirmer, préparer et assurer le suivi de votre commande ou réservation. Aucune donnée n'est vendue ni cédée à des tiers.</p>
+      <h4>2. Données collectées & Finalités</h4>
+      <p>Les informations collectées via notre module de commande à emporter et de réservation de tables (nom, prénom, numéro de téléphone, adresse e-mail) sont strictement nécessaires à l'exécution de la prestation de restauration :</p>
+      <ul>
+        <li>Préparation et suivi des commandes à emporter ;</li>
+        <li>Confirmation et gestion des réservations de tables ;</li>
+        <li>Communication directe avec le client en cas d'indisponibilité ou d'ajustement.</li>
+      </ul>
+      <p><strong>Aucune donnée n'est vendue, cédée ou transmise à des tiers à des fins publicitaires.</strong></p>
 
-      <h4>3. Durée de conservation et droits</h4>
-      <p>Conformément au Règlement Général sur la Protection des Données (RGPD), vous disposez d'un droit d'accès, de rectification et de suppression de vos données personnelles sur simple demande auprès du restaurant.</p>
+      <h4>3. Durée de conservation</h4>
+      <p>Les données relatives aux commandes et réservations sont conservées pour la durée strictement nécessaire au traitement de la demande et à la gestion de la relation client, dans le respect des délais légaux de prescription.</p>
+
+      <h4>4. Vos droits (RGPD)</h4>
+      <p>Conformément au Règlement Général sur la Protection des Données (RGPD - Règlement UE 2016/679) et à la loi Informatique et Libertés, vous disposez des droits suivants :</p>
+      <ul>
+        <li>Droit d'accès et de rectification de vos données ;</li>
+        <li>Droit à l'effacement (« droit à l'oubli ») ;</li>
+        <li>Droit à la limitation du traitement et d'opposition.</li>
+      </ul>
+      <p>Pour exercer ces droits, vous pouvez contacter directement le restaurant par téléphone au <strong>01 30 45 28 48</strong> ou sur place.</p>
+
+      <h4>5. Politique relative aux Cookies</h4>
+      <p>Notre site utilise exclusivement des <strong>cookies techniques de session</strong> strictement indispensables à la navigation et à la mémorisation de votre panier d'achat. Ces cookies ne requièrent pas de consentement préalable conformément aux recommandations de la CNIL.</p>
+      <p>L'affichage interactif de la carte repose sur <strong>Google Maps Platform</strong>. Aucun traceur publicitaire ou de profilage n'est déposé sur votre terminal.</p>
     `;
   } else if (type === 'cgv') {
     title.textContent = 'Conditions Générales de Vente (CGV)';
     content.innerHTML = `
-      <h4>1. Commandes et préparation</h4>
-      <p>Tous nos plats sont préparés artisanalement à la minute. En cas de forte affluence, un délai indicatif de préparation vous est communiqué.</p>
+      <h4>1. Commandes & Préparation à la minute</h4>
+      <p>Tous les plats (sushis, makis, sashimis, yakitoris et spécialités chaudes) sont préparés artisanalement à la commande pour garantir une fraîcheur optimale. En cas de forte affluence, un délai indicatif de préparation vous est communiqué lors de la validation.</p>
 
-      <h4>2. Prix et règlement</h4>
-      <p>Les prix indiqués sur notre carte sont exprimés en euros TTC. Le paiement s'effectue au retrait du panier ou à table par Carte Bancaire, Apple/Google Pay, Titres-restaurant ou espèces.</p>
+      <h4>2. Tarifs et Moyens de paiement</h4>
+      <p>Les prix affichés sur notre carte sont exprimés en euros (€) Toutes Taxes Comprises (TTC). Le règlement de votre commande s'effectue au comptoir lors du retrait ou à table :</p>
+      <ul>
+        <li>Carte Bancaire (Visa, Mastercard, American Express) ;</li>
+        <li>Paiement sans contact (Apple Pay, Google Pay) ;</li>
+        <li>Titres-restaurant (cartes et tickets) ;</li>
+        <li>Espèces en euros.</li>
+      </ul>
 
-      <h4>3. Rétractation et réclamations</h4>
-      <p>Conformément à l'article L.221-28 du Code de la consommation, le droit de rétractation ne peut être exercé pour les denrées alimentaires périssables préparées à la commande.</p>
+      <h4>3. Absence de droit de rétractation</h4>
+      <p>Conformément aux dispositions de l'article <strong>L.221-28 4° du Code de la consommation</strong>, le droit de rétractation ne peut être exercé pour les contrats de fourniture de denrées alimentaires périssables préparées à la commande.</p>
+
+      <h4>4. Réclamations & Service client</h4>
+      <p>Pour toute question ou réclamation concernant une commande ou une réservation, notre équipe se tient à votre entière disposition au restaurant ou par téléphone au <strong>01 30 45 28 48</strong>.</p>
     `;
   }
 
