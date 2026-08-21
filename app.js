@@ -1415,3 +1415,14 @@ function closeLegalModal() {
     backdrop.setAttribute('aria-hidden', 'true');
   }
 }
+
+// Observer pour baisser l'opacité du bouton Scroll to Top lorsqu'il est dans la zone du footer
+const footerSiteEl = document.getElementById('footer-site') || document.querySelector('.footer');
+if (footerSiteEl && btnScrollTop && 'IntersectionObserver' in window) {
+  const footerObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      btnScrollTop.classList.toggle('in-footer', entry.isIntersecting);
+    });
+  }, { threshold: 0.05, rootMargin: '0px 0px -40px 0px' });
+  footerObserver.observe(footerSiteEl);
+}
