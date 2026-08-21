@@ -256,6 +256,14 @@ function renderCategoryNavigation() {
       mobileCatNavInner.appendChild(pill);
     }
   });
+
+  const catScrollContainer = document.querySelector('.categories-scroll');
+  if (catScrollContainer && !catScrollContainer.dataset.listenerAttached) {
+    catScrollContainer.dataset.listenerAttached = 'true';
+    catScrollContainer.addEventListener('scroll', () => {
+      catScrollContainer.classList.toggle('has-left-scroll', catScrollContainer.scrollLeft > 12);
+    }, { passive: true });
+  }
 }
 
 function selectCategoryFilter(catId, shouldScroll = true) {
@@ -270,7 +278,12 @@ function selectCategoryFilter(catId, shouldScroll = true) {
     const isActive = (pill.dataset.cat === catId) || (catId === 'all' && pill.id === 'mobile-cat-pill-all');
     pill.classList.toggle('active', isActive);
     if (isActive) {
-      pill.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      if (catId === 'all') {
+        const scrollContainer = document.querySelector('.categories-scroll');
+        if (scrollContainer) scrollContainer.scrollTo({ left: 0, behavior: 'smooth' });
+      } else {
+        pill.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }
     }
   });
 
