@@ -1094,7 +1094,12 @@ function setActiveCategoryTab(catId) {
     pill.classList.toggle('active', pill.dataset.cat === catId);
   });
   const activeMobilePill = document.getElementById(`mobile-cat-pill-${catId}`);
-  activeMobilePill?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  if (catId === 'all') {
+    const scrollContainer = document.querySelector('.categories-scroll');
+    if (scrollContainer) scrollContainer.scrollTo({ left: 0, behavior: 'smooth' });
+  } else {
+    activeMobilePill?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  }
 }
 
 // ---- Toast Notification ----
