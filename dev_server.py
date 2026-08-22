@@ -173,7 +173,7 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
       color: #E11D48 !important;
     }}
     .border-row {{
-      border-bottom: 1px solid #F5E6EA !important;
+      border-color: #F5E6EA !important;
     }}
     .code-pill {{
       background-color: #FFF0F3 !important;
@@ -217,7 +217,7 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
         color: #FF80AB !important;
       }}
       .border-row {{
-        border-bottom: 1px solid #24294A !important;
+        border-color: #24294A !important;
       }}
       .code-pill {{
         background-color: #381224 !important;
@@ -248,7 +248,7 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
           </tr>
         </table>
 
-        <!-- 2. ENCADRÉ INFOS COMMANDE (SOBRE, SANS ROSE ACCENTUÉ) -->
+        <!-- 2. ENCADRÉ INFOS COMMANDE (TOUTES LES DONNÉES EN GRAS COHÉRENT) -->
         <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
           <tr>
             <td class="email-meta-box" style="background-color: #FFF5F8; border-radius: 12px; padding: 14px 18px; border: 1px solid #FFE4E8;">
@@ -259,11 +259,11 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
                 </tr>
                 <tr>
                   <td class="text-muted" style="padding: 3px 0; font-size: 12.5px; color: #64748B;">Date</td>
-                  <td class="text-main" style="padding: 3px 0; font-size: 12.5px; color: #0D1127; text-align: right;">{order.get('dateFormatted', '')}</td>
+                  <td class="text-main" style="padding: 3px 0; font-size: 12.5px; font-weight: 700; color: #0D1127; text-align: right;">{order.get('dateFormatted', '')}</td>
                 </tr>
                 <tr>
                   <td class="text-muted" style="padding: 3px 0; font-size: 12.5px; color: #64748B;">Retrait prévu</td>
-                  <td class="text-main" style="padding: 3px 0; font-size: 12.5px; font-weight: 600; color: #0D1127; text-align: right;">{order.get('pickupTime', 'Dès que possible')}</td>
+                  <td class="text-main" style="padding: 3px 0; font-size: 12.5px; font-weight: 700; color: #0D1127; text-align: right;">{order.get('pickupTime', 'Dès que possible')}</td>
                 </tr>
               </table>
             </td>
@@ -286,8 +286,8 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
           </tbody>
         </table>
 
-        <!-- 5. TOTAUX & REMISE (SANS POINTILLÉS) -->
-        <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse; font-size: 13px; margin-bottom: 24px;">
+        <!-- 5. TOTAUX & CADRE ÉPURÉ POUR LE TOTAL -->
+        <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse; font-size: 13px; margin-bottom: 22px;">
           <tr>
             <td class="text-muted" style="padding: 4px 0; color: #64748B;">Sous-total</td>
             <td class="text-main" style="padding: 4px 0; text-align: right; color: #0D1127;">{subtotal:.2f} €</td>
@@ -296,36 +296,50 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
             <td class="text-discount" style="padding: 4px 0; color: #059669; font-weight: 600;">Remise à emporter (–10%)</td>
             <td class="text-discount" style="padding: 4px 0; text-align: right; color: #059669; font-weight: 600;">–{discount:.2f} €</td>
           </tr>
-          <tr class="border-row" style="border-top: 1px solid #F5E6EA;">
-            <td class="text-main" style="padding: 12px 0 0; font-size: 14px; font-weight: 600; color: #0D1127;">Total à régler</td>
-            <td class="text-total" style="padding: 12px 0 0; font-size: 17px; font-weight: 700; color: #E11D48; text-align: right; white-space: nowrap;">{total:.2f} €</td>
+          
+          <!-- 1ER TRAIT DISCRET : HAUT DU CADRE TOTAL (ESPACÉ DU TEXTE AU DESSUS) -->
+          <tr>
+            <td colspan="2" style="padding-top: 14px;">
+              <div class="border-row" style="border-top: 1px solid #F5E6EA;"></div>
+            </td>
+          </tr>
+
+          <!-- LIGNE TOTAL À RÉGLER (ENCADRÉE) -->
+          <tr>
+            <td class="text-main" style="padding: 12px 0; font-size: 14px; font-weight: 700; color: #0D1127;">Total à régler</td>
+            <td class="text-total" style="padding: 12px 0; font-size: 17px; font-weight: 700; color: #E11D48; text-align: right; white-space: nowrap;">{total:.2f} €</td>
+          </tr>
+
+          <!-- 2E TRAIT DISCRET : BAS DU CADRE TOTAL -->
+          <tr>
+            <td colspan="2" style="padding-bottom: 4px;">
+              <div class="border-row" style="border-top: 1px solid #F5E6EA;"></div>
+            </td>
           </tr>
         </table>
 
-        <!-- 6. INFORMATIONS PRATIQUES (SANS FOND GRIS, SANS ENCADRÉ, BIEN AÉRÉ) -->
-        <div class="border-row" style="border-top: 1px solid #F5E6EA; padding-top: 18px;">
-          <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="font-size: 12.5px; line-height: 1.6;">
-            <tr>
-              <td class="text-muted" style="padding: 7px 0; width: 120px; color: #64748B; vertical-align: top;">Sauces & couverts</td>
-              <td class="text-main" style="padding: 7px 0; color: #0D1127;">{sauces_couverts}</td>
-            </tr>
-            {comment_row}
-            {client_email_row}
-            <tr>
-              <td class="text-muted" style="padding: 7px 0; color: #64748B; vertical-align: top;">Lieu de retrait</td>
-              <td class="text-main" style="padding: 7px 0; color: #0D1127;">
-                32 Rue des Dames<br>78340 Les Clayes-sous-Bois
-              </td>
-            </tr>
-            <tr>
-              <td class="text-muted" style="padding: 7px 0; color: #64748B; vertical-align: top;">Téléphone</td>
-              <td style="padding: 7px 0;"><a href="tel:0130452848" class="link-phone" style="color: #F06292; text-decoration: none; font-weight: 600;">01 30 45 28 48</a></td>
-            </tr>
-          </table>
-        </div>
+        <!-- 6. INFORMATIONS PRATIQUES (AÉRÉES) -->
+        <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="font-size: 12.5px; line-height: 1.6;">
+          <tr>
+            <td class="text-muted" style="padding: 7px 0; width: 120px; color: #64748B; vertical-align: top;">Sauces & couverts</td>
+            <td class="text-main" style="padding: 7px 0; color: #0D1127;">{sauces_couverts}</td>
+          </tr>
+          {comment_row}
+          {client_email_row}
+          <tr>
+            <td class="text-muted" style="padding: 7px 0; color: #64748B; vertical-align: top;">Lieu de retrait</td>
+            <td class="text-main" style="padding: 7px 0; color: #0D1127;">
+              32 Rue des Dames<br>78340 Les Clayes-sous-Bois
+            </td>
+          </tr>
+          <tr>
+            <td class="text-muted" style="padding: 7px 0; color: #64748B; vertical-align: top;">Téléphone</td>
+            <td style="padding: 7px 0;"><a href="tel:0130452848" class="link-phone" style="color: #F06292; text-decoration: none; font-weight: 600;">01 30 45 28 48</a></td>
+          </tr>
+        </table>
 
         <!-- 7. PIED DU REÇU -->
-        <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-top: 20px;">
+        <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-top: 22px;">
           <tr>
             <td class="text-muted" style="text-align: center; font-size: 11.5px; color: #94A3B8; letter-spacing: 0.3px;">
               Merci pour votre commande et bon appétit.
