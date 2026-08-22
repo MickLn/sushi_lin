@@ -273,6 +273,11 @@
         </div>
 
         <div class="form-field">
+          <label for="res-email">Adresse e-mail (pour recevoir la confirmation)</label>
+          <input type="email" id="res-email" class="res-input" placeholder="nom@exemple.com">
+        </div>
+
+        <div class="form-field">
           <label for="res-notes">Remarques ou demandes particulières (facultatif)</label>
           <textarea id="res-notes" class="res-input res-textarea" rows="3" placeholder="Ex. Table au calme, chaise haute enfant, allergies..."></textarea>
         </div>
@@ -432,6 +437,7 @@
       const notes = document.getElementById('res-notes')?.value || '';
 
       const resId = 'RES-' + Date.now().toString().slice(-5);
+      const email = document.getElementById('res-email')?.value.trim() || '';
       const resData = {
         id: resId,
         timestamp: new Date().toISOString(),
@@ -440,9 +446,20 @@
         guests,
         name,
         phone,
+        email,
         notes,
         status: 'confirmed'
       };
+
+      // Envoi de l'e-mail de confirmation via Resend
+      fetch('/api/send-reservation-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ toEmail: email, reservation: resData })
+      })
+      .then(r => r.json())
+      .then(resInfo => console.log('Confirmation e-mail réservation:', resInfo))
+      .catch(err => console.warn('Erreur envoi e-mail réservation:', err));
 
       try {
         const existingRes = JSON.parse(localStorage.getItem('sushilin_reservations') || '[]');

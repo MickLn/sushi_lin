@@ -75,8 +75,14 @@
       <aside class="admin-nav">
         <button class="admin-nav-item active" onclick="switchAdminTab('orders')" id="nav-tab-orders">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-          <span>Commandes & réservations</span>
+          <span>Commandes à emporter</span>
           <span class="nav-count" id="total-orders-count" style="background: var(--sakura-vibrant); color: #fff;">0</span>
+        </button>
+
+        <button class="admin-nav-item" onclick="switchAdminTab('reservations')" id="nav-tab-reservations">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span>Réservations</span>
+          <span class="nav-count" id="total-reservations-count" style="background: var(--indigo); color: #fff;">0</span>
         </button>
 
         <button class="admin-nav-item" onclick="switchAdminTab('products')" id="nav-tab-products">
@@ -106,12 +112,12 @@
       <!-- ADMIN CONTENT AREA -->
       <main class="admin-main">
 
-        <!-- TAB 0: COMMANDES & RÉSERVATIONS EN DIRECT -->
+        <!-- TAB 0: COMMANDES À EMPORTER EN DIRECT -->
         <section class="admin-tab-pane active" id="pane-orders">
           <div class="pane-header">
             <div>
-              <h2>Commandes & réservations en direct</h2>
-              <p>Suivez en temps réel les commandes des clients et les réservations de tables.</p>
+              <h2>Commandes à emporter en direct</h2>
+              <p>Suivez en temps réel les commandes passées par vos clients sur la boutique.</p>
             </div>
             
             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
@@ -125,25 +131,33 @@
             </div>
           </div>
 
-          <!-- SUBTABS: COMMANDES / RÉSERVATIONS -->
-          <div class="admin-subtabs-nav">
-            <button class="btn-subtab active" id="subtab-btn-orders" onclick="switchOrdersSubtab('orders')">
-              <span>Commandes à emporter</span>
-              <span class="badge-count" id="badge-subtab-orders">0</span>
-            </button>
-            <button class="btn-subtab" id="subtab-btn-res" onclick="switchOrdersSubtab('res')">
-              <span>Réservations de tables</span>
-              <span class="badge-count" id="badge-subtab-res">0</span>
-            </button>
-          </div>
-
           <!-- LISTE DES COMMANDES -->
           <div id="admin-orders-list">
             <!-- Rendu par JS -->
           </div>
+        </section>
+
+        <!-- TAB DÉDIÉ: RÉSERVATIONS DE TABLES -->
+        <section class="admin-tab-pane" id="pane-reservations" style="display: none;">
+          <div class="pane-header">
+            <div>
+              <h2>Réservations de tables en direct</h2>
+              <p>Consultez et gérez les demandes de réservation reçues en temps réel.</p>
+            </div>
+            
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+              <button class="btn-add-product" onclick="generateTestReservation()" style="background: var(--sakura-vibrant); color: #fff;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <span>Simuler une réservation test</span>
+              </button>
+              <button onclick="clearAllReservations()" style="background: #FFF0F0; color: #D32F2F; border: 1.5px solid #FFCDD2; padding: 10px 16px; border-radius: var(--radius-md); font-weight: 700; cursor: pointer; font-size: 13px;">
+                <span>Vider les réservations</span>
+              </button>
+            </div>
+          </div>
 
           <!-- LISTE DES RÉSERVATIONS -->
-          <div id="admin-res-list" style="display: none;">
+          <div id="admin-res-list">
             <!-- Rendu par JS -->
           </div>
         </section>
