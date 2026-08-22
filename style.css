@@ -2370,8 +2370,9 @@ img { display: block; max-width: 100%; }
 }
 
 .cart-item-price-calc {
-  font-size: 13px;
-  color: var(--text-secondary);
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--indigo-dark);
 }
 
 .cart-item-stepper {
@@ -2571,8 +2572,9 @@ img { display: block; max-width: 100%; }
   left: 50%;
   transform: translate(-50%, -45%) scale(0.96);
   width: 92%;
-  max-width: 480px; /* Taille parfaitement équilibrée et compacte */
-  max-height: 88dvh;
+  max-width: 540px;
+  min-height: 540px;
+  max-height: 90dvh;
   background: #FFFFFF;
   border: 2px solid var(--sakura-border);
   border-radius: var(--radius-xl);
@@ -2712,7 +2714,7 @@ img { display: block; max-width: 100%; }
 
 /* Historique des commandes avec défilement fluide et marge anti-coupure */
 .user-orders-scroll-box {
-  max-height: 190px;
+  max-height: 280px;
   overflow-y: auto;
   padding: 10px 4px 10px 4px;
   scroll-behavior: smooth;

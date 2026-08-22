@@ -755,7 +755,7 @@ function renderCartPanelItems() {
     row.innerHTML = `
       <div class="cart-item-details">
         <div class="cart-item-title">${item.name}</div>
-        <div class="cart-item-price-calc">${formatEuro(item.price)} × ${item.qty} = <strong>${formatEuro(item.price * item.qty)}</strong></div>
+        <div class="cart-item-price-calc">${formatEuro(item.price * item.qty)}</div>
       </div>
       <div class="cart-item-stepper">
         <button class="stepper-btn minus" aria-label="Diminuer" data-id="${item.id}">−</button>
@@ -773,6 +773,11 @@ function renderCartPanelItems() {
 
 function openCartPanel() {
   renderCartPanelItems();
+  const user = getLoggedUser();
+  const cartEmailGroup = document.getElementById('cart-email-group');
+  if (cartEmailGroup) {
+    cartEmailGroup.style.display = user ? 'none' : 'block';
+  }
   cartDrawer?.classList.add('open');
   cartOverlay?.classList.add('active');
   cartOverlay?.setAttribute('aria-hidden', 'false');
@@ -974,10 +979,17 @@ function updateUserAccountUI() {
   const loggedName = document.getElementById('logged-user-name');
   const loggedContact = document.getElementById('logged-user-contact');
 
+  // Gérer l'affichage de l'e-mail dans le panier
+  const cartEmailGroup = document.getElementById('cart-email-group');
+  if (cartEmailGroup) {
+    cartEmailGroup.style.display = user ? 'none' : 'block';
+  }
+
   if (user) {
     if (guestView) guestView.style.display = 'none';
     if (loggedView) loggedView.style.display = 'block';
     if (loggedName) loggedName.textContent = user.name;
+    if (loggedContact) loggedContact.textContent = user.email || user.contact || '';
     if (btnAccountEl) {
       btnAccountEl.innerHTML = `
         <span class="user-logged-btn-content">
@@ -1020,11 +1032,15 @@ function renderUserOrdersHistory() {
 
   container.innerHTML = orders.map(ord => `
     <div class="user-order-card">
-      <div>
-        <strong style="font-size: 14px; color: var(--indigo-dark); display: block; font-family: var(--font-heading);">${ord.id} · ${(ord.total || 0).toFixed(2).replace('.', ',')} €</strong>
-        <span style="font-size: 12px; color: var(--text-secondary); display: block; margin-top: 2px;">
-          ${ord.dateFormatted || ''} · <span style="font-weight: 700; color: var(--indigo-primary);">${ord.itemCount || ord.items.length} plat${(ord.itemCount || ord.items.length) > 1 ? 's' : ''}</span>
-        </span>
+      <div style="line-height: 1.45;">
+        <div style="font-size: 13.5px; color: var(--indigo-dark); display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+          <strong style="font-weight: 700; font-family: var(--font-heading); font-size: 14px; color: var(--indigo-dark);">${ord.id}</strong>
+          <span style="font-weight: 400; font-size: 12.5px; color: var(--text-secondary);">${ord.dateFormatted || ''}</span>
+        </div>
+        <div style="font-size: 12.5px; color: var(--text-secondary); margin-top: 4px; display: flex; align-items: center; gap: 14px;">
+          <span style="font-weight: 400; color: var(--indigo-dark); font-size: 13px;">${(ord.total || 0).toFixed(2).replace('.', ',')} €</span>
+          <span style="font-weight: 400; color: var(--text-secondary);">${ord.itemCount || ord.items.length} plat${(ord.itemCount || ord.items.length) > 1 ? 's' : ''}</span>
+        </div>
       </div>
       <button type="button" class="btn-reorder" onclick="reorderPastOrder('${ord.id}')">
         Recommander
@@ -1055,7 +1071,8 @@ function handleOrderCheckout() {
   const baguettesChoice = document.getElementById('baguettes-choice')?.value || '1 paire';
   const pickupTime = document.getElementById('pickup-time')?.value || 'Dès que possible';
   const comment = document.getElementById('comment-order')?.value.trim() || '';
-  const customerEmail = document.getElementById('order-customer-email')?.value.trim() || '';
+  const loggedUser = getLoggedUser();
+  const customerEmail = loggedUser?.email || loggedUser?.contact || document.getElementById('order-customer-email')?.value.trim() || '';
 
   // 1. Sauvegarde dans le panneau d'administration (localStorage)
   const orderId = 'CMD-' + Date.now().toString().slice(-6);
