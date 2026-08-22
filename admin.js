@@ -290,7 +290,7 @@ function renderProductsTable(items) {
       </td>
       <td>
         <button class="stock-toggle-btn ${item.available ? 'in-stock' : 'out-of-stock'}" onclick="toggleProductStock('${item.id}')">
-          <span>${item.available ? '● En stock' : '○ En rupture'}</span>
+          <span>${item.available ? 'En stock' : 'En rupture'}</span>
         </button>
       </td>
       <td style="text-align: right;">
@@ -606,18 +606,18 @@ function renderAdminOrders() {
                 <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">${order.dateFormatted || ''}</div>
               </div>
               <select onchange="updateOrderStatus('${order.id}', this.value)" style="font-size: 12px; font-weight: 800; padding: 4px 10px; border-radius: 20px; border: 1.5px solid ${order.status === 'new' ? 'var(--sakura-vibrant)' : 'var(--sakura-border)'}; background: ${order.status === 'new' ? 'var(--sakura-bg-soft)' : '#fff'}; color: var(--indigo-dark); cursor: pointer;">
-                <option value="new" ${order.status === 'new' ? 'selected' : ''}>🟢 Nouvelle</option>
-                <option value="preparing" ${order.status === 'preparing' ? 'selected' : ''}>🟡 En préparation</option>
-                <option value="ready" ${order.status === 'ready' ? 'selected' : ''}>🔵 Prête</option>
-                <option value="completed" ${order.status === 'completed' ? 'selected' : ''}>⚪ Terminée</option>
+                <option value="new" ${order.status === 'new' ? 'selected' : ''}>Nouvelle</option>
+                <option value="preparing" ${order.status === 'preparing' ? 'selected' : ''}>En préparation</option>
+                <option value="ready" ${order.status === 'ready' ? 'selected' : ''}>Prête</option>
+                <option value="completed" ${order.status === 'completed' ? 'selected' : ''}>Terminée</option>
               </select>
             </div>
 
             <div style="background: var(--sakura-bg-soft); border-radius: var(--radius-md); padding: 10px 14px; font-size: 13px; margin-bottom: 14px;">
-              <div><strong>🕒 Heure de retrait :</strong> ${order.pickupTime || 'Dès que possible'}</div>
-              <div><strong>🥢 Baguettes :</strong> ${order.baguettesChoice || '1'}</div>
-              <div><strong>🍶 Sauces :</strong> ${order.sauceChoice || 'Sauce sucrée'}</div>
-              ${order.comment ? `<div style="margin-top: 4px; color: #D32F2F;"><strong>📝 Note client :</strong> ${order.comment}</div>` : ''}
+              <div><strong>Heure de retrait :</strong> ${order.pickupTime || 'Dès que possible'}</div>
+              <div><strong>Baguettes :</strong> ${order.baguettesChoice || '1'}</div>
+              <div><strong>Sauces :</strong> ${order.sauceChoice || 'Sauce sucrée'}</div>
+              ${order.comment ? `<div style="margin-top: 4px; color: #D32F2F;"><strong>Note client :</strong> ${order.comment}</div>` : ''}
             </div>
 
             <div style="margin-bottom: 16px;">
@@ -649,7 +649,7 @@ function renderAdminOrders() {
 
             <div style="display: flex; gap: 8px;">
               <button onclick="window.print()" style="flex: 1; padding: 8px; font-size: 12px; font-weight: 800; background: var(--sakura-bg-soft); border: 1px solid var(--sakura-border); border-radius: var(--radius-md); color: var(--indigo-dark); cursor: pointer;">
-                🖨️ Imprimer ticket
+                Imprimer ticket
               </button>
               <button onclick="deleteOrder('${order.id}')" style="padding: 8px 12px; font-size: 12px; font-weight: 700; background: #FFF0F0; border: 1px solid #FFCDD2; border-radius: var(--radius-md); color: #D32F2F; cursor: pointer;">
                 Supprimer
@@ -696,10 +696,10 @@ function renderAdminReservations() {
           </div>
 
           <div style="font-size: 13.5px; line-height: 1.6; margin-bottom: 16px;">
-            <div><strong>📅 Date :</strong> ${res.date}</div>
-            <div><strong>⏰ Service :</strong> ${res.service}</div>
-            <div><strong>👥 Couverts :</strong> ${res.guests} personne(s)</div>
-            <div><strong>📞 Téléphone :</strong> <a href="tel:${res.phone}" style="color: var(--indigo-primary); font-weight: 700;">${res.phone}</a></div>
+            <div><strong>Date :</strong> ${res.date}</div>
+            <div><strong>Créneau :</strong> ${res.service}</div>
+            <div><strong>Couverts :</strong> ${res.guests} personne(s)</div>
+            <div><strong>Téléphone :</strong> <a href="tel:${res.phone}" style="color: var(--indigo-primary); font-weight: 700;">${res.phone}</a></div>
             ${res.notes ? `<div style="margin-top: 6px; padding: 8px 10px; background: var(--sakura-bg-soft); border-radius: var(--radius-md);"><strong>Remarques :</strong> ${res.notes}</div>` : ''}
           </div>
 
@@ -794,7 +794,7 @@ function generateTestOrder() {
   localStorage.setItem('sushilin_orders', JSON.stringify(existingOrders));
 
   renderAdminOrders();
-  showToast(`✅ Commande test ${orderId} générée avec succès !`);
+  showToast(`Commande test ${orderId} générée avec succès !`);
 }
 
 // Écouteur en direct pour actualiser le dashboard dès qu'une commande est passée dans un autre onglet
@@ -869,7 +869,7 @@ function generateTestReservation() {
 
   renderAdminReservations();
   updateAdminBadges();
-  showToast(`✅ Réservation test ${resId} enregistrée !`);
+  showToast(`Réservation test ${resId} enregistrée !`);
 }
 
 function clearAllReservations() {
