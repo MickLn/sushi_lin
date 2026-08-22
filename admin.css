@@ -1108,3 +1108,8 @@ button {
 .allergen-checkbox-item:hover {
   color: var(--indigo-dark);
 }
+
+/* Textarea resize handle removal */
+textarea, textarea.admin-input, #form-product-desc {
+  resize: none !important;
+}
