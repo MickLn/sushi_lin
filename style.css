@@ -364,11 +364,13 @@ img { display: block; max-width: 100%; }
   font-weight: 600;
   margin-top: 6px;
   margin-bottom: 10px;
-  padding: 3px 8px;
+  padding: 4px 9px;
   background: var(--sakura-bg-soft);
   border-radius: var(--radius-sm);
   border: 1px solid var(--sakura-border);
-  line-height: 1.3;
+  line-height: 1.35;
+  white-space: normal !important;
+  word-break: break-word !important;
 }
 
 .product-bottom-row {
@@ -3103,11 +3105,4 @@ input[type="date"], input[type="time"] {
 }
 input[type="date"]::-webkit-date-and-time-value {
   text-align: left;
-}
-
-/* Centrage du titre de la 3e colonne du footer sur Desktop */
-.footer-col-right .footer-section-title {
-  text-align: center;
-  display: block;
-  width: 100%;
 }
