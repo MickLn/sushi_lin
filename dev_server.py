@@ -78,7 +78,7 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
                 discount = safe_float(order.get('discount', 0))
                 total = safe_float(order.get('total', 0))
 
-                print(f"\n🍣 [NOUVELLE COMMANDE REÇUE] #{order.get('id', 'CMD-XXX')} - {len(items)} article(s):")
+                print(f"\n🍣 [COMMANDE SUSHI LIN] #{order.get('id', 'CMD-XXX')} - {len(items)} article(s):")
                 rows = []
                 for it in items:
                     qty = safe_int(it.get('qty', 1))
@@ -86,23 +86,21 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
                     item_total = price * qty
                     code = str(it.get('code', '')).strip()
                     name = str(it.get('name', 'Article')).strip()
-                    code_badge = f'<span style="display:inline-block; font-size:10px; font-weight:700; color:#E11D48; background:#FFF0F3; border:1px solid #FFCCD5; border-radius:4px; padding:1px 5px; margin-right:6px;">{code}</span>' if code else ''
+                    code_badge = f'<span class="code-pill" style="display:inline-block; font-size:10.5px; font-weight:700; color:#E11D48; background:#FFF0F3; border:1px solid #FFCCD5; border-radius:4px; padding:1px 5px; margin-right:6px;">{code}</span>' if code else ''
                     
                     print(f"   • {qty}x {code} {name} -> {item_total:.2f} €")
-                    rows.append(f"""<tr>
-                        <td style="padding: 10px 0; border-bottom: 1px solid #F8E8EB; vertical-align: middle;">
-                          <div style="font-family: 'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13.5px; color: #1E244D; line-height: 1.4;">
-                            <span style="font-weight: 700; color: #1E244D; margin-right: 4px;">{qty}x</span>{code_badge}{name}
+                    rows.append(f"""<tr class="border-row" style="border-bottom: 1px solid #F5E6EA;">
+                        <td style="padding: 11px 0; vertical-align: middle;">
+                          <div class="text-main" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Source Sans 3', sans-serif; font-size: 13.5px; color: #0D1127; line-height: 1.4;">
+                            <span style="font-weight: 700; margin-right: 4px;">{qty}x</span>{code_badge}{name}
                           </div>
                         </td>
-                        <td style="padding: 10px 0; border-bottom: 1px solid #F8E8EB; text-align: right; vertical-align: middle; white-space: nowrap;">
-                          <span style="font-family: 'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13.5px; font-weight: 600; color: #1E244D;">{item_total:.2f} €</span>
+                        <td style="padding: 11px 0; text-align: right; vertical-align: middle; white-space: nowrap;">
+                          <span class="text-main" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Source Sans 3', sans-serif; font-size: 13.5px; font-weight: 600; color: #0D1127;">{item_total:.2f} €</span>
                         </td>
                     </tr>""")
 
                 items_html = ''.join(rows)
-                print(f"   Total: {total:.2f} € | Retrait: {order.get('pickupTime')} | Sauces: {order.get('sauceChoice')}")
-                print(f"   Destinataire client: '{requested_email or registered_account_email}'")
 
                 if not api_key:
                     print("❌ ERREUR: Pas de RESEND_API_KEY dans .env")
@@ -112,18 +110,23 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
                     self.wfile.write(json.dumps({'error': 'Clé RESEND_API_KEY manquante dans .env'}).encode('utf-8'))
                     return
 
+                # Formatting options & details
+                sauce_choice = order.get('sauceChoice', 'Sauce sucrée')
+                baguettes_choice = order.get('baguettesChoice', '1 paire')
+                sauces_couverts = f"{sauce_choice} / {baguettes_choice}"
+
                 comment_val = order.get('comment', '').strip()
                 comment_row = f"""<tr>
-                  <td style="padding: 3px 0; color: #8C98A4; vertical-align: top;">Remarques</td>
-                  <td style="padding: 3px 0; color: #1E244D;">{comment_val}</td>
+                  <td class="text-muted" style="padding: 7px 0; color: #64748B; vertical-align: top; width: 120px;">Remarques</td>
+                  <td class="text-main" style="padding: 7px 0; color: #0D1127;">{comment_val}</td>
                 </tr>""" if comment_val else ""
 
                 client_email_row = f"""<tr>
-                  <td style="padding: 3px 0; color: #8C98A4;">E-mail client</td>
-                  <td style="padding: 3px 0; color: #1E244D;">{requested_email}</td>
+                  <td class="text-muted" style="padding: 7px 0; color: #64748B; width: 120px;">E-mail client</td>
+                  <td class="text-main" style="padding: 7px 0; color: #0D1127;">{requested_email}</td>
                 </tr>""" if requested_email else ""
 
-                # Clean, pure, Mobile-First Receipt Email Template
+                # Responsive Clean Mobile-First HTML Email (Light/Dark mode compliant)
                 html_content = f"""<!DOCTYPE html>
 <html lang="fr" xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -133,121 +136,198 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
   <meta name="supported-color-schemes" content="light dark">
   <title>Confirmation de commande - Sushi Lin</title>
   <style>
-    :root {{ color-scheme: light dark; supported-color-schemes: light dark; }}
+    :root {{
+      color-scheme: light dark;
+      supported-color-schemes: light dark;
+    }}
+    
+    /* STYLES LIGHT PAR DÉFAUT */
+    body, .email-body {{
+      background-color: #FFF5F8 !important;
+      color: #0D1127 !important;
+    }}
+    .email-card {{
+      background-color: #FFFFFF !important;
+      border: 1.5px solid #FFD6DF !important;
+    }}
+    .email-title {{
+      color: #1E244D !important;
+    }}
+    .email-subtitle {{
+      color: #F06292 !important;
+    }}
+    .email-meta-box {{
+      background-color: #FFF5F8 !important;
+      border: 1px solid #FFE4E8 !important;
+    }}
+    .text-main {{
+      color: #0D1127 !important;
+    }}
+    .text-muted {{
+      color: #64748B !important;
+    }}
+    .text-discount {{
+      color: #059669 !important;
+    }}
+    .text-total {{
+      color: #E11D48 !important;
+    }}
+    .border-row {{
+      border-bottom: 1px solid #F5E6EA !important;
+    }}
+    .code-pill {{
+      background-color: #FFF0F3 !important;
+      color: #E11D48 !important;
+      border: 1px solid #FFCCD5 !important;
+    }}
+    .link-phone {{
+      color: #F06292 !important;
+    }}
+
+    /* STYLES DARK MODE ADAPTATIFS */
     @media (prefers-color-scheme: dark) {{
-      .email-bg {{ background-color: #1A1F3D !important; }}
-      .receipt-card {{ background-color: #FFFFFF !important; color: #1E244D !important; }}
+      body, .email-body {{
+        background-color: #0A0C16 !important;
+        color: #F0F2FF !important;
+      }}
+      .email-card {{
+        background-color: #14172B !important;
+        border: 1.5px solid #2B1D2C !important;
+      }}
+      .email-title {{
+        color: #FFFFFF !important;
+      }}
+      .email-subtitle {{
+        color: #FF80AB !important;
+      }}
+      .email-meta-box {{
+        background-color: #1C2038 !important;
+        border: 1px solid #2C3358 !important;
+      }}
+      .text-main {{
+        color: #F0F2FF !important;
+      }}
+      .text-muted {{
+        color: #A0AEC0 !important;
+      }}
+      .text-discount {{
+        color: #34D399 !important;
+      }}
+      .text-total {{
+        color: #FF80AB !important;
+      }}
+      .border-row {{
+        border-bottom: 1px solid #24294A !important;
+      }}
+      .code-pill {{
+        background-color: #381224 !important;
+        color: #FF80AB !important;
+        border: 1px solid #5C1E3A !important;
+      }}
+      .link-phone {{
+        color: #FF80AB !important;
+      }}
     }}
   </style>
 </head>
-<body style="margin: 0; padding: 20px 12px; background-color: #FFF5F7; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Source Sans 3', sans-serif; -webkit-font-smoothing: antialiased;" class="email-bg">
+<body style="margin: 0; padding: 24px 12px; background-color: #FFF5F8; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Source Sans 3', sans-serif; -webkit-font-smoothing: antialiased;" class="email-body">
   
-  <!-- CONTENEUR PRINCIPAL STYLE REÇU / TICKET PREMIUM -->
-  <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="max-width: 480px; margin: 0 auto; background-color: #FFFFFF; border-radius: 18px; border: 1.5px solid #FFD6DF; box-shadow: 0 4px 25px rgba(30, 36, 77, 0.07); overflow: hidden;" class="receipt-card">
+  <!-- CARTE PRINCIPALE ÉPURÉE (MOBILE-FIRST) -->
+  <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="max-width: 460px; margin: 0 auto; background-color: #FFFFFF; border-radius: 20px; border: 1.5px solid #FFD6DF; box-shadow: 0 4px 25px rgba(30, 36, 77, 0.06); overflow: hidden;" class="email-card">
     <tr>
-      <td>
+      <td style="padding: 28px 24px;">
 
-        <!-- 1. EN-TÊTE / LOGO TYPOGRAPHIQUE CHARTE SUSHI LIN -->
+        <!-- 1. EN-TÊTE TYPOGRAPHIQUE -->
         <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0">
           <tr>
-            <td style="text-align: center; padding: 28px 20px 16px;">
-              <h1 style="font-family: 'Shippori Mincho', 'Times New Roman', serif; font-size: 26px; font-weight: 700; letter-spacing: 5px; color: #1E244D; margin: 0; text-transform: uppercase; line-height: 1;">SUSHI LIN</h1>
-              <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 1.8px; text-transform: uppercase; color: #F06292; margin: 5px 0 0;">Restaurant Japonais Artisanal</p>
-              <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13px; color: #64748B; margin: 10px 0 0;">Confirmation de commande à emporter</p>
+            <td style="text-align: center; padding-bottom: 22px;">
+              <h1 class="email-title" style="font-family: 'Shippori Mincho', 'Times New Roman', serif; font-size: 26px; font-weight: 700; letter-spacing: 5px; color: #1E244D; margin: 0; text-transform: uppercase; line-height: 1;">SUSHI LIN</h1>
+              <p class="email-subtitle" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: #F06292; margin: 6px 0 0;">Restaurant Japonais</p>
+              <p class="text-muted" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13px; color: #64748B; margin: 12px 0 0;">Confirmation de commande à emporter</p>
             </td>
           </tr>
         </table>
 
-        <!-- 2. BLOC INFOS COMMANDE (N°, DATE, RETRAIT) -->
-        <div style="padding: 0 20px 16px;">
-          <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="background-color: #FFF5F7; border-radius: 12px; padding: 12px 16px; border: 1px solid #FFE4E8;">
-            <tr>
-              <td style="padding: 3px 0; font-size: 12.5px; color: #8C98A4;">N° Commande</td>
-              <td style="padding: 3px 0; font-size: 13px; font-weight: 700; color: #1E244D; text-align: right; letter-spacing: 0.5px;">{order.get('id', 'N/A')}</td>
-            </tr>
-            <tr>
-              <td style="padding: 3px 0; font-size: 12.5px; color: #8C98A4;">Date</td>
-              <td style="padding: 3px 0; font-size: 12.5px; color: #1E244D; text-align: right;">{order.get('dateFormatted', '')}</td>
-            </tr>
-            <tr>
-              <td style="padding: 3px 0; font-size: 12.5px; color: #8C98A4;">Retrait prévu</td>
-              <td style="padding: 3px 0; font-size: 13px; font-weight: 600; color: #E11D48; text-align: right;">{order.get('pickupTime', 'Dès que possible')}</td>
-            </tr>
-          </table>
-        </div>
-
-        <!-- SÉPARATEUR TICKET EN POINTILLÉS -->
-        <div style="border-top: 1.5px dashed #FFCCD5; margin: 0 20px 16px;"></div>
-
-        <!-- 3. TITRE SECTION : DÉTAIL DE LA COMMANDE -->
-        <div style="padding: 0 20px 8px;">
-          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.4px; color: #8C98A4;">Détail de la commande</div>
-        </div>
-
-        <!-- TABLEAU DES ARTICLES COMMANDÉS -->
-        <div style="padding: 0 20px 8px;">
-          <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
-            <tbody>
-              {items_html}
-            </tbody>
-          </table>
-        </div>
-
-        <!-- SÉPARATEUR TICKET EN POINTILLÉS -->
-        <div style="border-top: 1.5px dashed #FFCCD5; margin: 12px 20px 14px;"></div>
-
-        <!-- 4. TOTAUX & REMISE -->
-        <div style="padding: 0 20px 16px;">
-          <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse; font-size: 13px;">
-            <tr>
-              <td style="padding: 3px 0; color: #64748B;">Sous-total</td>
-              <td style="padding: 3px 0; text-align: right; color: #1E244D;">{subtotal:.2f} €</td>
-            </tr>
-            <tr>
-              <td style="padding: 3px 0; color: #10B981; font-weight: 600;">Remise à emporter (–10%)</td>
-              <td style="padding: 3px 0; text-align: right; color: #10B981; font-weight: 600;">–{discount:.2f} €</td>
-            </tr>
-            <tr>
-              <td colspan="2" style="padding-top: 10px; border-top: 1px solid #FFE4E8;">
-                <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0">
-                  <tr>
-                    <td style="font-size: 14px; font-weight: 600; color: #1E244D;">Total à régler au restaurant</td>
-                    <td style="font-size: 17px; font-weight: 700; color: #E11D48; text-align: right; white-space: nowrap;">{total:.2f} €</td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-          </table>
-        </div>
-
-        <!-- 5. INFORMATIONS PRATIQUES & OPTIONS (SANS ÉMOJIS) -->
-        <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="background-color: #FAFAFA; border-top: 1px solid #F1F5F9;">
+        <!-- 2. ENCADRÉ INFOS COMMANDE (SOBRE, SANS ROSE ACCENTUÉ) -->
+        <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
           <tr>
-            <td style="padding: 16px 20px; font-size: 12px; color: #64748B; line-height: 1.55;">
+            <td class="email-meta-box" style="background-color: #FFF5F8; border-radius: 12px; padding: 14px 18px; border: 1px solid #FFE4E8;">
               <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0">
                 <tr>
-                  <td style="padding: 3px 0; width: 110px; color: #8C98A4; vertical-align: top;">Sauces & couverts</td>
-                  <td style="padding: 3px 0; color: #1E244D;">{order.get('sauceChoice', 'Sauce sucrée')} · {order.get('baguettesChoice', '1 paire')}</td>
-                </tr>
-                {comment_row}
-                {client_email_row}
-                <tr>
-                  <td style="padding: 3px 0; color: #8C98A4; vertical-align: top;">Lieu de retrait</td>
-                  <td style="padding: 3px 0; color: #1E244D;">32 Rue des Dames, 78340 Les Clayes-sous-Bois</td>
+                  <td class="text-muted" style="padding: 3px 0; font-size: 12.5px; color: #64748B;">N° Commande</td>
+                  <td class="text-main" style="padding: 3px 0; font-size: 13px; font-weight: 700; color: #0D1127; text-align: right; letter-spacing: 0.5px;">{order.get('id', 'N/A')}</td>
                 </tr>
                 <tr>
-                  <td style="padding: 3px 0; color: #8C98A4; vertical-align: top;">Téléphone direct</td>
-                  <td style="padding: 3px 0;"><a href="tel:0130452848" style="color: #F06292; text-decoration: none; font-weight: 600;">01 30 45 28 48</a></td>
+                  <td class="text-muted" style="padding: 3px 0; font-size: 12.5px; color: #64748B;">Date</td>
+                  <td class="text-main" style="padding: 3px 0; font-size: 12.5px; color: #0D1127; text-align: right;">{order.get('dateFormatted', '')}</td>
+                </tr>
+                <tr>
+                  <td class="text-muted" style="padding: 3px 0; font-size: 12.5px; color: #64748B;">Retrait prévu</td>
+                  <td class="text-main" style="padding: 3px 0; font-size: 12.5px; font-weight: 600; color: #0D1127; text-align: right;">{order.get('pickupTime', 'Dès que possible')}</td>
                 </tr>
               </table>
             </td>
           </tr>
         </table>
 
-        <!-- 6. PIED DU REÇU -->
+        <!-- 3. TITRE SECTION : DÉTAIL DE LA COMMANDE -->
         <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0">
           <tr>
-            <td style="text-align: center; padding: 14px 20px 20px; font-size: 11px; color: #94A3B8; letter-spacing: 0.3px;">
+            <td style="padding-bottom: 10px;">
+              <div class="text-muted" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #8C98A4;">Détail de la commande</div>
+            </td>
+          </tr>
+        </table>
+
+        <!-- 4. TABLEAU DES ARTICLES -->
+        <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse; margin-bottom: 18px;">
+          <tbody>
+            {items_html}
+          </tbody>
+        </table>
+
+        <!-- 5. TOTAUX & REMISE (SANS POINTILLÉS) -->
+        <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse; font-size: 13px; margin-bottom: 24px;">
+          <tr>
+            <td class="text-muted" style="padding: 4px 0; color: #64748B;">Sous-total</td>
+            <td class="text-main" style="padding: 4px 0; text-align: right; color: #0D1127;">{subtotal:.2f} €</td>
+          </tr>
+          <tr>
+            <td class="text-discount" style="padding: 4px 0; color: #059669; font-weight: 600;">Remise à emporter (–10%)</td>
+            <td class="text-discount" style="padding: 4px 0; text-align: right; color: #059669; font-weight: 600;">–{discount:.2f} €</td>
+          </tr>
+          <tr class="border-row" style="border-top: 1px solid #F5E6EA;">
+            <td class="text-main" style="padding: 12px 0 0; font-size: 14px; font-weight: 600; color: #0D1127;">Total à régler</td>
+            <td class="text-total" style="padding: 12px 0 0; font-size: 17px; font-weight: 700; color: #E11D48; text-align: right; white-space: nowrap;">{total:.2f} €</td>
+          </tr>
+        </table>
+
+        <!-- 6. INFORMATIONS PRATIQUES (SANS FOND GRIS, SANS ENCADRÉ, BIEN AÉRÉ) -->
+        <div class="border-row" style="border-top: 1px solid #F5E6EA; padding-top: 18px;">
+          <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="font-size: 12.5px; line-height: 1.6;">
+            <tr>
+              <td class="text-muted" style="padding: 7px 0; width: 120px; color: #64748B; vertical-align: top;">Sauces & couverts</td>
+              <td class="text-main" style="padding: 7px 0; color: #0D1127;">{sauces_couverts}</td>
+            </tr>
+            {comment_row}
+            {client_email_row}
+            <tr>
+              <td class="text-muted" style="padding: 7px 0; color: #64748B; vertical-align: top;">Lieu de retrait</td>
+              <td class="text-main" style="padding: 7px 0; color: #0D1127;">
+                32 Rue des Dames<br>78340 Les Clayes-sous-Bois
+              </td>
+            </tr>
+            <tr>
+              <td class="text-muted" style="padding: 7px 0; color: #64748B; vertical-align: top;">Téléphone</td>
+              <td style="padding: 7px 0;"><a href="tel:0130452848" class="link-phone" style="color: #F06292; text-decoration: none; font-weight: 600;">01 30 45 28 48</a></td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- 7. PIED DU REÇU -->
+        <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-top: 20px;">
+          <tr>
+            <td class="text-muted" style="text-align: center; font-size: 11.5px; color: #94A3B8; letter-spacing: 0.3px;">
               Merci pour votre commande et bon appétit.
             </td>
           </tr>
