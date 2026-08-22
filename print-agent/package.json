@@ -1,0 +1,11 @@
+{
+  "name": "hokkaido-print-agent",
+  "private": true,
+  "scripts": {
+    "start": "node src/index.mjs"
+  },
+  "type": "module",
+  "dependencies": {
+    "node-thermal-printer": "^4.6.0"
+  }
+}

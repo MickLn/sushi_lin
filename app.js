@@ -181,6 +181,7 @@ async function loadMenuData() {
                 available: typeof override.available === 'boolean' ? override.available : item.available,
                 pieces: override.pieces !== undefined ? override.pieces : item.pieces,
                 desc: override.desc !== undefined ? override.desc : item.desc,
+                allergens: Array.isArray(override.allergens) ? override.allergens : item.allergens,
                 img: item.img || override.img,
                 cat: override.cat || item.cat
               };
@@ -492,6 +493,9 @@ function renderProductsMenu() {
 
 // ---- Allergen Helper ----
 function getItemAllergens(item) {
+  if (Array.isArray(item.allergens)) {
+    return item.allergens;
+  }
   const text = (item.name + ' ' + (item.desc || '') + ' ' + item.cat).toLowerCase();
   const allergens = [];
 

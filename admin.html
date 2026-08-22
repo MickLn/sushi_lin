@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="admin.css?v=20260821f">
+  <link rel="stylesheet" href="admin.css?v=20260822_c">
 </head>
 <body>
 
@@ -424,7 +424,7 @@
 
       <div class="form-row mt-12">
         <div class="form-field">
-          <label for="form-product-pieces">Quantité / Format bouteille (ex : 6 pièces, 75 cl, 33 cl) :</label>
+          <label for="form-product-pieces">Quantité / Format :</label>
           <input type="text" id="form-product-pieces" class="admin-input" placeholder="Ex: 6 pièces, 75 cl, 33 cl, 2 pièces...">
         </div>
 
@@ -438,6 +438,86 @@
         <label for="form-product-desc">Description / Ingrédients (facultatif) :</label>
         <textarea id="form-product-desc" class="admin-input" rows="3" placeholder="Ingrédients et détails du plat..."></textarea>
       </div>
+
+      <!-- SECTION ALLERGÈNES (14 ALLERGÈNES COCHABLES) -->
+      <div class="admin-allergens-section mt-16">
+        <button type="button" class="admin-allergens-toggle" id="admin-allergens-toggle" onclick="toggleAdminAllergensSection()">
+          <span class="admin-allergens-toggle-title">
+            Allergènes (<span id="admin-allergens-count">0</span>)
+          </span>
+          <span class="admin-allergens-chevron">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+          </span>
+        </button>
+        
+        <div class="admin-allergens-body" id="admin-allergens-body">
+          <p class="admin-allergens-hint">Cochez les allergènes présents dans la recette. Vérifiez-les à chaque modification.</p>
+          
+          <div class="admin-allergens-grid">
+            <label class="allergen-checkbox-item">
+              <input type="checkbox" name="admin-allergen" value="Céréales" onchange="updateAdminAllergensCount()">
+              <span>Céréales</span>
+            </label>
+            <label class="allergen-checkbox-item">
+              <input type="checkbox" name="admin-allergen" value="Crustacés" onchange="updateAdminAllergensCount()">
+              <span>Crustacés</span>
+            </label>
+            <label class="allergen-checkbox-item">
+              <input type="checkbox" name="admin-allergen" value="Œufs" onchange="updateAdminAllergensCount()">
+              <span>Œufs</span>
+            </label>
+
+            <label class="allergen-checkbox-item">
+              <input type="checkbox" name="admin-allergen" value="Poissons" onchange="updateAdminAllergensCount()">
+              <span>Poissons</span>
+            </label>
+            <label class="allergen-checkbox-item">
+              <input type="checkbox" name="admin-allergen" value="Arachides" onchange="updateAdminAllergensCount()">
+              <span>Arachides</span>
+            </label>
+            <label class="allergen-checkbox-item">
+              <input type="checkbox" name="admin-allergen" value="Soja" onchange="updateAdminAllergensCount()">
+              <span>Soja</span>
+            </label>
+
+            <label class="allergen-checkbox-item">
+              <input type="checkbox" name="admin-allergen" value="Lait" onchange="updateAdminAllergensCount()">
+              <span>Lait</span>
+            </label>
+            <label class="allergen-checkbox-item">
+              <input type="checkbox" name="admin-allergen" value="Fruits à coque" onchange="updateAdminAllergensCount()">
+              <span>Fruits à coque</span>
+            </label>
+            <label class="allergen-checkbox-item">
+              <input type="checkbox" name="admin-allergen" value="Céleri" onchange="updateAdminAllergensCount()">
+              <span>Céleri</span>
+            </label>
+
+            <label class="allergen-checkbox-item">
+              <input type="checkbox" name="admin-allergen" value="Moutarde" onchange="updateAdminAllergensCount()">
+              <span>Moutarde</span>
+            </label>
+            <label class="allergen-checkbox-item">
+              <input type="checkbox" name="admin-allergen" value="Sésame" onchange="updateAdminAllergensCount()">
+              <span>Sésame</span>
+            </label>
+            <label class="allergen-checkbox-item">
+              <input type="checkbox" name="admin-allergen" value="Sulfites" onchange="updateAdminAllergensCount()">
+              <span>Sulfites</span>
+            </label>
+
+            <label class="allergen-checkbox-item">
+              <input type="checkbox" name="admin-allergen" value="Lupin" onchange="updateAdminAllergensCount()">
+              <span>Lupin</span>
+            </label>
+            <label class="allergen-checkbox-item">
+              <input type="checkbox" name="admin-allergen" value="Mollusques" onchange="updateAdminAllergensCount()">
+              <span>Mollusques</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
 
       <div class="form-field mt-12">
         <label class="checkbox-label">
@@ -456,6 +536,6 @@
   <!-- TOAST NOTIFICATION -->
   <div class="admin-toast" id="admin-toast"></div>
 
-  <script src="admin.js?v=20260821e"></script>
+  <script src="admin.js?v=20260822_c"></script>
 </body>
 </html>

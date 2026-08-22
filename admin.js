@@ -1,3 +1,63 @@
+
+// ---- GESTION DES ALLERGÈNES PAR PLAT ----
+function toggleAdminAllergensSection() {
+  const toggleBtn = document.getElementById('admin-allergens-toggle');
+  const body = document.getElementById('admin-allergens-body');
+  if (!body) return;
+  const isHidden = body.style.display === 'none';
+  body.style.display = isHidden ? 'block' : 'none';
+  if (toggleBtn) {
+    if (isHidden) toggleBtn.classList.remove('closed');
+    else toggleBtn.classList.add('closed');
+  }
+}
+
+function updateAdminAllergensCount() {
+  const countEl = document.getElementById('admin-allergens-count');
+  const checked = document.querySelectorAll('input[name="admin-allergen"]:checked');
+  if (countEl) countEl.textContent = checked.length;
+}
+
+function getItemDefaultAllergens(item) {
+  if (Array.isArray(item.allergens)) return item.allergens;
+  const text = (item.name + ' ' + (item.desc || '') + ' ' + (item.cat || '')).toLowerCase();
+  const list = [];
+  if (text.includes('saumon') || text.includes('thon') || text.includes('daurade') || text.includes('bar') || text.includes('maquereau') || text.includes('sashimi') || text.includes('chirashi') || text.includes('sushi') || text.includes('poisson')) {
+    list.push('Poissons');
+  }
+  if (text.includes('crevette') || text.includes('ebi') || text.includes('tempura')) {
+    list.push('Crustacés');
+  }
+  if (text.includes('poulpe') || text.includes('calamar') || text.includes('takoyaki') || text.includes('jacques')) {
+    list.push('Mollusques');
+  }
+  if (text.includes('sesame') || text.includes('sésame') || text.includes('california') || text.includes('wakame') || text.includes('yakitori') || text.includes('brochette')) {
+    list.push('Sésame');
+  }
+  if (text.includes('soja') || text.includes('miso') || text.includes('edamame') || text.includes('tofu')) {
+    list.push('Soja');
+  }
+  if (text.includes('cheese') || text.includes('fromage') || text.includes('lait')) {
+    list.push('Lait');
+  }
+  if (text.includes('oeuf') || text.includes('œuf') || text.includes('mayo') || text.includes('tartare') || text.includes('tamago') || text.includes('dorayaki')) {
+    list.push('Œufs');
+  }
+  if (text.includes('nem') || text.includes('gyoza') || text.includes('tempura') || text.includes('oignon frit') || text.includes('crispy') || text.includes('beignet') || text.includes('bière')) {
+    list.push('Céréales');
+  }
+  if (text.includes('cacahuète') || text.includes('arachide')) {
+    list.push('Arachides');
+  }
+  if (text.includes('noisette') || text.includes('amande') || text.includes('noix')) {
+    list.push('Fruits à coque');
+  }
+  if (text.includes('vin') || text.includes('champagne')) {
+    list.push('Sulfites');
+  }
+  return list;
+}
+
 /* ==========================================================================
    SUSHI LIN II — Logique Tableau de Bord Gérant (Admin)
    ========================================================================== */
@@ -214,6 +274,7 @@ function renderProductsTable(items) {
       <td>
         <div class="table-product-name">${item.name}</div>
         ${item.desc ? `<div class="table-product-desc" title="${item.desc}">${item.desc}</div>` : ''}
+        ${(item.allergens && item.allergens.length > 0) ? `<div style="font-size: 11px; color: var(--sakura-vibrant); margin-top: 3px; font-weight: 600;">Allergènes : ${item.allergens.join(', ')}</div>` : ''}
       </td>
       <td>
         <span class="table-cat-badge">${catLabel}</span>
@@ -305,6 +366,10 @@ function openAddProductModal() {
   document.getElementById('form-product-desc').value = '';
   document.getElementById('form-product-available').checked = true;
 
+  // Reset allergens
+  document.querySelectorAll('input[name="admin-allergen"]').forEach(cb => cb.checked = false);
+  updateAdminAllergensCount();
+
   adminProductModal.classList.add('open');
   productModalBackdrop.classList.add('active');
 }
@@ -324,6 +389,13 @@ function openEditProductModal(itemId) {
   document.getElementById('form-product-img').value = item.img || '';
   document.getElementById('form-product-desc').value = item.desc || '';
   document.getElementById('form-product-available').checked = item.available !== false;
+
+  // Set allergens
+  const itemAllergens = getItemDefaultAllergens(item);
+  document.querySelectorAll('input[name="admin-allergen"]').forEach(cb => {
+    cb.checked = itemAllergens.some(a => a.toLowerCase() === cb.value.toLowerCase() || (cb.value === 'Céréales' && a.toLowerCase().includes('gluten')) || (cb.value === 'Poissons' && a.toLowerCase().includes('poisson')));
+  });
+  updateAdminAllergensCount();
 
   adminProductModal.classList.add('open');
   productModalBackdrop.classList.add('active');
@@ -364,6 +436,7 @@ function handleSaveProductForm(e) {
       item.img = img;
       item.desc = desc;
       item.available = available;
+      item.allergens = Array.from(document.querySelectorAll('input[name="admin-allergen"]:checked')).map(cb => cb.value);
     }
   } else {
     // Create new
@@ -377,7 +450,8 @@ function handleSaveProductForm(e) {
       pieces,
       img,
       desc,
-      available
+      available,
+      allergens: Array.from(document.querySelectorAll('input[name="admin-allergen"]:checked')).map(cb => cb.value)
     });
   }
 
