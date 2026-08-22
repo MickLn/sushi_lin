@@ -74,6 +74,7 @@ let ADMIN_SETTINGS = {
   midiEnd: '14:30',
   soirStart: '18:30',
   soirEnd: '22:00',
+  maxOrdersPerSlot: 5,
   discount: 10,
   phone: '01 30 79 00 88',
   whatsapp: '33130790088',
@@ -476,6 +477,8 @@ function populateSettingsFields() {
   document.getElementById('soir-start').value = ADMIN_SETTINGS.soirStart || '18:30';
   document.getElementById('soir-end').value = ADMIN_SETTINGS.soirEnd || '22:00';
   document.getElementById('discount-input').value = ADMIN_SETTINGS.discount || 10;
+  const maxOrdersEl = document.getElementById('max-orders-slot-input');
+  if (maxOrdersEl) maxOrdersEl.value = ADMIN_SETTINGS.maxOrdersPerSlot || 5;
   document.getElementById('phone-display-input').value = ADMIN_SETTINGS.phone || '01 30 79 00 88';
   document.getElementById('whatsapp-number-input').value = ADMIN_SETTINGS.whatsapp || '33130790088';
   document.getElementById('address-input').value = ADMIN_SETTINGS.address || '32 Rue des Dames, 78340 Les Clayes-sous-Bois';
@@ -491,6 +494,8 @@ function collectSettingsFromForm() {
   ADMIN_SETTINGS.soirStart = document.getElementById('soir-start').value;
   ADMIN_SETTINGS.soirEnd = document.getElementById('soir-end').value;
   ADMIN_SETTINGS.discount = parseInt(document.getElementById('discount-input').value, 10) || 10;
+  const maxOrdersInput = document.getElementById('max-orders-slot-input');
+  ADMIN_SETTINGS.maxOrdersPerSlot = maxOrdersInput ? (parseInt(maxOrdersInput.value, 10) || 5) : 5;
   ADMIN_SETTINGS.phone = document.getElementById('phone-display-input').value.trim();
   ADMIN_SETTINGS.whatsapp = document.getElementById('whatsapp-number-input').value.trim();
   ADMIN_SETTINGS.address = document.getElementById('address-input').value.trim();

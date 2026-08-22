@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="admin.css?v=20260822_d">
+  <link rel="stylesheet" href="admin.css?v=20260823_a">
 </head>
 <body>
 
@@ -319,6 +319,25 @@
 
           <div class="admin-cards-grid">
             
+                        <div class="admin-card">
+              <div class="card-head">
+                <span class="card-icon-tag">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                </span>
+                <h3>Capacité par créneau</h3>
+              </div>
+              <div class="card-body">
+                <div class="form-field">
+                  <label for="max-orders-slot-input">Nombre max de commandes par créneau (15 min) :</label>
+                  <div class="input-unit-wrap">
+                    <input type="number" id="max-orders-slot-input" class="admin-input" value="5" min="1" max="50">
+                    <span class="input-unit" style="right: 10px; font-size: 11px; font-weight: 700;">cmd</span>
+                  </div>
+                  <span class="field-hint">Dès que ce quota est atteint sur un créneau, il est automatiquement grisé (Complet) dans le panier client.</span>
+                </div>
+              </div>
+            </div>
+
             <div class="admin-card">
               <div class="card-head">
                 <span class="card-icon-tag">
@@ -536,6 +555,6 @@
   <!-- TOAST NOTIFICATION -->
   <div class="admin-toast" id="admin-toast"></div>
 
-  <script src="admin.js?v=20260822_e"></script>
+  <script src="admin.js?v=20260823_a"></script>
 </body>
 </html>

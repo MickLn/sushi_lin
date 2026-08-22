@@ -276,7 +276,7 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
             </tr>
             <tr>
               <td class="text-muted" style="padding: 7px 0; color: #64748B; vertical-align: top;">Téléphone</td>
-              <td style="padding: 7px 0;"><a href="tel:0130452848" class="link-phone" style="color: #F06292; text-decoration: none; font-weight: 600;">01 30 45 28 48</a></td>
+              <td style="padding: 7px 0;"><a href="tel:0130790088" class="link-phone" style="color: #F06292; text-decoration: none; font-weight: 600;">01 30 79 00 88</a></td>
             </tr>
           </table>
         </div>
@@ -433,7 +433,7 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
             </tr>
             <tr>
               <td class="text-muted" style="padding: 7px 0; color: #64748B; vertical-align: top;">Téléphone</td>
-              <td style="padding: 7px 0;"><a href="tel:0130452848" class="link-phone" style="color: #F06292; text-decoration: none; font-weight: 600;">01 30 45 28 48</a></td>
+              <td style="padding: 7px 0;"><a href="tel:0130790088" class="link-phone" style="color: #F06292; text-decoration: none; font-weight: 600;">01 30 79 00 88</a></td>
             </tr>
           </table>
         </div>

@@ -81,7 +81,27 @@ function getCategorySvgIcon(catId) {
 // ---- Generate Available Pickup Slots (Dès l'ouverture et jusqu'à 15 min avant fermeture) ----
 function generatePickupTimeSlots() {
   if (!pickupTimeSelect) return;
-  pickupTimeSelect.innerHTML = '<option value="Dès que possible (~20 min)">Dès que possible (~20 min)</option>';
+  const maxOrders = APP_SETTINGS.maxOrdersPerSlot || 5;
+
+  // Calcul du nombre de commandes par créneau pour aujourd'hui
+  let orders = [];
+  try {
+    orders = JSON.parse(localStorage.getItem('sushilin_orders') || '[]');
+  } catch (e) {
+    orders = [];
+  }
+  const todayStr = new Date().toLocaleDateString('fr-FR');
+  const slotCounts = {};
+
+  orders.forEach(order => {
+    const isToday = !order.dateFormatted || order.dateFormatted.startsWith(todayStr);
+    if (isToday && order.status !== 'cancelled' && order.pickupTime) {
+      const cleanSlot = order.pickupTime.replace(/^À\s+/i, '').trim();
+      slotCounts[cleanSlot] = (slotCounts[cleanSlot] || 0) + 1;
+    }
+  });
+
+  pickupTimeSelect.innerHTML = '';
   
   const midiSlots = [
     '12h00', '12h15', '12h30', '12h45',
@@ -101,7 +121,13 @@ function generatePickupTimeSlots() {
   midiSlots.forEach(slot => {
     const opt = document.createElement('option');
     opt.value = slot;
-    opt.textContent = `À ${slot}`;
+    const count = slotCounts[slot] || 0;
+    if (count >= maxOrders) {
+      opt.disabled = true;
+      opt.textContent = `À ${slot} (Complet)`;
+    } else {
+      opt.textContent = `À ${slot}`;
+    }
     midiGroup.appendChild(opt);
   });
   pickupTimeSelect.appendChild(midiGroup);
@@ -111,10 +137,22 @@ function generatePickupTimeSlots() {
   soirSlots.forEach(slot => {
     const opt = document.createElement('option');
     opt.value = slot;
-    opt.textContent = `À ${slot}`;
+    const count = slotCounts[slot] || 0;
+    if (count >= maxOrders) {
+      opt.disabled = true;
+      opt.textContent = `À ${slot} (Complet)`;
+    } else {
+      opt.textContent = `À ${slot}`;
+    }
     soirGroup.appendChild(opt);
   });
   pickupTimeSelect.appendChild(soirGroup);
+
+  // Sélectionner le premier créneau disponible
+  if (pickupTimeSelect.selectedOptions.length === 0 || pickupTimeSelect.selectedOptions[0].disabled) {
+    const firstAvailable = Array.from(pickupTimeSelect.options).find(o => !o.disabled);
+    if (firstAvailable) firstAvailable.selected = true;
+  }
 }
 
 // ---- Dynamic Admin Settings ----
@@ -123,6 +161,7 @@ let APP_SETTINGS = {
   exceptionalMessage: '',
   scheduleText: 'Ouvert 7j/7 · 12h00–14h30 & 18h30–22h00',
   discount: 10,
+  maxOrdersPerSlot: 5,
   phone: '01 30 79 00 88',
   whatsapp: '33130790088'
 };
@@ -776,6 +815,7 @@ function renderCartPanelItems() {
 }
 
 function openCartPanel() {
+  generatePickupTimeSlots();
   renderCartPanelItems();
   const user = getLoggedUser();
   const cartEmailGroup = document.getElementById('cart-email-group');
@@ -1073,7 +1113,7 @@ function handleOrderCheckout() {
   const { subtotal, discount, total } = calculateCartTotals();
   const sauceChoice = document.getElementById('sauce-choice')?.value || 'Sauce sucrée';
   const baguettesChoice = document.getElementById('baguettes-choice')?.value || '1 paire';
-  const pickupTime = document.getElementById('pickup-time')?.value || 'Dès que possible';
+  const pickupTime = document.getElementById('pickup-time')?.value || '12h00';
   const comment = document.getElementById('comment-order')?.value.trim() || '';
   const loggedUser = getLoggedUser();
   const customerEmail = loggedUser?.email || loggedUser?.contact || document.getElementById('order-customer-email')?.value.trim() || '';
@@ -1418,7 +1458,7 @@ function openLegalModal(type) {
       <p>Le présent site internet est exploité sous le nom commercial :</p>
       <p><strong>Raison commerciale :</strong> SUSHI LIN (SUSHI LIN II)</p>
       <p><strong>Adresse de l'établissement :</strong> 32 Rue des Dames, 78340 Les Clayes-sous-Bois, France</p>
-      <p><strong>Téléphone direct :</strong> <a href="tel:0130452848" style="color: var(--sakura-vibrant); font-weight: 700;">01 30 45 28 48</a></p>
+      <p><strong>Téléphone direct :</strong> <a href="tel:0130790088" style="color: var(--sakura-vibrant); font-weight: 700;">01 30 79 00 88</a></p>
       <p><strong>Activité :</strong> Restauration japonaise traditionnelle sur place, vente à emporter et service traiteur.</p>
 
       <h4>2. Hébergement</h4>
@@ -1459,7 +1499,7 @@ function openLegalModal(type) {
         <li>Droit à l'effacement (« droit à l'oubli ») ;</li>
         <li>Droit à la limitation du traitement et d'opposition.</li>
       </ul>
-      <p>Pour exercer ces droits, vous pouvez contacter directement le restaurant par téléphone au <strong>01 30 45 28 48</strong> ou sur place.</p>
+      <p>Pour exercer ces droits, vous pouvez contacter directement le restaurant par téléphone au <strong>01 30 79 00 88</strong> ou sur place.</p>
 
       <h4>5. Politique relative aux Cookies</h4>
       <p>Notre site utilise exclusivement des <strong>cookies techniques de session</strong> strictement indispensables à la navigation et à la mémorisation de votre panier d'achat. Ces cookies ne requièrent pas de consentement préalable conformément aux recommandations de la CNIL.</p>
@@ -1484,7 +1524,7 @@ function openLegalModal(type) {
       <p>Conformément aux dispositions de l'article <strong>L.221-28 4° du Code de la consommation</strong>, le droit de rétractation ne peut être exercé pour les contrats de fourniture de denrées alimentaires périssables préparées à la commande.</p>
 
       <h4>4. Réclamations & Service client</h4>
-      <p>Pour toute question ou réclamation concernant une commande ou une réservation, notre équipe se tient à votre entière disposition au restaurant ou par téléphone au <strong>01 30 45 28 48</strong>.</p>
+      <p>Pour toute question ou réclamation concernant une commande ou une réservation, notre équipe se tient à votre entière disposition au restaurant ou par téléphone au <strong>01 30 79 00 88</strong>.</p>
     `;
   }
 
