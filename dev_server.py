@@ -119,6 +119,19 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
                 requested_email = str(data.get('toEmail', '')).strip()
                 order = data.get('order', {})
                 items = order.get('items', [])
+
+                # Map canonical codes from menu.json as fallback
+                menu_code_map = {}
+                try:
+                    with open(os.path.join(os.path.dirname(__file__), 'data', 'menu.json'), 'r', encoding='utf-8') as mf:
+                        menu_json_data = json.load(mf)
+                        for mi in menu_json_data.get('items', []):
+                            if mi.get('id'):
+                                menu_code_map[mi['id']] = mi.get('code', '')
+                            if mi.get('name'):
+                                menu_code_map[mi['name'].strip().lower()] = mi.get('code', '')
+                except Exception as ex:
+                    print(f"Warning menu.json map: {ex}")
                 subtotal = safe_float(order.get('subtotal', 0))
                 discount = safe_float(order.get('discount', 0))
                 total = safe_float(order.get('total', 0))
@@ -129,7 +142,9 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
                     qty = safe_int(it.get('qty', 1))
                     price = safe_float(it.get('price', 0))
                     item_total = price * qty
-                    code = str(it.get('code', '')).strip()
+                    item_id = str(it.get('id', '')).strip()
+                    item_name_key = str(it.get('name', '')).strip().lower()
+                    code = str(it.get('code', '')).strip() or menu_code_map.get(item_id, '') or menu_code_map.get(item_name_key, '')
                     name = str(it.get('name', 'Article')).strip()
                     code_badge = f'<span class="code-pill" style="display:inline-block; font-size:10.5px; font-weight:700; color:#E11D48; background:#FFF0F3; border:1px solid #FFCCD5; border-radius:4px; padding:1px 5px; margin-right:6px;">{code}</span>' if code else ''
                     

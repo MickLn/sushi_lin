@@ -825,9 +825,11 @@ function addItemToCart(item, quantity = 1) {
   } else {
     cart.push({
       id: item.id,
+      code: item.code || '',
       name: item.name,
       price: item.price,
       cat: item.cat,
+      img: item.img || '',
       qty: quantity
     });
   }
@@ -1335,18 +1337,22 @@ function handleOrderCheckout() {
     timestamp: now.toISOString(),
     dateFormatted: dateFormatted,
     customerEmail: customerEmail,
-    items: cart.map(item => ({
-      id: item.id,
-      code: item.code || (item.id === 'D28' ? 'D28' : ''),
-      name: item.name,
-      price: item.price,
-      qty: item.qty,
-      image: item.image || item.img || '',
-      details: item.details || null,
-      unitPrice: item.unitPrice || item.price,
-      totalQuantity: item.totalQuantity || item.qty,
-      totalPrice: item.totalPrice || (item.price * item.qty)
-    })),
+    items: cart.map(item => {
+      const canonicalItem = MENU_DATA?.items?.find(m => m.id === item.id || (item.name && m.name.toLowerCase() === item.name.toLowerCase()));
+      const resolvedCode = item.code || canonicalItem?.code || (item.id === 'D28' || item.id === 'desserts-ds22' ? 'D28' : '');
+      return {
+        id: item.id,
+        code: resolvedCode,
+        name: item.name,
+        price: item.price,
+        qty: item.qty,
+        image: item.image || item.img || canonicalItem?.img || '',
+        details: item.details || null,
+        unitPrice: item.unitPrice || item.price,
+        totalQuantity: item.totalQuantity || item.qty,
+        totalPrice: item.totalPrice || (item.price * item.qty)
+      };
+    }),
     itemCount: cart.reduce((acc, c) => acc + c.qty, 0),
     subtotal: subtotal,
     discount: discount,
