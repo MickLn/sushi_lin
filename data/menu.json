@@ -865,9 +865,7 @@
       "price": 5.1,
       "img": "img/products/33.png",
       "desc": "",
-      "available": true,
-      "subcat": "sushis-saumon-thon",
-      "subcatName": "Sushis saumon & thon"
+      "available": true
     },
     {
       "id": "sushis-34",
@@ -878,9 +876,7 @@
       "price": 5.4,
       "img": "img/products/34.png",
       "desc": "",
-      "available": true,
-      "subcat": "sushis-saumon-thon",
-      "subcatName": "Sushis saumon & thon"
+      "available": true
     },
     {
       "id": "sushis-39",
@@ -891,9 +887,7 @@
       "price": 5.4,
       "img": "img/products/39.png",
       "desc": "",
-      "available": true,
-      "subcat": "sushis-saumon-thon",
-      "subcatName": "Sushis saumon & thon"
+      "available": true
     },
     {
       "id": "sushis-45",
@@ -904,9 +898,7 @@
       "price": 5.5,
       "img": "img/products/45.png",
       "desc": "",
-      "available": true,
-      "subcat": "sushis-saumon-thon",
-      "subcatName": "Sushis saumon & thon"
+      "available": true
     },
     {
       "id": "sushis-46",
@@ -917,9 +909,7 @@
       "price": 5.3,
       "img": "img/products/46.png",
       "desc": "",
-      "available": true,
-      "subcat": "sushis-saumon-thon",
-      "subcatName": "Sushis saumon & thon"
+      "available": true
     },
     {
       "id": "sushis-47",
@@ -930,9 +920,7 @@
       "price": 5.1,
       "img": "img/products/47.png",
       "desc": "",
-      "available": true,
-      "subcat": "sushis-saumon-thon",
-      "subcatName": "Sushis saumon & thon"
+      "available": true
     },
     {
       "id": "sushis-48",
@@ -943,9 +931,7 @@
       "price": 5.3,
       "img": "img/products/48.png",
       "desc": "",
-      "available": true,
-      "subcat": "sushis-saumon-thon",
-      "subcatName": "Sushis saumon & thon"
+      "available": true
     },
     {
       "id": "sushis-50",
@@ -956,9 +942,7 @@
       "price": 6.5,
       "img": "img/products/50.png",
       "desc": "",
-      "available": true,
-      "subcat": "sushis-saumon-thon",
-      "subcatName": "Sushis saumon & thon"
+      "available": true
     },
     {
       "id": "sushis-52",
@@ -969,9 +953,7 @@
       "price": 5.5,
       "img": "img/products/52.png",
       "desc": "",
-      "available": true,
-      "subcat": "sushis-saumon-thon",
-      "subcatName": "Sushis saumon & thon"
+      "available": true
     },
     {
       "id": "sushis-35",
@@ -982,9 +964,7 @@
       "price": 5.4,
       "img": "img/products/35.png",
       "desc": "",
-      "available": true,
-      "subcat": "sushis-autres",
-      "subcatName": "Sushis daurade, crevette & spéciaux"
+      "available": true
     },
     {
       "id": "sushis-37",
@@ -995,9 +975,7 @@
       "price": 5.4,
       "img": "img/products/37.png",
       "desc": "",
-      "available": true,
-      "subcat": "sushis-autres",
-      "subcatName": "Sushis daurade, crevette & spéciaux"
+      "available": true
     },
     {
       "id": "sushis-38",
@@ -1008,9 +986,7 @@
       "price": 5.0,
       "img": "img/products/38.png",
       "desc": "",
-      "available": true,
-      "subcat": "sushis-autres",
-      "subcatName": "Sushis daurade, crevette & spéciaux"
+      "available": true
     },
     {
       "id": "sushis-40",
@@ -1021,9 +997,7 @@
       "price": 5.4,
       "img": "img/products/40.png",
       "desc": "",
-      "available": true,
-      "subcat": "sushis-autres",
-      "subcatName": "Sushis daurade, crevette & spéciaux"
+      "available": true
     },
     {
       "id": "sushis-41",
@@ -1034,9 +1008,7 @@
       "price": 6.0,
       "img": "img/products/41.png",
       "desc": "",
-      "available": true,
-      "subcat": "sushis-autres",
-      "subcatName": "Sushis daurade, crevette & spéciaux"
+      "available": true
     },
     {
       "id": "sushis-42",
@@ -1047,9 +1019,7 @@
       "price": 6.9,
       "img": "img/products/42.png",
       "desc": "",
-      "available": true,
-      "subcat": "sushis-autres",
-      "subcatName": "Sushis daurade, crevette & spéciaux"
+      "available": true
     },
     {
       "id": "sushis-43",
@@ -1060,9 +1030,7 @@
       "price": 4.3,
       "img": "img/products/43.png",
       "desc": "",
-      "available": true,
-      "subcat": "sushis-autres",
-      "subcatName": "Sushis daurade, crevette & spéciaux"
+      "available": true
     },
     {
       "id": "sushis-44",
@@ -1073,9 +1041,7 @@
       "price": 5.0,
       "img": "img/products/44.png",
       "desc": "",
-      "available": true,
-      "subcat": "sushis-autres",
-      "subcatName": "Sushis daurade, crevette & spéciaux"
+      "available": true
     },
     {
       "id": "makis-6",
