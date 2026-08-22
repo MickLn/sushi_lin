@@ -1017,7 +1017,7 @@ function reorderPastOrder(orderId) {
   showToastNotification('Articles réajoutés à votre panier !');
 }
 
-// ---- Validation de commande (Enregistrement en local pour le Panel Admin) ----
+// ---- Validation de commande (Enregistrement en local pour le Panel Admin & Envoi Resend) ----
 function handleOrderCheckout() {
   if (cart.length === 0) return;
   const { subtotal, discount, total } = calculateCartTotals();
@@ -1025,6 +1025,7 @@ function handleOrderCheckout() {
   const baguettesChoice = document.getElementById('baguettes-choice')?.value || '1 paire';
   const pickupTime = document.getElementById('pickup-time')?.value || 'Dès que possible';
   const comment = document.getElementById('comment-order')?.value.trim() || '';
+  const customerEmail = document.getElementById('order-customer-email')?.value.trim() || '';
 
   // 1. Sauvegarde dans le panneau d'administration (localStorage)
   const orderId = 'CMD-' + Date.now().toString().slice(-6);
@@ -1037,6 +1038,7 @@ function handleOrderCheckout() {
     id: orderId,
     timestamp: now.toISOString(),
     dateFormatted: dateFormatted,
+    customerEmail: customerEmail,
     items: cart.map(item => ({
       id: item.id,
       code: item.code || '',
@@ -1064,13 +1066,32 @@ function handleOrderCheckout() {
     console.error('Erreur enregistrement commande locale:', err);
   }
 
-  // 2. Finalisation de la commande (Sans redirection externe)
+  // 2. Envoi de l'e-mail de confirmation via Resend
+  fetch('/api/send-order-email', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ toEmail: customerEmail, order: orderData })
+  })
+  .then(res => res.json())
+  .then(resData => {
+    if (resData.success) {
+      showToastNotification(`🍣 Commande ${orderId} validée ! E-mail envoyé avec succès.`);
+    } else {
+      console.warn('E-mail non envoyé:', resData);
+      showToastNotification(`Commande ${orderId} validée et transmise en cuisine !`);
+    }
+  })
+  .catch(err => {
+    console.warn('Serveur e-mail local:', err);
+    showToastNotification(`Commande ${orderId} validée et transmise en cuisine !`);
+  });
+
+  // 3. Finalisation de la commande (Vidage panier & UI)
   closeCartPanel();
   cart = [];
   saveCartToStorage();
   updateCartUI();
   MENU_DATA?.items.forEach(item => updateCardBadgeUI(item.id));
-  showToastNotification(`Commande ${orderId} validée et transmise en cuisine !`);
 }
 
 // ---- Intersection Observer for Category Highlighting ----
