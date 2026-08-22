@@ -526,7 +526,7 @@ function createProductCard(item) {
     : getCategorySvgIcon(item.cat);
 
   const allergensCardHtml = allergens.length > 0
-    ? `<span class="product-allergens-tag" title="Allergènes : ${allergens.join(', ')}">Allergènes : ${allergens.join(\', \')}</span>`
+    ? `<span class="product-allergens-tag" title="Allergènes : ${allergens.join(', ')}">Allergènes : ${allergens.join(', ')}</span>`
     : '';
 
   card.innerHTML = `
