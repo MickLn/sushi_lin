@@ -64,32 +64,43 @@ function getCategorySvgIcon(catId) {
     </div>`;
 }
 
-// ---- Generate Available Pickup Slots ----
+// ---- Generate Available Pickup Slots (Dès l'ouverture et jusqu'à 15 min avant fermeture) ----
 function generatePickupTimeSlots() {
   if (!pickupTimeSelect) return;
   pickupTimeSelect.innerHTML = '<option value="Dès que possible (~20 min)">Dès que possible (~20 min)</option>';
   
-  const now = new Date();
-  let h = now.getHours();
-  let m = now.getMinutes();
+  const midiSlots = [
+    '12h00', '12h15', '12h30', '12h45',
+    '13h00', '13h15', '13h30', '13h45',
+    '14h00', '14h15'
+  ];
 
-  // Round to next 15 min slot + 20 min preparation
-  m = Math.ceil((m + 20) / 15) * 15;
-  if (m >= 60) {
-    h += Math.floor(m / 60);
-    m = m % 60;
-  }
+  const soirSlots = [
+    '18h30', '18h45',
+    '19h00', '19h15', '19h30', '19h45',
+    '20h00', '20h15', '20h30', '20h45',
+    '21h00', '21h15', '21h30', '21h45'
+  ];
 
-  for (let i = 0; i < 10; i++) {
-    const slotHour = (h + Math.floor((m + i * 15) / 60)) % 24;
-    const slotMin = (m + i * 15) % 60;
-    const timeString = `${String(slotHour).padStart(2, '0')}h${String(slotMin).padStart(2, '0')}`;
-    
+  const midiGroup = document.createElement('optgroup');
+  midiGroup.label = 'Midi (12h00 – 14h15)';
+  midiSlots.forEach(slot => {
     const opt = document.createElement('option');
-    opt.value = timeString;
-    opt.textContent = `À ${timeString}`;
-    pickupTimeSelect.appendChild(opt);
-  }
+    opt.value = slot;
+    opt.textContent = `À ${slot}`;
+    midiGroup.appendChild(opt);
+  });
+  pickupTimeSelect.appendChild(midiGroup);
+
+  const soirGroup = document.createElement('optgroup');
+  soirGroup.label = 'Soir (18h30 – 21h45)';
+  soirSlots.forEach(slot => {
+    const opt = document.createElement('option');
+    opt.value = slot;
+    opt.textContent = `À ${slot}`;
+    soirGroup.appendChild(opt);
+  });
+  pickupTimeSelect.appendChild(soirGroup);
 }
 
 // ---- Dynamic Admin Settings ----
@@ -515,7 +526,7 @@ function createProductCard(item) {
     : getCategorySvgIcon(item.cat);
 
   const allergensCardHtml = allergens.length > 0
-    ? `<span class="product-allergens-tag" title="Allergènes : ${allergens.join(', ')}">Allergènes : ${allergens.slice(0, 2).join(', ')}${allergens.length > 2 ? '...' : ''}</span>`
+    ? `<span class="product-allergens-tag" title="Allergènes : ${allergens.join(', ')}">Allergènes : ${allergens.join(\', \')}</span>`
     : '';
 
   card.innerHTML = `

@@ -137,6 +137,55 @@
       .res-page-container { margin: 20px auto 60px; padding: 0 14px; }
       .res-hero-card { padding: 24px 18px; }
     }
+  
+    /* Grid & Input Mobile Fit Fix */
+    .form-grid-3, .form-grid-2, .form-field {
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
+    }
+    .res-input, input[type="date"].res-input, select.res-input, textarea.res-input {
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
+      box-sizing: border-box !important;
+      -webkit-appearance: none;
+      appearance: none;
+      display: block;
+    }
+    input[type="date"]::-webkit-date-and-time-value {
+      text-align: left;
+    }
+    textarea, .res-textarea {
+      resize: none !important;
+    }
+    .res-info-grid {
+      margin-top: 36px;
+      padding-top: 24px;
+      border-top: 1.5px solid var(--sakura-border);
+      display: grid;
+      grid-template-columns: 1.3fr 1.3fr 1fr;
+      width: 100%;
+      gap: 24px;
+      font-size: 13.5px;
+      color: var(--text-secondary);
+      box-sizing: border-box;
+    }
+    .res-desktop-br { display: block; }
+    .res-mobile-comma { display: none; }
+    @media (max-width: 768px) {
+      .res-info-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+      .res-desktop-br { display: none; }
+      .res-mobile-comma { display: inline; }
+      .form-grid-3, .form-grid-2 {
+        grid-template-columns: 1fr !important;
+      }
+    }
+
   </style>
 </head>
 <body class="reservation-page-body">
@@ -177,10 +226,24 @@
             <input type="date" id="res-date" class="res-input" required>
           </div>
           <div class="form-field">
-            <label for="res-service">Service</label>
+            <label for="res-service">Créneau</label>
             <select id="res-service" class="res-input" required>
-              <option value="Midi (12h00 – 14h30)">Midi (12h00 – 14h30)</option>
-              <option value="Soir (18h30 – 22h00)" selected>Soir (18h30 – 22h00)</option>
+              <optgroup label="Midi (12h00 – 14h00)">
+                <option value="12h00">12h00</option>
+                <option value="12h30">12h30</option>
+                <option value="13h00">13h00</option>
+                <option value="13h30">13h30</option>
+                <option value="14h00">14h00</option>
+              </optgroup>
+              <optgroup label="Soir (18h30 – 21h30)">
+                <option value="18h30">18h30</option>
+                <option value="19h00" selected>19h00</option>
+                <option value="19h30">19h30</option>
+                <option value="20h00">20h00</option>
+                <option value="20h30">20h30</option>
+                <option value="21h00">21h00</option>
+                <option value="21h30">21h30</option>
+              </optgroup>
             </select>
           </div>
           <div class="form-field">
@@ -230,18 +293,18 @@
       </div>
 
       <!-- Informations pratiques -->
-      <div style="margin-top: 36px; padding-top: 24px; border-top: 1.5px solid var(--sakura-border); display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; font-size: 13.5px; color: var(--text-secondary);">
-        <div>
-          <strong style="color: var(--indigo-dark); display: block; margin-bottom: 4px;">Adresse</strong>
-          <span>32 Rue des Dames, 78340 Les Clayes-sous-Bois</span>
+      <div class="res-info-grid">
+        <div class="res-info-col">
+          <strong style="color: var(--indigo-dark); display: block; margin-bottom: 6px; font-weight: 700;">Adresse</strong>
+          <span class="res-address-text">32 Rue des Dames<br class="res-desktop-br"><span class="res-mobile-comma">, </span>78340 Les Clayes-sous-Bois</span>
         </div>
-        <div>
-          <strong style="color: var(--indigo-dark); display: block; margin-bottom: 4px;">Horaires d'ouverture</strong>
+        <div class="res-info-col">
+          <strong style="color: var(--indigo-dark); display: block; margin-bottom: 6px; font-weight: 700;">Horaires d'ouverture</strong>
           <span>Midi : 12h00 – 14h30<br>Soir : 18h30 – 22h00<br><span>(Ouvert 7j/7)</span></span>
         </div>
-        <div>
-          <strong style="color: var(--indigo-dark); display: block; margin-bottom: 4px;">Téléphone direct</strong>
-          <span>01 30 45 28 48</span>
+        <div class="res-info-col">
+          <strong style="color: var(--indigo-dark); display: block; margin-bottom: 6px; font-weight: 700;">Téléphone</strong>
+          <a href="tel:0130452848" style="color: inherit; text-decoration: none; font-weight: 600;">01 30 45 28 48</a>
         </div>
       </div>
 
