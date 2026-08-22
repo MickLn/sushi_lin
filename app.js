@@ -384,11 +384,11 @@ function renderProductsMenu() {
     `;
     section.appendChild(catHeader);
 
-    // Regroupement par sous-catégories
+    // Regroupement par sous-catégories (catégorie 'desserts' affichée en direct sans sous-catégories)
     const subcatMap = new Map();
     items.forEach(item => {
-      const skey = item.subcat || `${cat.id}-default`;
-      const sname = item.subcatName || catLabel;
+      const skey = (cat.id === 'desserts') ? `${cat.id}-default` : (item.subcat || `${cat.id}-default`);
+      const sname = (cat.id === 'desserts') ? catLabel : (item.subcatName || catLabel);
       if (!subcatMap.has(skey)) {
         subcatMap.set(skey, { name: sname, items: [] });
       }

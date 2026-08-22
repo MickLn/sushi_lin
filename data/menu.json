@@ -2165,9 +2165,7 @@
       "price": 3.5,
       "img": "img/products/ds3.png",
       "desc": "",
-      "available": true,
-      "subcat": "mochis-speciaux",
-      "subcatName": "Mochis glacés & pâtisseries japonaises"
+      "available": true
     },
     {
       "id": "desserts-ds4",
@@ -2178,9 +2176,7 @@
       "price": 4.0,
       "img": "img/products/ds4.png",
       "desc": "",
-      "available": true,
-      "subcat": "mochis-speciaux",
-      "subcatName": "Mochis glacés & pâtisseries japonaises"
+      "available": true
     },
     {
       "id": "desserts-ds6",
@@ -2191,9 +2187,7 @@
       "price": 4.5,
       "img": "img/products/ds6.png",
       "desc": "",
-      "available": true,
-      "subcat": "mochis-speciaux",
-      "subcatName": "Mochis glacés & pâtisseries japonaises"
+      "available": true
     },
     {
       "id": "desserts-ds22",
@@ -2204,9 +2198,7 @@
       "price": 2.8,
       "img": "img/products/ds22.png",
       "desc": "",
-      "available": true,
-      "subcat": "mochis-speciaux",
-      "subcatName": "Mochis glacés & pâtisseries japonaises"
+      "available": true
     },
     {
       "id": "desserts-ds1",
@@ -2217,9 +2209,7 @@
       "price": 3.8,
       "img": "img/products/ds1.png",
       "desc": "",
-      "available": true,
-      "subcat": "desserts-classiques",
-      "subcatName": "Glaces & douceurs"
+      "available": true
     },
     {
       "id": "desserts-ds2",
@@ -2230,9 +2220,7 @@
       "price": 3.5,
       "img": "img/products/ds2.png",
       "desc": "",
-      "available": true,
-      "subcat": "desserts-classiques",
-      "subcatName": "Glaces & douceurs"
+      "available": true
     },
     {
       "id": "desserts-ds5",
@@ -2243,9 +2231,7 @@
       "price": 4.5,
       "img": "img/products/ds5.png",
       "desc": "",
-      "available": true,
-      "subcat": "desserts-classiques",
-      "subcatName": "Glaces & douceurs"
+      "available": true
     },
     {
       "id": "desserts-ds7",
@@ -2256,9 +2242,7 @@
       "price": 6.0,
       "img": "img/products/ds7.png",
       "desc": "",
-      "available": true,
-      "subcat": "desserts-classiques",
-      "subcatName": "Glaces & douceurs"
+      "available": true
     },
     {
       "id": "desserts-ds8",
@@ -2269,9 +2253,7 @@
       "price": 6.5,
       "img": "img/products/ds8.png",
       "desc": "",
-      "available": true,
-      "subcat": "desserts-classiques",
-      "subcatName": "Glaces & douceurs"
+      "available": true
     },
     {
       "id": "desserts-ds9",
@@ -2282,9 +2264,7 @@
       "price": 5.5,
       "img": "img/products/ds9.png",
       "desc": "",
-      "available": true,
-      "subcat": "desserts-classiques",
-      "subcatName": "Glaces & douceurs"
+      "available": true
     },
     {
       "id": "desserts-ds11",
@@ -2295,9 +2275,7 @@
       "price": 5.5,
       "img": "img/products/ds11.png",
       "desc": "",
-      "available": true,
-      "subcat": "desserts-classiques",
-      "subcatName": "Glaces & douceurs"
+      "available": true
     },
     {
       "id": "desserts-ds13",
@@ -2308,9 +2286,7 @@
       "price": 7.5,
       "img": "img/products/ds13.png",
       "desc": "",
-      "available": true,
-      "subcat": "desserts-classiques",
-      "subcatName": "Glaces & douceurs"
+      "available": true
     },
     {
       "id": "desserts-ds14",
@@ -2321,9 +2297,7 @@
       "price": 5.5,
       "img": "img/products/ds14.png",
       "desc": "",
-      "available": true,
-      "subcat": "desserts-classiques",
-      "subcatName": "Glaces & douceurs"
+      "available": true
     },
     {
       "id": "desserts-ds15",
@@ -2334,9 +2308,7 @@
       "price": 5.5,
       "img": "img/products/ds15.png",
       "desc": "",
-      "available": true,
-      "subcat": "desserts-classiques",
-      "subcatName": "Glaces & douceurs"
+      "available": true
     },
     {
       "id": "desserts-ds18",
@@ -2347,9 +2319,7 @@
       "price": 4.5,
       "img": "img/products/ds18.png",
       "desc": "",
-      "available": true,
-      "subcat": "desserts-classiques",
-      "subcatName": "Glaces & douceurs"
+      "available": true
     },
     {
       "id": "desserts-ds20",
@@ -2360,9 +2330,7 @@
       "price": 5.5,
       "img": "img/products/ds20.png",
       "desc": "",
-      "available": true,
-      "subcat": "desserts-classiques",
-      "subcatName": "Glaces & douceurs"
+      "available": true
     },
     {
       "id": "desserts-ds21",
@@ -2373,9 +2341,7 @@
       "price": 6.5,
       "img": "img/products/ds21.png",
       "desc": "",
-      "available": true,
-      "subcat": "desserts-classiques",
-      "subcatName": "Glaces & douceurs"
+      "available": true
     },
     {
       "id": "boissons-bo1",
