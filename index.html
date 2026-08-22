@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Source+Sans+3:wght@400;500;600;700&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=20260822_i">
+  <link rel="stylesheet" href="style.css?v=20260823_a">
 </head>
 <body>
 
@@ -374,6 +374,34 @@
 
   <!-- PRODUCT DETAIL MODAL -->
   <div class="modal-backdrop" id="modal-overlay" aria-hidden="true"></div>
+    <!-- MOCHI FLAVORS SELECTION MODAL (CODE D28 - 2,80 € / PIÈCE) -->
+  <div class="modal-backdrop" id="mochi-overlay" aria-hidden="true"></div>
+  <div class="mochi-modal" id="mochi-modal" role="dialog" aria-modal="true" aria-label="Sélection des parfums de mochis glacés">
+    <button class="modal-close-icon" id="mochi-modal-close" aria-label="Fermer">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    
+    <div class="mochi-modal-header">
+      <h2 class="mochi-modal-title">Mochis glacés</h2>
+      <div class="mochi-modal-price-badge">2,80 € / pièce</div>
+      <p class="mochi-modal-subtitle">Composez votre assortiment parmi nos 13 parfums artisanaux :</p>
+    </div>
+    
+    <div class="mochi-flavors-list" id="mochi-flavors-list">
+      <!-- Rendu par JS -->
+    </div>
+
+    <div class="mochi-modal-footer">
+      <div class="mochi-modal-summary">
+        <span class="mochi-summary-count" id="mochi-total-items">0 pièce sélectionnée</span>
+        <span class="mochi-summary-price" id="mochi-total-price">0,00 €</span>
+      </div>
+      <button class="btn-mochi-submit" id="mochi-modal-submit" disabled>
+        <span>Ajouter au panier • 0,00 €</span>
+      </button>
+    </div>
+  </div>
+
   <div class="product-modal" id="item-modal" role="dialog" aria-modal="true" aria-label="Détails du produit">
     <button class="modal-close-icon" id="modal-close" aria-label="Fermer">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -409,7 +437,7 @@
         <!-- BOUTON COMPTE DE TEST EN 1 CLIC -->
         <div style="margin-bottom: 16px;">
           <button type="button" onclick="loginWithTestAccount()" style="width: 100%; padding: 10px 14px; background: var(--sakura-bg-soft); border: 1.5px dashed var(--sakura-border-strong); border-radius: var(--radius-md); font-family: var(--font-heading); font-size: 13px; font-weight: 800; color: var(--indigo-dark); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease;">
-            <span>⚡ Se connecter avec le compte test (Mickaël)</span>
+            <span>Se connecter avec le compte test (Mickaël)</span>
           </button>
         </div>
 
@@ -503,6 +531,6 @@
   </button>
 
   <!-- SCRIPTS -->
-  <script src="app.js?v=20260823_b"></script>
+  <script src="app.js?v=20260823_d"></script>
 </body>
 </html>

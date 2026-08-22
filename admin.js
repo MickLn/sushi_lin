@@ -628,12 +628,21 @@ function renderAdminOrders() {
             <div style="margin-bottom: 16px;">
               <strong style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-secondary); display: block; margin-bottom: 8px;">Détail des plats (${order.itemCount || order.items.length}) :</strong>
               <ul style="list-style: none; padding: 0; margin: 0; font-size: 13.5px;">
-                ${order.items.map(it => `
-                  <li style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(0,0,0,0.04);">
-                    <span><strong>${it.qty}×</strong> ${it.name}</span>
-                    <span style="font-weight: 700; color: var(--indigo-dark);">${(it.price * it.qty).toFixed(2).replace('.', ',')} €</span>
+                ${order.items.map(it => {
+                  let detailsHtml = '';
+                  if (Array.isArray(it.details) && it.details.length > 0) {
+                    const flavorStr = it.details.map(d => `${d.quantity}× ${d.flavor}`).join(', ');
+                    detailsHtml = `<div style="font-size: 11.5px; color: var(--sakura-vibrant); font-weight: 600; margin-top: 2px;">${flavorStr}</div>`;
+                  }
+                  return `
+                  <li style="padding: 5px 0; border-bottom: 1px solid rgba(0,0,0,0.04);">
+                    <div style="display: flex; justify-content: space-between;">
+                      <span><strong>${it.qty}×</strong> ${it.name}</span>
+                      <span style="font-weight: 700; color: var(--indigo-dark);">${(it.price * it.qty).toFixed(2).replace('.', ',')} €</span>
+                    </div>
+                    ${detailsHtml}
                   </li>
-                `).join('')}
+                `;}).join('')}
               </ul>
             </div>
           </div>

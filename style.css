@@ -3108,3 +3108,200 @@ input[type="date"], input[type="time"] {
 input[type="date"]::-webkit-date-and-time-value {
   text-align: left;
 }
+
+/* ==========================================================================
+   MOCHI FLAVORS SELECTION MODAL
+   ========================================================================== */
+.mochi-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -45%) scale(0.96);
+  width: 92%;
+  max-width: 480px;
+  max-height: 88dvh;
+  background: #FFFFFF;
+  border: 2px solid var(--sakura-border);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 20px 60px rgba(39, 47, 97, 0.2), 0 4px 16px rgba(255, 193, 215, 0.4);
+  z-index: 460;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.mochi-modal.open {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+  pointer-events: all;
+}
+
+.mochi-modal-header {
+  padding: 24px 24px 16px;
+  border-bottom: 1px solid var(--sakura-border);
+  background: linear-gradient(180deg, #FFF7F9 0%, #FFFFFF 100%);
+  position: relative;
+}
+
+.mochi-modal-title {
+  font-family: var(--font-heading);
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--indigo-dark);
+  margin-bottom: 4px;
+}
+
+.mochi-modal-price-badge {
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--sakura-vibrant);
+  background: var(--sakura-bg-soft);
+  padding: 3px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--sakura-border);
+  margin-bottom: 8px;
+}
+
+.mochi-modal-subtitle {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.mochi-flavors-list {
+  padding: 14px 20px;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 48dvh;
+}
+
+.mochi-flavor-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid #F1F5F9;
+  background: #FFFFFF;
+  transition: all 0.2s ease;
+}
+
+.mochi-flavor-row:hover {
+  border-color: var(--sakura-border);
+  background: #FFFDFE;
+}
+
+.mochi-flavor-row.has-qty {
+  border-color: var(--sakura-primary);
+  background: #FFF5F8;
+}
+
+.mochi-flavor-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--indigo-dark);
+}
+
+.mochi-flavor-stepper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mochi-stepper-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1.5px solid var(--sakura-border);
+  background: #FFFFFF;
+  color: var(--indigo-dark);
+  font-size: 16px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.mochi-stepper-btn:hover:not(:disabled) {
+  background: var(--sakura-vibrant);
+  color: #FFFFFF;
+  border-color: var(--sakura-vibrant);
+  transform: scale(1.08);
+}
+
+.mochi-stepper-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.mochi-stepper-val {
+  font-size: 14.5px;
+  font-weight: 800;
+  color: var(--indigo-dark);
+  min-width: 22px;
+  text-align: center;
+}
+
+.mochi-modal-footer {
+  padding: 16px 24px 20px;
+  border-top: 1px solid var(--sakura-border);
+  background: #FFFFFF;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.mochi-modal-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.mochi-summary-price {
+  font-size: 16.5px;
+  font-weight: 800;
+  color: var(--sakura-vibrant);
+}
+
+.btn-mochi-submit {
+  width: 100%;
+  padding: 14px;
+  border-radius: var(--radius-md);
+  border: none;
+  background: var(--indigo-dark);
+  color: #FFFFFF;
+  font-size: 14.5px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-mochi-submit:hover:not(:disabled) {
+  background: var(--sakura-vibrant);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(225, 29, 72, 0.3);
+}
+
+.btn-mochi-submit:disabled {
+  background: #E2E8F0;
+  color: #94A3B8;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}

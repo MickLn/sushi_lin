@@ -2157,13 +2157,13 @@
     },
     {
       "id": "desserts-ds22",
-      "code": "DS22",
+      "code": "D28",
       "cat": "desserts",
-      "name": "Mochis glacés artisanaux",
-      "pieces": "2 pièces",
+      "name": "Mochis glacés",
+      "pieces": "1 pièce",
       "price": 2.8,
       "img": "img/products/ds22.png",
-      "desc": "",
+      "desc": "13 parfums artisanaux au choix : Pistache, Thé vert, Mangue, Yuzu, Sésame, Litchi, Framboise...",
       "available": true
     },
     {

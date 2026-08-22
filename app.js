@@ -1,3 +1,189 @@
+
+// ==========================================================================
+// MODULE MOCHIS GLACÉS (13 PARFUMS INDIVIDUELS - CODE D28 - 2,80 €)
+// ==========================================================================
+const MOCHI_FLAVORS = [
+  'Pistache',
+  'Caramel',
+  'Thé vert',
+  'Passion / Mangue',
+  'Noix de coco',
+  'Mangue',
+  'Chocolat',
+  'Yuzu',
+  'Sésame',
+  'Fraise',
+  'Vanille',
+  'Litchi',
+  'Framboise'
+];
+
+let mochiSelection = {};
+let currentMochiItem = null;
+
+function isMochiItem(item) {
+  if (!item) return false;
+  const id = (item.id || '').toLowerCase();
+  const code = (item.code || '').toLowerCase();
+  const name = (item.name || '').toLowerCase();
+  return id === 'desserts-ds22' || id === 'd28' || code === 'd28' || code === 'ds22' || name.includes('mochi');
+}
+
+function openMochiModal(item) {
+  currentMochiItem = item || {
+    id: 'D28',
+    code: 'D28',
+    name: 'Mochis glacés',
+    price: 2.80,
+    cat: 'desserts'
+  };
+
+  // Réinitialisation de tous les compteurs à 0
+  mochiSelection = {};
+  MOCHI_FLAVORS.forEach(flavor => {
+    mochiSelection[flavor] = 0;
+  });
+
+  renderMochiFlavorsList();
+  updateMochiModalTotals();
+
+  const mochiModal = document.getElementById('mochi-modal');
+  const mochiOverlay = document.getElementById('mochi-overlay');
+  mochiModal?.classList.add('open');
+  mochiOverlay?.classList.add('active');
+  mochiOverlay?.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeMochiModal() {
+  const mochiModal = document.getElementById('mochi-modal');
+  const mochiOverlay = document.getElementById('mochi-overlay');
+  mochiModal?.classList.remove('open');
+  mochiOverlay?.classList.remove('active');
+  mochiOverlay?.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+}
+
+function renderMochiFlavorsList() {
+  const listEl = document.getElementById('mochi-flavors-list');
+  if (!listEl) return;
+
+  listEl.innerHTML = MOCHI_FLAVORS.map(flavor => {
+    const qty = mochiSelection[flavor] || 0;
+    return `
+      <div class="mochi-flavor-row ${qty > 0 ? 'has-qty' : ''}" data-flavor="${flavor}">
+        <span class="mochi-flavor-name">${flavor}</span>
+        <div class="mochi-flavor-stepper">
+          <button type="button" class="mochi-stepper-btn minus" onclick="updateMochiFlavorQty('${flavor.replace(/'/g, "\'")}', -1)" ${qty === 0 ? 'disabled' : ''} aria-label="Moins de ${flavor}">−</button>
+          <span class="mochi-stepper-val">${qty}</span>
+          <button type="button" class="mochi-stepper-btn plus" onclick="updateMochiFlavorQty('${flavor.replace(/'/g, "\'")}', 1)" aria-label="Plus de ${flavor}">+</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function updateMochiFlavorQty(flavor, delta) {
+  const current = mochiSelection[flavor] || 0;
+  const next = Math.max(0, current + delta);
+  mochiSelection[flavor] = next;
+
+  const row = document.querySelector(`.mochi-flavor-row[data-flavor="${flavor}"]`);
+  if (row) {
+    row.classList.toggle('has-qty', next > 0);
+    const valEl = row.querySelector('.mochi-stepper-val');
+    if (valEl) valEl.textContent = next;
+    const minusBtn = row.querySelector('.mochi-stepper-btn.minus');
+    if (minusBtn) minusBtn.disabled = next === 0;
+  }
+
+  updateMochiModalTotals();
+}
+
+function updateMochiModalTotals() {
+  const totalItems = Object.values(mochiSelection).reduce((acc, q) => acc + q, 0);
+  const unitPrice = 2.80;
+  const totalPrice = totalItems * unitPrice;
+
+  const countEl = document.getElementById('mochi-total-items');
+  const priceEl = document.getElementById('mochi-total-price');
+  const submitBtn = document.getElementById('mochi-modal-submit');
+
+  if (countEl) countEl.textContent = totalItems > 1 ? `${totalItems} pièces sélectionnées` : `${totalItems} pièce sélectionnée`;
+  if (priceEl) priceEl.textContent = formatEuro(totalPrice);
+  if (submitBtn) {
+    submitBtn.disabled = totalItems === 0;
+    submitBtn.innerHTML = `<span>Ajouter au panier • ${formatEuro(totalPrice)}</span>`;
+  }
+}
+
+function handleMochiAddToCart() {
+  const details = [];
+  let totalItems = 0;
+
+  MOCHI_FLAVORS.forEach(flavor => {
+    const quantity = mochiSelection[flavor] || 0;
+    if (quantity > 0) {
+      details.push({ flavor, quantity });
+      totalItems += quantity;
+    }
+  });
+
+  if (totalItems === 0) return;
+
+  const unitPrice = 2.80;
+  const totalPrice = totalItems * unitPrice;
+
+  const mochiCartItem = {
+    id: "D28",
+    name: "Mochis glacés",
+    unitPrice: unitPrice,
+    totalQuantity: totalItems,
+    totalPrice: totalPrice,
+    details: details,
+    qty: totalItems,
+    price: unitPrice,
+    cat: "desserts",
+    img: "img/products/ds22.png"
+  };
+
+  const existingIdx = cart.findIndex(c => c.id === 'D28' || c.id === 'desserts-ds22');
+  if (existingIdx > -1) {
+    const existing = cart[existingIdx];
+    const mergedMap = {};
+    (existing.details || []).forEach(d => {
+      mergedMap[d.flavor] = (mergedMap[d.flavor] || 0) + d.quantity;
+    });
+    details.forEach(d => {
+      mergedMap[d.flavor] = (mergedMap[d.flavor] || 0) + d.quantity;
+    });
+
+    const newDetails = Object.keys(mergedMap).map(f => ({ flavor: f, quantity: mergedMap[f] }));
+    const newTotalQty = newDetails.reduce((acc, d) => acc + d.quantity, 0);
+
+    cart[existingIdx] = {
+      ...existing,
+      id: "D28",
+      name: "Mochis glacés",
+      unitPrice: 2.80,
+      totalQuantity: newTotalQty,
+      totalPrice: newTotalQty * 2.80,
+      details: newDetails,
+      qty: newTotalQty,
+      price: 2.80
+    };
+  } else {
+    cart.push(mochiCartItem);
+  }
+
+  saveCartToStorage();
+  updateCartUI();
+  updateCardBadgeUI('desserts-ds22');
+  updateCardBadgeUI('D28');
+  closeMochiModal();
+  showToastNotification(`${totalItems} mochi(s) glacé(s) ajouté(s) au panier !`);
+}
+
 // ---- Helper : Éligibilité à la réduction -10% (Exclusion Desserts & Boissons/Vins) ----
 function isItemDiscountEligible(item) {
   if (!item) return false;
@@ -613,8 +799,13 @@ function createProductCard(item) {
     </div>
   `;
 
-  // Click card to open modal details
+  // Click card to open modal details or mochi flavor selector
   card.addEventListener('click', (e) => {
+    if (isMochiItem(item)) {
+      e.stopPropagation();
+      openMochiModal(item);
+      return;
+    }
     if (e.target.closest('.btn-add-item')) {
       e.stopPropagation();
       addItemToCart(item);
@@ -795,9 +986,16 @@ function renderCartPanelItems() {
   cart.forEach(item => {
     const row = document.createElement('div');
     row.className = 'cart-item-row';
+    let detailsHtml = '';
+    if (Array.isArray(item.details) && item.details.length > 0) {
+      const flavorStr = item.details.map(d => `${d.quantity}× ${d.flavor}`).join(', ');
+      detailsHtml = `<div class="cart-item-flavors-detail" style="font-size: 11.5px; color: var(--sakura-vibrant); font-weight: 600; margin-top: 2px;">${flavorStr}</div>`;
+    }
+
     row.innerHTML = `
       <div class="cart-item-details">
         <div class="cart-item-title">${item.name}</div>
+        ${detailsHtml}
         <div class="cart-item-price-calc">${formatEuro(item.price * item.qty)}</div>
       </div>
       <div class="cart-item-stepper">
@@ -808,7 +1006,13 @@ function renderCartPanelItems() {
     `;
 
     row.querySelector('.minus').addEventListener('click', () => updateCartQuantity(item.id, -1));
-    row.querySelector('.plus').addEventListener('click', () => updateCartQuantity(item.id, 1));
+    row.querySelector('.plus').addEventListener('click', () => {
+      if (isMochiItem(item)) {
+        openMochiModal(item);
+      } else {
+        updateCartQuantity(item.id, 1);
+      }
+    });
 
     cartDrawerBody.appendChild(row);
   });
@@ -892,6 +1096,7 @@ function openProductModal(item) {
   document.getElementById('btn-modal-add').addEventListener('click', () => {
     addItemToCart(item, modalQuantity);
     closeProductModal();
+    closeMochiModal();
   });
 
   itemModal?.classList.add('open');
@@ -1132,11 +1337,15 @@ function handleOrderCheckout() {
     customerEmail: customerEmail,
     items: cart.map(item => ({
       id: item.id,
-      code: item.code || '',
+      code: item.code || (item.id === 'D28' ? 'D28' : ''),
       name: item.name,
       price: item.price,
       qty: item.qty,
-      image: item.image || ''
+      image: item.image || item.img || '',
+      details: item.details || null,
+      unitPrice: item.unitPrice || item.price,
+      totalQuantity: item.totalQuantity || item.qty,
+      totalPrice: item.totalPrice || (item.price * item.qty)
     })),
     itemCount: cart.reduce((acc, c) => acc + c.qty, 0),
     subtotal: subtotal,
@@ -1166,7 +1375,7 @@ function handleOrderCheckout() {
   .then(res => res.json())
   .then(resData => {
     if (resData.success) {
-      showToastNotification(`🍣 Commande ${orderId} validée ! E-mail envoyé avec succès.`);
+      showToastNotification(`Commande ${orderId} validée ! E-mail envoyé avec succès.`);
     } else {
       console.warn('E-mail non envoyé:', resData);
       showToastNotification(`Commande ${orderId} validée et transmise en cuisine !`);
@@ -1264,6 +1473,7 @@ btnCheckout?.addEventListener('click', handleOrderCheckout);
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     closeProductModal();
+    closeMochiModal();
     closeCartPanel();
     closeAuthModal();
   }
@@ -1550,3 +1760,8 @@ if (footerSiteEl && btnScrollTop && 'IntersectionObserver' in window) {
   }, { threshold: 0.05, rootMargin: '0px 0px -40px 0px' });
   footerObserver.observe(footerSiteEl);
 }
+
+// Mochis modal listeners
+document.getElementById('mochi-modal-close')?.addEventListener('click', closeMochiModal);
+document.getElementById('mochi-overlay')?.addEventListener('click', closeMochiModal);
+document.getElementById('mochi-modal-submit')?.addEventListener('click', handleMochiAddToCart);

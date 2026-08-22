@@ -73,20 +73,20 @@ def dispatch_resend_email(api_key, registered_account_email, requested_email, su
     initial_target = requested_email or registered_account_email
     try:
         resend_res = call_resend(initial_target)
-        print(f"✅ E-mail envoyé avec succès à {initial_target} (Resend ID: {resend_res.get('id')})")
+        print(f"E-mail envoyé avec succès à {initial_target} (Resend ID: {resend_res.get('id')})")
         return resend_res
     except urllib.error.HTTPError as e:
         err_body = e.read().decode('utf-8')
         match = re.search(r'\(([^)]+@[^)]+)\)', err_body)
         if match:
             allowed_email = match.group(1).strip()
-            print(f"⚠️ Resend 403 (compte gratuit) -> Redirection vers l'adresse autorisée : {allowed_email}")
+            print(f"Resend 403 (compte gratuit) -> Redirection vers l'adresse autorisée : {allowed_email}")
             resend_res = call_resend(allowed_email)
-            print(f"✅ E-mail envoyé avec succès à {allowed_email} (Resend ID: {resend_res.get('id')})")
+            print(f"E-mail envoyé avec succès à {allowed_email} (Resend ID: {resend_res.get('id')})")
             return resend_res
         else:
             resend_res = call_resend("mickael.lin@icloud.com")
-            print(f"✅ E-mail envoyé avec succès à mickael.lin@icloud.com (Resend ID: {resend_res.get('id')})")
+            print(f"E-mail envoyé avec succès à mickael.lin@icloud.com (Resend ID: {resend_res.get('id')})")
             return resend_res
 
 class SushiLinHandler(SimpleHTTPRequestHandler):
@@ -123,7 +123,7 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
                 discount = safe_float(order.get('discount', 0))
                 total = safe_float(order.get('total', 0))
 
-                print(f"\n🍣 [COMMANDE SUSHI LIN] #{order.get('id', 'CMD-XXX')} - {len(items)} article(s):")
+                print(f"\n[COMMANDE SUSHI LIN] #{order.get('id', 'CMD-XXX')} - {len(items)} article(s):")
                 rows = []
                 for it in items:
                     qty = safe_int(it.get('qty', 1))
@@ -133,10 +133,18 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
                     name = str(it.get('name', 'Article')).strip()
                     code_badge = f'<span class="code-pill" style="display:inline-block; font-size:10.5px; font-weight:700; color:#E11D48; background:#FFF0F3; border:1px solid #FFCCD5; border-radius:4px; padding:1px 5px; margin-right:6px;">{code}</span>' if code else ''
                     
+                    details_list = it.get('details', [])
+                    details_str = ""
+                    if details_list and isinstance(details_list, list):
+                        flavor_parts = [f"{d.get('quantity', 1)}x {d.get('flavor', '')}" for d in details_list if d.get('quantity', 0) > 0]
+                        if flavor_parts:
+                            details_str = f'<div style="font-size: 12px; color: #E11D48; margin-top: 3px; font-weight: 600;">{", ".join(flavor_parts)}</div>'
+
                     rows.append(f"""<tr class="border-row" style="border-bottom: 1px solid #F5E6EA;">
                         <td style="padding: 11px 0; vertical-align: middle;">
                           <div class="text-main" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Source Sans 3', sans-serif; font-size: 13.5px; color: #0D1127; line-height: 1.4;">
                             <span style="font-weight: 700; margin-right: 4px;">{qty}x</span>{code_badge}{name}
+                            {details_str}
                           </div>
                         </td>
                         <td style="padding: 11px 0; text-align: right; vertical-align: middle; white-space: nowrap;">
@@ -297,7 +305,7 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
                 self.wfile.write(json.dumps({'success': True, 'resend': resend_res}).encode('utf-8'))
 
             except Exception as e:
-                print(f"❌ Erreur commande email: {e}")
+                print(f"Erreur commande email: {e}")
                 traceback.print_exc()
                 self.send_response(500)
                 self.send_header('Content-Type', 'application/json')
@@ -312,7 +320,7 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
                 requested_email = str(data.get('toEmail', '')).strip()
                 res_data = data.get('reservation', {})
 
-                print(f"\n🍱 [RÉSERVATION TABLE SUSHI LIN] #{res_data.get('id', 'RES-XXX')} - {res_data.get('name')} ({res_data.get('guests')} couverts):")
+                print(f"\n[RÉSERVATION TABLE SUSHI LIN] #{res_data.get('id', 'RES-XXX')} - {res_data.get('name')} ({res_data.get('guests')} couverts):")
                 print(f"   Date: {res_data.get('date')} | Créneau: {res_data.get('service')} | Tél: {res_data.get('phone')}")
 
                 notes_val = str(res_data.get('notes', '')).strip()
@@ -454,7 +462,7 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
                 self.wfile.write(json.dumps({'success': True, 'resend': resend_res}).encode('utf-8'))
 
             except Exception as e:
-                print(f"❌ Erreur réservation email: {e}")
+                print(f"Erreur réservation email: {e}")
                 traceback.print_exc()
                 self.send_response(500)
                 self.send_header('Content-Type', 'application/json')
@@ -466,5 +474,5 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
 
 if __name__ == '__main__':
     server = HTTPServer(('0.0.0.0', PORT), SushiLinHandler)
-    print(f"🍣 Serveur Sushi Lin prêt sur http://localhost:{PORT}")
+    print(f"Serveur Sushi Lin prêt sur http://localhost:{PORT}")
     server.serve_forever()
