@@ -470,6 +470,7 @@ function switchAdminTab(tabName) {
 
   if (tabName === 'orders') {
     renderAdminOrders();
+  } else if (tabName === 'reservations') {
     renderAdminReservations();
   }
 }
@@ -688,7 +689,11 @@ function generateTestOrder() {
   ];
 
   const subtotal = testItems.reduce((acc, it) => acc + (it.price * it.qty), 0);
-  const discount = Math.round(subtotal * 0.10 * 100) / 100;
+  const eligibleSubtotal = testItems.reduce((acc, it) => {
+    const isExcluded = it.id.startsWith('desserts') || it.id.startsWith('boissons') || it.id.startsWith('vins');
+    return isExcluded ? acc : acc + (it.price * it.qty);
+  }, 0);
+  const discount = Math.round(eligibleSubtotal * 0.10 * 100) / 100;
   const total = Math.round((subtotal - discount) * 100) / 100;
 
   const now = new Date();
@@ -745,3 +750,58 @@ if (sessionStorage.getItem('sushilin_admin_logged') === 'true') {
   renderAdminReservations();
 }
 
+
+// ---- GESTION DÉDIÉE DES RÉSERVATIONS ----
+function updateAdminBadges() {
+  const orders = JSON.parse(localStorage.getItem('sushilin_orders') || '[]');
+  const reservations = JSON.parse(localStorage.getItem('sushilin_reservations') || '[]');
+  const ordersBadge = document.getElementById('total-orders-count');
+  const resBadge = document.getElementById('total-reservations-count');
+  if (ordersBadge) ordersBadge.textContent = orders.length;
+  if (resBadge) resBadge.textContent = reservations.length;
+}
+
+function updateReservationStatus(resId, newStatus) {
+  let resList = JSON.parse(localStorage.getItem('sushilin_reservations') || '[]');
+  const idx = resList.findIndex(r => r.id === resId);
+  if (idx !== -1) {
+    resList[idx].status = newStatus;
+    localStorage.setItem('sushilin_reservations', JSON.stringify(resList));
+    renderAdminReservations();
+    showToast(`Statut de la réservation ${resId} mis à jour !`);
+  }
+}
+
+function generateTestReservation() {
+  const now = new Date();
+  const resId = 'RES-' + Date.now().toString().slice(-5);
+  const dateStr = now.toISOString().split('T')[0];
+  const testRes = {
+    id: resId,
+    timestamp: now.toISOString(),
+    date: dateStr,
+    service: '19h30',
+    guests: '2',
+    name: 'Mickaël Lin',
+    phone: '06 12 34 56 78',
+    email: 'mickael.lin@icloud.com',
+    notes: 'Table au calme pour 2 personnes',
+    status: 'confirmed'
+  };
+
+  const existingRes = JSON.parse(localStorage.getItem('sushilin_reservations') || '[]');
+  existingRes.unshift(testRes);
+  localStorage.setItem('sushilin_reservations', JSON.stringify(existingRes));
+
+  renderAdminReservations();
+  updateAdminBadges();
+  showToast(`✅ Réservation test ${resId} enregistrée !`);
+}
+
+function clearAllReservations() {
+  if (!confirm("Voulez-vous vraiment effacer toutes les réservations ?")) return;
+  localStorage.removeItem('sushilin_reservations');
+  renderAdminReservations();
+  updateAdminBadges();
+  showToast("Historique des réservations réinitialisé !");
+}

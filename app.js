@@ -1,3 +1,17 @@
+// ---- Helper : Éligibilité à la réduction -10% (Exclusion Desserts & Boissons/Vins) ----
+function isItemDiscountEligible(item) {
+  if (!item) return false;
+  const cat = String(item.cat || '').toLowerCase().trim();
+  const id = String(item.id || '').toLowerCase().trim();
+  if (cat === 'desserts' || cat === 'boissons' || cat.includes('dessert') || cat.includes('boisson')) {
+    return false;
+  }
+  if (id.startsWith('desserts') || id.startsWith('boissons') || id.startsWith('vins') || id.startsWith('champagne')) {
+    return false;
+  }
+  return true;
+}
+
 /* ==========================================================================
    SUSHI LIN II — Application Logic & Interactions
    ========================================================================== */
@@ -515,7 +529,8 @@ function createProductCard(item) {
   card.className = `product-card ${item.available ? '' : 'unavailable'}`;
   card.id = `product-card-${item.id}`;
 
-  const discountVal = item.price * 0.10;
+  const isEligible = isItemDiscountEligible(item);
+  const discountVal = isEligible ? item.price * 0.10 : 0;
   const takeawayPrice = item.price - discountVal;
   const cartItem = cart.find(c => c.id === item.id);
   const currentQty = cartItem ? cartItem.qty : 0;
@@ -543,7 +558,7 @@ function createProductCard(item) {
       <div class="product-bottom-row">
         <div class="product-pricing">
           <span class="price-main">${formatEuro(item.price)}</span>
-          <span class="price-takeaway">→ ${formatEuro(takeawayPrice)} emporter</span>
+          ${isEligible ? `<span class="price-takeaway">→ ${formatEuro(takeawayPrice)} emporter</span>` : ''}
         </div>
         <button class="btn-add-item" id="add-btn-${item.id}" aria-label="Ajouter ${item.name} au panier">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
@@ -610,10 +625,13 @@ function saveCartToStorage() {
 
 function calculateCartTotals() {
   const subtotal = cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
-  const discount = subtotal * 0.10;
-  const total = subtotal - discount;
+  const eligibleSubtotal = cart.reduce((acc, item) => {
+    return isItemDiscountEligible(item) ? acc + (item.price * item.qty) : acc;
+  }, 0);
+  const discount = Math.round(eligibleSubtotal * 0.10 * 100) / 100;
+  const total = Math.round((subtotal - discount) * 100) / 100;
   const totalItemsCount = cart.reduce((acc, item) => acc + item.qty, 0);
-  return { subtotal, discount, total, totalItemsCount };
+  return { subtotal, eligibleSubtotal, discount, total, totalItemsCount };
 }
 
 function updateCartUI() {
@@ -773,7 +791,8 @@ function openProductModal(item) {
   currentModalItem = item;
   modalQuantity = 1;
 
-  const takeawayPrice = item.price * 0.90;
+  const isEligible = isItemDiscountEligible(item);
+  const takeawayPrice = isEligible ? item.price * 0.90 : item.price;
   const mediaHtml = item.img
     ? `<img src="${item.img}" alt="${item.name}" loading="lazy">`
     : getCategorySvgIcon(item.cat);
@@ -792,7 +811,7 @@ function openProductModal(item) {
     ${allergensModalHtml}
     <div class="product-pricing">
       <span class="price-main">${formatEuro(item.price)}</span>
-      <span class="price-takeaway">→ ${formatEuro(takeawayPrice)} à emporter (–10%)</span>
+      ${isEligible ? `<span class="price-takeaway">→ ${formatEuro(takeawayPrice)} à emporter (–10%)</span>` : ''}
     </div>
     
     <div class="modal-action-row">
