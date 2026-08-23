@@ -876,7 +876,24 @@ function generateTestOrder() {
   const total = Math.round((subtotal - discount) * 100) / 100;
 
   const now = new Date();
-  const orderId = 'CMD-' + Date.now().toString().slice(-6);
+  const today = now.toISOString().slice(0, 10);
+  let orderId = '1';
+  try {
+    const raw = localStorage.getItem('sushilin_daily_counter');
+    const data = raw ? JSON.parse(raw) : null;
+    let nextNum = 1;
+    if (data && data.date === today && Number.isInteger(data.count)) {
+      nextNum = data.count + 1;
+    } else {
+      const existing = JSON.parse(localStorage.getItem('sushilin_orders') || '[]');
+      const todayOrders = existing.filter(o => o.timestamp && o.timestamp.slice(0, 10) === today);
+      nextNum = todayOrders.length + 1;
+    }
+    localStorage.setItem('sushilin_daily_counter', JSON.stringify({ date: today, count: nextNum }));
+    orderId = String(nextNum);
+  } catch {
+    orderId = '1';
+  }
 
   const testOrder = {
     id: orderId,

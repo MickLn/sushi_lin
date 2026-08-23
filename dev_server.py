@@ -151,6 +151,15 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
             self.wfile.write(json.dumps({'orders': orders}, default=str).encode('utf-8'))
             return
 
+        # --- API : PROCHAIN ID DE COMMANDE DU JOUR (1, 2, 3...) ---
+        if self.path.startswith('/api/next-order-id'):
+            next_id = db.get_next_daily_order_id()
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({'orderId': next_id or '1'}).encode('utf-8'))
+            return
+
         # --- API : LECTURE DES RÉSERVATIONS (POSTGRESQL) ---
         if self.path.startswith('/api/reservations'):
             reservations = db.get_reservations()
@@ -269,6 +278,15 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
 
                 # Sauvegarde immédiate dans PostgreSQL
                 db_saved = db.save_order(order)
+
+                # Impression automatique directe du ticket thermique (IP: 192.168.1.210)
+                try:
+                    import threading
+                    import thermal_printer
+                    threading.Thread(target=thermal_printer.send_to_thermal_printer, args=(order, "192.168.1.210", 9100), daemon=True).start()
+                    print(f"[PRINT] 🖨️ Déclenchement automatique de l'impression pour la commande #{order_id_clean} vers 192.168.1.210...", flush=True)
+                except Exception as p_err:
+                    print(f"[PRINT] Erreur déclenchement impression: {p_err}", flush=True)
 
                 print(f"\n[COMMANDE SUSHI LIN] #{order_id_clean} - {len(items)} article(s) (DB: {'OK' if db_saved else 'N/A'}):", flush=True)
                 rows = []

@@ -133,6 +133,8 @@ export function parseTicketOrder(value) {
   const paymentMethod = parseOptionalText(value.paymentMethod);
   const flatwareQty = parseOptionalFlatwareQty(value.flatwareQty);
   const subtotalCents = parseOptionalCents(value.subtotalCents);
+  const discountCents = parseOptionalCents(value.discountCents) ?? 
+    (typeof value.discount === "number" && value.discount > 0 ? Math.round(value.discount * 100) : undefined);
   const deliveryFeeCents = parseOptionalCents(value.deliveryFeeCents);
   const customerEmail = parseOptionalText(value.customerEmail);
   const timeWindow = parseOptionalText(value.timeWindow);
@@ -143,6 +145,7 @@ export function parseTicketOrder(value) {
     paymentMethod === null ||
     flatwareQty === null ||
     subtotalCents === null ||
+    discountCents === null ||
     deliveryFeeCents === null ||
     customerEmail === null ||
     timeWindow === null ||
@@ -158,6 +161,7 @@ export function parseTicketOrder(value) {
     ...(note === undefined ? {} : { note }),
     ...(paymentMethod === undefined ? {} : { paymentMethod }),
     ...(subtotalCents === undefined ? {} : { subtotalCents }),
+    ...(discountCents === undefined ? {} : { discountCents }),
     ...(deliveryFeeCents === undefined ? {} : { deliveryFeeCents }),
     ...(customerEmail === undefined ? {} : { customerEmail }),
     ...(timeWindow === undefined ? {} : { timeWindow }),

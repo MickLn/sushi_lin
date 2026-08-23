@@ -18,9 +18,9 @@ const demoOrder = {
   items: [
     {
       code: "29",
-      lineTotalCents: 580,
+      lineTotalCents: 1160,
       name: "California saumon avocat (6 pcs)",
-      quantity: 1,
+      quantity: 2,
       selectedOptions: [],
       unitPriceCents: 580,
     },
@@ -42,13 +42,14 @@ const demoOrder = {
     },
   ],
   note: "Sauce sucree svp",
-  number: "CMD-" + Math.floor(100000 + Math.random() * 900000),
+  number: "1",
   paymentMethod: "CARD",
   sauce: "sucree",
   serviceDate: new Date().toLocaleDateString("fr-CA"),
-  subtotalCents: 2630,
+  subtotalCents: 3210,
+  discountCents: 321,
   timeWindow: "19h30",
-  totalCents: 2630,
+  totalCents: 2889,
   type: "TAKEAWAY",
 };
 

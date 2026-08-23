@@ -183,6 +183,25 @@ def get_users(limit=200):
 
 # --- COMMANDES (ORDERS) ---
 
+def get_next_daily_order_id():
+    conn = get_connection()
+    if not conn:
+        return None
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT COUNT(*) FROM orders 
+                WHERE created_at >= CURRENT_DATE;
+            """)
+            row = cur.fetchone()
+            count = (row[0] if row else 0) + 1
+            return str(count)
+    except Exception as e:
+        print(f"[DB] Erreur get_next_daily_order_id: {e}", flush=True)
+        return None
+    finally:
+        conn.close()
+
 def save_order(order_data):
     conn = get_connection()
     if not conn:

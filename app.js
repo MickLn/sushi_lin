@@ -1324,9 +1324,31 @@ function reorderPastOrder(orderId) {
   showToastNotification('Articles réajoutés à votre panier !');
 }
 
+// Compteur journalier réinitialisé à 1 chaque jour (1, 2, 3...)
+function getNextDailyOrderNumber() {
+  const today = new Date().toISOString().slice(0, 10);
+  try {
+    const raw = localStorage.getItem('sushilin_daily_counter');
+    const data = raw ? JSON.parse(raw) : null;
+    let nextNum = 1;
+    if (data && data.date === today && Number.isInteger(data.count)) {
+      nextNum = data.count + 1;
+    } else {
+      const existing = JSON.parse(localStorage.getItem('sushilin_orders') || '[]');
+      const todayOrders = existing.filter(o => o.timestamp && o.timestamp.slice(0, 10) === today);
+      nextNum = todayOrders.length + 1;
+    }
+    localStorage.setItem('sushilin_daily_counter', JSON.stringify({ date: today, count: nextNum }));
+    return String(nextNum);
+  } catch {
+    return '1';
+  }
+}
+
 // ---- Validation de commande (Enregistrement en local pour le Panel Admin & Envoi Resend) ----
 function handleOrderCheckout() {
   if (cart.length === 0) return;
+
   const { subtotal, discount, total } = calculateCartTotals();
   const sauceChoice = document.getElementById('sauce-choice')?.value || 'Sauce sucrée';
   const baguettesSelect = document.getElementById('baguettes-choice');
@@ -1336,8 +1358,8 @@ function handleOrderCheckout() {
   const loggedUser = getLoggedUser();
   const customerEmail = loggedUser?.email || loggedUser?.contact || document.getElementById('order-customer-email')?.value.trim() || '';
 
-  // 1. Sauvegarde dans le panneau d'administration (localStorage)
-  const orderId = 'CMD-' + Date.now().toString().slice(-6);
+  // 1. Numérotation journalière réinitialisée à 1 chaque jour (1, 2, 3...)
+  const orderId = getNextDailyOrderNumber();
   const now = new Date();
   const dateFormatted = now.toLocaleDateString('fr-FR', {
     day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'

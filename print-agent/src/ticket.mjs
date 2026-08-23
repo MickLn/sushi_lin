@@ -239,21 +239,63 @@ export function formatTicket(order, header = getRestaurantHeader()) {
 
   lines.push(SEPARATOR);
   lines.push("A emporter");
-  lines.push(SEPARATOR, formatHeaderRow());
+  lines.push(SEPARATOR);
+  lines.push("QTE / CODE   DESIGNATION                   TOTAL");
+  lines.push("");
 
   for (const item of order.items) {
-    lines.push(...formatItemRow(item));
-    for (const selectedOption of item.selectedOptions) {
-      lines.push(`  - ${stripAccents(selectedOption.name)}`);
+    const lineTotalCents = itemLineAmountCents(item);
+    const totalText = lineTotalCents === undefined ? "" : formatEuro(lineTotalCents);
+    const isEligible = !((item.code || "").startsWith("D") && /^D\d+$/.test(item.code || ""));
+    const discountedLineCents = isEligible && lineTotalCents !== undefined ? Math.round(lineTotalCents * 0.9) : lineTotalCents;
+
+    const fullName = stripAccents(item.name).toUpperCase().trim();
+    const maxFirstLineLen = Math.max(10, 48 - 3 - totalText.length - 2);
+    const words = fullName.split(/\s+/).filter(Boolean);
+    const nameLines = [];
+    let cur = "";
+    for (const w of words) {
+      if (!cur) cur = w;
+      else if (cur.length + 1 + w.length <= maxFirstLineLen) cur += " " + w;
+      else { nameLines.push(cur); cur = w; }
     }
+    if (cur) nameLines.push(cur);
+
+    lines.push(`${item.quantity}x  [ ${item.code ?? "—"} ]`);
+    lines.push(`   ${nameLines[0].padEnd(34)}${totalText.padStart(11)}`);
+    for (let i = 1; i < nameLines.length; i++) {
+      lines.push(`   ${nameLines[i]}`);
+    }
+
+    if (isEligible && lineTotalCents !== undefined && discountedLineCents < lineTotalCents) {
+      const discountedText = formatEuro(discountedLineCents);
+      lines.push(`   ${"(-10% remise)".padEnd(34)}${discountedText.padStart(11)}`);
+    }
+    for (const selectedOption of item.selectedOptions) {
+      lines.push(`     - ${stripAccents(selectedOption.name)}`);
+    }
+    lines.push("");
   }
   lines.push(SEPARATOR);
+
+  const subtotalCents = order.subtotalCents ?? order.totalCents;
+  const discountCents = order.discountCents;
+
+  if (discountCents !== undefined && discountCents > 0) {
+    const subtotalStr = formatEuro(subtotalCents);
+    const subtotalRow = padStart(subtotalStr, LINE_WIDTH - "Sous-total :".length);
+    lines.push(`Sous-total :${subtotalRow}`);
+
+    const discountStr = `-${formatEuro(discountCents)}`;
+    const discountRow = padStart(discountStr, LINE_WIDTH - "Remise a emporter (-10%) :".length);
+    lines.push(`Remise a emporter (-10%) :${discountRow}`);
+  }
 
   const totalStr = formatEuro(order.totalCents);
   const totalRow = padStart(totalStr, LINE_WIDTH - "Total TTC :".length);
   lines.push(`Total TTC :${totalRow}`);
 
-  const netLabel = `Net a Payer : ${totalStr}`;
+  const netLabel = `Net a payer : ${totalStr}`;
   lines.push(center(netLabel, LINE_WIDTH));
 
   lines.push(SEPARATOR);
