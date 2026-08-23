@@ -8,54 +8,54 @@ import { formatTicket, parseTicketOrder } from "./ticket.mjs";
 
 // Representative DELIVERY order in the exact shape served by GET /api/print/next.
 const deliveryOrder = {
-  address: "5 rue des Fleurs, 78120 Rambouillet",
-  createdAt: "2026-08-09T08:00:00.000Z",
-  customerEmail: "pierre.dupont@example.com",
-  customerName: "Pierre DUPONT",
+  address: "12 Avenue de Paris, 78340 Les Clayes-sous-Bois",
+  createdAt: "2026-08-23T12:00:00.000Z",
+  customerEmail: "client@example.com",
+  customerName: "Mickaël LIN",
   customerPhone: "06 12 34 56 78",
-  deliveryFeeCents: 300,
+  deliveryFeeCents: 0,
   flatwareQty: 2,
   items: [
     {
-      code: "E1",
-      lineTotalCents: 560,
-      name: "RIZ NATURE",
-      quantity: 2,
-      selectedOptions: [{ name: "Sans oignons", priceDeltaCents: 0 }],
-      unitPriceCents: 280,
-    },
-    {
-      code: "E2",
-      lineTotalCents: 320,
-      name: "RIZ VINAIGRE",
+      code: "1",
+      lineTotalCents: 650,
+      name: "California Saumon Avocat (6 pcs)",
       quantity: 1,
       selectedOptions: [],
-      unitPriceCents: 320,
+      unitPriceCents: 650,
     },
     {
-      code: "E10",
-      lineTotalCents: 720,
-      name: "RAVIOLIS CREVETTES X4",
+      code: "2",
+      lineTotalCents: 750,
+      name: "California Thon Cuit Avocat (6 pcs)",
       quantity: 1,
-      selectedOptions: [{ name: "Supplément crevettes", priceDeltaCents: 100 }],
-      unitPriceCents: 620,
+      selectedOptions: [],
+      unitPriceCents: 750,
+    },
+    {
+      code: "M1",
+      lineTotalCents: 1450,
+      name: "Menu Yakitori 5 Brochettes",
+      quantity: 1,
+      selectedOptions: [],
+      unitPriceCents: 1450,
     },
   ],
-  note: "Ne pas sonner, déposer devant la porte",
-  number: "HK-20260809-DEMO",
+  note: "Sauce sucrée svp",
+  number: "CMD-20260823-DEMO",
   paymentMethod: "carte_bancaire",
-  sauce: "les_deux",
-  serviceDate: "2026-08-09",
-  subtotalCents: 1600,
-  timeWindow: "20:15 ~ 20:45",
-  totalCents: 1900,
-  type: "DELIVERY",
+  sauce: "sucree",
+  serviceDate: "2026-08-23",
+  subtotalCents: 2850,
+  timeWindow: "19h30",
+  totalCents: 2850,
+  type: "TAKEAWAY",
 };
 
 // Legacy payload: plain-string options, no serviceDate, no lineTotalCents.
 const legacyOrder = {
-  address: "3 rue de la Gare, 78120 Rambouillet",
-  createdAt: "2026-08-01T12:00:00.000Z",
+  address: "32 Rue des Dames, 78340 Les Clayes-sous-Bois",
+  createdAt: "2026-08-23T12:00:00.000Z",
   customerEmail: null,
   customerName: "Aya Tanaka",
   customerPhone: "0612345678",
@@ -63,20 +63,20 @@ const legacyOrder = {
   flatwareQty: 0,
   items: [
     {
-      code: "E1",
-      name: "RIZ NATURE",
+      code: "1",
+      name: "California Saumon Avocat",
       quantity: 1,
-      selectedOptions: ["Sans oignons"],
-      unitPriceCents: 280,
+      selectedOptions: [],
+      unitPriceCents: 650,
     },
   ],
   note: null,
-  number: "HK-20260801-LEGACY",
+  number: "CMD-20260823-LEGACY",
   paymentMethod: null,
   sauce: null,
-  subtotalCents: 280,
+  subtotalCents: 650,
   timeWindow: null,
-  totalCents: 280,
+  totalCents: 650,
   type: "TAKEAWAY",
 };
 
@@ -90,7 +90,7 @@ if (parseTicketOrder(legacyOrder) === null) {
 
 console.log(formatTicket(parsedOrder));
 
-const outputDirectory = await mkdtemp(join(tmpdir(), "hokkaido-ticket-demo-"));
+const outputDirectory = await mkdtemp(join(tmpdir(), "sushilin-ticket-demo-"));
 const result = await printTicketToPrinter({
   dryRun: true,
   order: parsedOrder,

@@ -12,7 +12,7 @@ const port = Number.parseInt(process.argv[3] ?? "9100", 10);
 const data = [
   "\x1b@", // initialize
   "\x1bd\x01", // feed line
-  "HOKKAIDO - TEST IMPRESSION\n",
+  "SUSHI LIN - TEST IMPRESSION\n",
   "====================\n",
   "Ce reçu confirme la\n",
   "connexion reseau.\n",

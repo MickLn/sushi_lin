@@ -6,7 +6,7 @@ import { formatTicket, parseTicketOrder } from "./ticket.mjs";
 
 const DEFAULT_CLOUD_POLL_INTERVAL_MS = 20_000;
 const DEFAULT_FILESYSTEM_POLL_INTERVAL_MS = 5_000;
-const PRINT_AGENT_SECRET_HEADER = "x-hokkaido-print-secret";
+const PRINT_AGENT_SECRET_HEADER = "x-sushilin-print-secret";
 const REQUEST_TIMEOUT_MS = 10_000;
 
 function getErrorMessage(error) {

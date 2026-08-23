@@ -1,6 +1,6 @@
 {
-  "name": "hokkaido-print-agent",
-  "private": true,
+  "name": "sushilin-print-agent",
+  "version": "1.0.0",
   "scripts": {
     "start": "node src/index.mjs"
   },

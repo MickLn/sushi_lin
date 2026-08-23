@@ -1,5 +1,16 @@
 export { parseTicketOrder } from "./parse-ticket.mjs";
 
+export function stripAccents(str) {
+  if (typeof str !== "string") return str ?? "";
+  return str
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[°]/g, ".")
+    .replace(/[€]/g, "EUR")
+    .replace(/[œŒ]/g, "oe")
+    .replace(/[æÆ]/g, "ae");
+}
+
 function isPresent(value) {
   return value !== undefined && value !== null;
 }
@@ -9,7 +20,7 @@ export function formatAmount(cents) {
 }
 
 export function formatEuro(cents) {
-  return `${formatAmount(cents)}€`;
+  return `${formatAmount(cents)} EUR`;
 }
 
 export function formatOrderType(type) {
@@ -19,15 +30,15 @@ export function formatOrderType(type) {
 export function formatSauce(value) {
   switch (value) {
     case "sucree":
-      return "Sucrée";
+      return "Sucree";
     case "salee":
-      return "Salée";
+      return "Salee";
     case "les_deux":
-      return "Sucrée et salée";
+      return "Sucree et salee";
     case "aucune":
       return "Pas de sauce";
     default:
-      return "Non précisée";
+      return "Non precisee";
   }
 }
 
@@ -40,9 +51,9 @@ export function formatPaymentMethod(value) {
     case "carte_restaurant":
       return "Carte restaurant";
     case "especes":
-      return "Espèces";
+      return "Especes";
     default:
-      return "Non précisé";
+      return "Non precise";
   }
 }
 
@@ -59,11 +70,11 @@ function envOrDefault(env, key, fallback) {
 
 export function getRestaurantHeader(env = process.env) {
   return {
-    name: envOrDefault(env, "PRINT_RESTAURANT_NAME", "HOKKAIDO RAMBOUILLET"),
-    address: envOrDefault(env, "PRINT_RESTAURANT_ADDRESS", "22 Rue Raymond Poincaré"),
-    city: envOrDefault(env, "PRINT_RESTAURANT_CITY", "78120 Rambouillet"),
-    phone: envOrDefault(env, "PRINT_RESTAURANT_PHONE", "01 34 83 28 53"),
-    site: envOrDefault(env, "PRINT_RESTAURANT_SITE", "http://www.hokkaido78rambouillet.fr"),
+    name: envOrDefault(env, "PRINT_RESTAURANT_NAME", "SUSHI LIN"),
+    address: envOrDefault(env, "PRINT_RESTAURANT_ADDRESS", "32 Rue des Dames"),
+    city: envOrDefault(env, "PRINT_RESTAURANT_CITY", "78340 Les Clayes-sous-Bois"),
+    phone: envOrDefault(env, "PRINT_RESTAURANT_PHONE", "01 30 79 00 88"),
+    site: envOrDefault(env, "PRINT_RESTAURANT_SITE", "https://sushilin.fr"),
   };
 }
 
@@ -81,8 +92,18 @@ export function itemLineAmountCents(item) {
   return (item.unitPriceCents + optionDeltaCents) * item.quantity;
 }
 
-// Date liv. comes from the persisted service date (YYYY-MM-DD -> DD/MM/YYYY).
-// Old orders without one fall back to the creation date.
+export function formatPickupTime(value) {
+  if (!value) return undefined;
+  let str = String(value).trim();
+  if (str.includes("~")) {
+    str = str.split("~")[0].trim();
+  } else if (str.includes(" - ")) {
+    str = str.split(" - ")[0].trim();
+  }
+  return str;
+}
+
+// Date vient de la date de service (YYYY-MM-DD -> DD/MM/YYYY).
 export function formatServiceDate(order) {
   if (order.serviceDate !== undefined) {
     return `${order.serviceDate.slice(8, 10)}/${order.serviceDate.slice(5, 7)}/${order.serviceDate.slice(0, 4)}`;
@@ -113,8 +134,8 @@ const LINE_WIDTH = 48;
 const SEPARATOR = "-".repeat(LINE_WIDTH);
 const COL_QTY = 3;
 const COL_CODE = 6;
-const COL_DESIGNATION = 22;
-const COL_UNIT = 8;
+const COL_DESIGNATION = 21;
+const COL_UNIT = 9;
 const COL_TOTAL = 9;
 
 function padEnd(text, width) {
@@ -142,20 +163,21 @@ function wrapText(text, width) {
   return lines;
 }
 
-function formatHeaderRow() {
+export function formatHeaderRow() {
   return (
     padEnd("Q.", COL_QTY) +
     padEnd("Code", COL_CODE) +
-    padEnd("Désignation", COL_DESIGNATION) +
-    padEnd("P.U.TTC", COL_UNIT) +
-    padEnd("Total", COL_TOTAL)
+    padEnd("Designation", COL_DESIGNATION) +
+    padStart("P.U.TTC", COL_UNIT) +
+    padStart("Total", COL_TOTAL)
   );
 }
 
 function formatItemRow(item) {
   const lineTotalCents = itemLineAmountCents(item);
   const perUnitCents = lineTotalCents === undefined ? undefined : Math.round(lineTotalCents / item.quantity);
-  const nameLines = wrapText(item.name, COL_DESIGNATION);
+  const cleanName = stripAccents(item.name);
+  const nameLines = wrapText(cleanName, COL_DESIGNATION);
   const lines = [
     padEnd(String(item.quantity), COL_QTY) +
       padEnd(item.code === undefined ? "" : item.code, COL_CODE) +
@@ -171,10 +193,10 @@ function formatItemRow(item) {
 
 function formatRestaurantHeaderLines(header) {
   return [
-    center(header.name, LINE_WIDTH),
-    center(header.address, LINE_WIDTH),
-    center(header.city, LINE_WIDTH),
-    center(`Tél. : ${header.phone}`, LINE_WIDTH),
+    center(stripAccents(header.name), LINE_WIDTH),
+    center(stripAccents(header.address), LINE_WIDTH),
+    center(stripAccents(header.city), LINE_WIDTH),
+    center(`Tel. : ${header.phone}`, LINE_WIDTH),
     center(`Site : ${header.site}`, LINE_WIDTH),
   ];
 }
@@ -182,66 +204,66 @@ function formatRestaurantHeaderLines(header) {
 export function formatTicket(order, header = getRestaurantHeader()) {
   const lines = [...formatRestaurantHeaderLines(header), SEPARATOR];
 
-  lines.push(
-    `N° cmde : ${order.number}`,
-    `${formatOrderType(order.type)} Commande`,
-    `Nom du client : ${order.customerName}`,
-    `Mode de paiement : ${formatPaymentMethod(order.paymentMethod)}`,
-  );
-
-  if (isPresent(order.customerEmail)) {
-    lines.push(`Email : ${order.customerEmail}`);
-  }
-  lines.push(`Tél : ${order.customerPhone}`);
-  if (order.address) {
-    lines.push(`Adresse : ${order.address}`);
-    const postalCode = extractPostalCode(order.address);
-    if (postalCode !== undefined) {
-      lines.push(`Code postal : ${postalCode}`);
-    }
-  }
+  lines.push(`N. commande :   ${order.number}`);
 
   const serviceDate = formatServiceDate(order);
   if (serviceDate !== undefined) {
-    lines.push(`Date liv. : ${serviceDate}`);
+    lines.push(`Date :          ${serviceDate}`);
   }
-  if (isPresent(order.timeWindow)) {
-    const label = order.type === "DELIVERY" ? "Heure de livraison" : "Heure de retrait";
-    lines.push(`${label} : ${order.timeWindow}`);
+  const pickupTime = formatPickupTime(order.timeWindow || order.pickupTime);
+  if (pickupTime !== undefined) {
+    lines.push(`Heure retrait : ${pickupTime}`);
   }
 
+  lines.push(`Nom client :    ${stripAccents(order.customerName)}`);
+  lines.push(`Telephone :     ${order.customerPhone}`);
+
+  if (isPresent(order.customerEmail)) {
+    lines.push(`Email :         ${order.customerEmail}`);
+  }
+
+  const preferences = [];
+  if (isPresent(order.note)) {
+    preferences.push(`Commentaires :  ${stripAccents(order.note)}`);
+  }
+  if (isPresent(order.flatwareQty) && order.flatwareQty > 0) {
+    preferences.push(`Nb. couverts :  ${order.flatwareQty}`);
+  }
+  if (isPresent(order.sauce)) {
+    preferences.push(`Sauce :         ${formatSauce(order.sauce)}`);
+  }
+
+  if (preferences.length > 0) {
+    lines.push(SEPARATOR, ...preferences);
+  }
+
+  lines.push(SEPARATOR);
+  lines.push("A emporter");
   lines.push(SEPARATOR, formatHeaderRow());
+
   for (const item of order.items) {
     lines.push(...formatItemRow(item));
     for (const selectedOption of item.selectedOptions) {
-      lines.push(`  - ${selectedOption.name}`);
+      lines.push(`  - ${stripAccents(selectedOption.name)}`);
     }
   }
   lines.push(SEPARATOR);
 
-  if (isPresent(order.deliveryFeeCents) && order.type === "DELIVERY") {
-    lines.push(`Frais de livraison : ${formatEuro(order.deliveryFeeCents)}`);
-  }
-  lines.push(`Net : ${formatEuro(order.totalCents)}`);
+  const totalStr = formatEuro(order.totalCents);
+  const totalRow = padStart(totalStr, LINE_WIDTH - "Total TTC :".length);
+  lines.push(`Total TTC :${totalRow}`);
 
-  const preferences = [];
-  if (isPresent(order.flatwareQty) && order.flatwareQty > 0) {
-    preferences.push(`Couvert : ${order.flatwareQty}`);
-  }
-  if (isPresent(order.sauce)) {
-    preferences.push(`SAUCE : ${formatSauce(order.sauce)}`);
-  }
-  if (isPresent(order.note)) {
-    preferences.push(`NOTE : ${order.note}`);
-  }
-  if (preferences.length > 0) {
-    lines.push("", ...preferences);
-  }
+  const netLabel = `Net a Payer : ${totalStr}`;
+  lines.push(center(netLabel, LINE_WIDTH));
 
-  lines.push(SEPARATOR, "");
+  lines.push(SEPARATOR);
+  lines.push(center("Merci de votre visite, a bientot !", LINE_WIDTH));
+  lines.push("");
+
   return lines.join("\n");
 }
 
 export function safeTicketFileName(orderNumber) {
   return orderNumber.replace(/[^a-zA-Z0-9_-]/g, "_");
 }
+
