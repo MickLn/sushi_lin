@@ -782,7 +782,7 @@ function createProductCard(item) {
     </div>
     <div class="product-content">
       <h3 class="product-name">${item.name}</h3>
-      ${item.desc ? `<p class="product-desc">${item.desc}</p>` : ''}
+      <p class="product-desc">${item.desc || '&nbsp;'}</p>
       ${allergensCardHtml}
       <div class="product-bottom-row">
         <div class="product-pricing">
@@ -1319,7 +1319,8 @@ function handleOrderCheckout() {
   if (cart.length === 0) return;
   const { subtotal, discount, total } = calculateCartTotals();
   const sauceChoice = document.getElementById('sauce-choice')?.value || 'Sauce sucrée';
-  const baguettesChoice = document.getElementById('baguettes-choice')?.value || '1 paire';
+  const baguettesSelect = document.getElementById('baguettes-choice');
+  const baguettesChoice = baguettesSelect ? (baguettesSelect.options[baguettesSelect.selectedIndex]?.text || baguettesSelect.value) : '1 paire';
   const pickupTime = document.getElementById('pickup-time')?.value || '12h00';
   const comment = document.getElementById('comment-order')?.value.trim() || '';
   const loggedUser = getLoggedUser();
@@ -1471,9 +1472,17 @@ modalOverlay?.addEventListener('click', closeProductModal);
 
 btnAccount?.addEventListener('click', openAuthModal);
 authClose?.addEventListener('click', closeAuthModal);
-authOverlay?.addEventListener('click', closeAuthModal);
-
 btnCheckout?.addEventListener('click', handleOrderCheckout);
+
+// Toggle Options de commande dans le panier (Mobile)
+const toggleOrderOptionsBtn = document.getElementById('toggle-order-options');
+const orderCustomizationContent = document.getElementById('order-customization-content');
+
+toggleOrderOptionsBtn?.addEventListener('click', () => {
+  const isCollapsed = orderCustomizationContent?.classList.toggle('is-collapsed');
+  toggleOrderOptionsBtn.classList.toggle('is-collapsed', isCollapsed);
+  toggleOrderOptionsBtn.setAttribute('aria-expanded', !isCollapsed);
+});
 
 // Escape key to close any modal
 document.addEventListener('keydown', (e) => {

@@ -310,7 +310,13 @@
     </div>
 
     <div class="panel-footer" id="cart-drawer-footer">
-      <div class="order-customization">
+      <button type="button" class="btn-toggle-options" id="toggle-order-options" aria-label="Masquer ou afficher les options de commande" aria-expanded="true" aria-controls="order-customization-content">
+        <svg class="toggle-options-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </button>
+
+      <div class="order-customization" id="order-customization-content">
         <div class="form-group">
           <label for="sauce-choice">Choix des sauces</label>
           <select id="sauce-choice" class="custom-select">
@@ -328,6 +334,11 @@
             <option value="2">2 paires</option>
             <option value="3">3 paires</option>
             <option value="4">4 paires</option>
+            <option value="5">5 paires</option>
+            <option value="6">6 paires</option>
+            <option value="7">7 paires</option>
+            <option value="8">8 paires</option>
+            <option value="9">9 paires</option>
             <option value="0">Sans baguette</option>
           </select>
         </div>
