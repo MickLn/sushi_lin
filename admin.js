@@ -770,10 +770,10 @@ function updateOrderStatus(orderId, newStatus) {
 function deleteOrder(orderId) {
   if (!confirm(`Supprimer la commande ${orderId} ?`)) return;
   fetch('/api/orders', {
-    method: 'PATCH',
+    method: 'DELETE',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id: orderId, status: 'deleted' })
-  }).catch(() => {});
+    body: JSON.stringify({ id: orderId })
+  }).catch(e => console.warn('Erreur suppression API:', e));
 
   let orders = JSON.parse(localStorage.getItem('sushilin_orders') || '[]');
   orders = orders.filter(o => o.id !== orderId);
@@ -784,6 +784,12 @@ function deleteOrder(orderId) {
 
 function deleteReservation(resId) {
   if (!confirm(`Supprimer la réservation ${resId} ?`)) return;
+  fetch('/api/reservations', {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: resId })
+  }).catch(e => console.warn('Erreur suppression API:', e));
+
   let resList = JSON.parse(localStorage.getItem('sushilin_reservations') || '[]');
   resList = resList.filter(r => r.id !== resId);
   localStorage.setItem('sushilin_reservations', JSON.stringify(resList));
@@ -793,6 +799,18 @@ function deleteReservation(resId) {
 
 function clearAllOrders() {
   if (!confirm("Voulez-vous vraiment effacer tout l'historique des commandes et réservations de test ?")) return;
+  fetch('/api/orders', {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: '__ALL__' })
+  }).catch(() => {});
+
+  fetch('/api/reservations', {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: '__ALL__' })
+  }).catch(() => {});
+
   localStorage.removeItem('sushilin_orders');
   localStorage.removeItem('sushilin_reservations');
   renderAdminOrders();

@@ -404,3 +404,44 @@ def update_reservation_status(res_id, status):
         return False
     finally:
         conn.close()
+
+def delete_order(order_id):
+    conn = get_connection()
+    if not conn:
+        return False
+    try:
+        with conn.cursor() as cur:
+            if order_id == '__ALL__':
+                cur.execute("TRUNCATE TABLE orders;")
+                print("[DB] Toutes les commandes ont été effacées de PostgreSQL.", flush=True)
+            else:
+                cur.execute("DELETE FROM orders WHERE id = %s;", (order_id,))
+                print(f"[DB] Commande #{order_id} supprimée de PostgreSQL.", flush=True)
+            conn.commit()
+            return True
+    except Exception as e:
+        print(f"[DB] Erreur suppression commande {order_id}: {e}", flush=True)
+        return False
+    finally:
+        conn.close()
+
+def delete_reservation(res_id):
+    conn = get_connection()
+    if not conn:
+        return False
+    try:
+        with conn.cursor() as cur:
+            if res_id == '__ALL__':
+                cur.execute("TRUNCATE TABLE reservations;")
+                print("[DB] Toutes les réservations ont été effacées de PostgreSQL.", flush=True)
+            else:
+                cur.execute("DELETE FROM reservations WHERE id = %s;", (res_id,))
+                print(f"[DB] Réservation #{res_id} supprimée de PostgreSQL.", flush=True)
+            conn.commit()
+            return True
+    except Exception as e:
+        print(f"[DB] Erreur suppression réservation {res_id}: {e}", flush=True)
+        return False
+    finally:
+        conn.close()
+

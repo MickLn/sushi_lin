@@ -195,6 +195,38 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
         self.send_response(404)
         self.end_headers()
 
+    def do_DELETE(self):
+        content_length = int(self.headers.get('Content-Length', 0))
+        body = self.rfile.read(content_length).decode('utf-8') if content_length > 0 else '{}'
+        try:
+            data = json.loads(body)
+            item_id = str(data.get('id', '')).strip()
+
+            if self.path == '/api/orders' and item_id:
+                success = db.delete_order(item_id)
+                self.send_response(200 if success else 400)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({'success': success}).encode('utf-8'))
+                return
+
+            if self.path == '/api/reservations' and item_id:
+                success = db.delete_reservation(item_id)
+                self.send_response(200 if success else 400)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({'success': success}).encode('utf-8'))
+                return
+        except Exception as e:
+            self.send_response(500)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({'error': str(e)}).encode('utf-8'))
+            return
+
+        self.send_response(404)
+        self.end_headers()
+
     def do_POST(self):
         env = load_env()
         api_key = env.get('RESEND_API_KEY') or os.environ.get('RESEND_API_KEY')
