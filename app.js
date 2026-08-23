@@ -187,12 +187,22 @@ function handleMochiAddToCart() {
 // ---- Helper : Éligibilité à la réduction -10% (Exclusion Desserts & Boissons/Vins) ----
 function isItemDiscountEligible(item) {
   if (!item) return false;
-  const cat = String(item.cat || '').toLowerCase().trim();
-  const id = String(item.id || '').toLowerCase().trim();
+  let cat = String(item.cat || '').toLowerCase().trim();
+  let id = String(item.id || '').toLowerCase().trim();
+
+  // Si la catégorie n'est pas directement présente sur l'objet item, on cherche dans MENU_DATA
+  if (!cat && typeof MENU_DATA !== 'undefined' && MENU_DATA?.items) {
+    const canonical = MENU_DATA.items.find(m => m.id === item.id || (item.name && m.name.toLowerCase() === item.name.toLowerCase()));
+    if (canonical) {
+      cat = String(canonical.cat || '').toLowerCase().trim();
+      id = String(canonical.id || '').toLowerCase().trim();
+    }
+  }
+
   if (cat === 'desserts' || cat === 'boissons' || cat.includes('dessert') || cat.includes('boisson')) {
     return false;
   }
-  if (id.startsWith('desserts') || id.startsWith('boissons') || id.startsWith('vins') || id.startsWith('champagne')) {
+  if (id.startsWith('desserts') || id.startsWith('boissons') || id.startsWith('vins') || id.startsWith('champagne') || id.startsWith('d28')) {
     return false;
   }
   return true;

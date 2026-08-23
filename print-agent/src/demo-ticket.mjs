@@ -7,48 +7,48 @@ import { printTicketToPrinter } from "./printer.mjs";
 import { formatTicket, parseTicketOrder } from "./ticket.mjs";
 
 // Representative DELIVERY order in the exact shape served by GET /api/print/next.
-const deliveryOrder = {
-  address: "12 Avenue de Paris, 78340 Les Clayes-sous-Bois",
+const demoOrder = {
+  address: "32 Rue des Dames, 78340 Les Clayes-sous-Bois",
   createdAt: "2026-08-23T12:00:00.000Z",
   customerEmail: "client@example.com",
-  customerName: "Mickaël LIN",
+  customerName: "Mickael LIN",
   customerPhone: "06 12 34 56 78",
   deliveryFeeCents: 0,
   flatwareQty: 2,
   items: [
     {
-      code: "1",
-      lineTotalCents: 650,
-      name: "California Saumon Avocat (6 pcs)",
+      code: "29",
+      lineTotalCents: 580,
+      name: "California saumon avocat (6 pcs)",
       quantity: 1,
       selectedOptions: [],
-      unitPriceCents: 650,
+      unitPriceCents: 580,
     },
     {
-      code: "2",
-      lineTotalCents: 750,
-      name: "California Thon Cuit Avocat (6 pcs)",
+      code: "32A",
+      lineTotalCents: 600,
+      name: "California thon cuit avocat (6 pcs)",
       quantity: 1,
       selectedOptions: [],
-      unitPriceCents: 750,
+      unitPriceCents: 600,
     },
     {
       code: "M1",
       lineTotalCents: 1450,
-      name: "Menu Yakitori 5 Brochettes",
+      name: "Menu M1 5 brochettes yakitori",
       quantity: 1,
       selectedOptions: [],
       unitPriceCents: 1450,
     },
   ],
-  note: "Sauce sucrée svp",
+  note: "Sauce sucree svp",
   number: "CMD-20260823-DEMO",
-  paymentMethod: "carte_bancaire",
+  paymentMethod: "CARD",
   sauce: "sucree",
   serviceDate: "2026-08-23",
-  subtotalCents: 2850,
+  subtotalCents: 2630,
   timeWindow: "19h30",
-  totalCents: 2850,
+  totalCents: 2630,
   type: "TAKEAWAY",
 };
 
@@ -80,9 +80,9 @@ const legacyOrder = {
   type: "TAKEAWAY",
 };
 
-const parsedOrder = parseTicketOrder(deliveryOrder);
+const parsedOrder = parseTicketOrder(demoOrder);
 if (parsedOrder === null) {
-  throw new Error("the demo delivery payload failed to parse");
+  throw new Error("the demo payload failed to parse");
 }
 if (parseTicketOrder(legacyOrder) === null) {
   throw new Error("the legacy payload failed to parse");
