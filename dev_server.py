@@ -2,13 +2,38 @@ import os
 import re
 import json
 import ssl
+import html
 import traceback
 import urllib.request
 import urllib.error
 from http.server import SimpleHTTPRequestHandler, HTTPServer
 
+import db
+
 PORT = 3000
 ENV_FILE = os.path.join(os.path.dirname(__file__), '.env')
+
+_MENU_CODE_MAP = None
+
+def get_menu_code_map():
+    global _MENU_CODE_MAP
+    if _MENU_CODE_MAP is not None:
+        return _MENU_CODE_MAP
+    code_map = {}
+    menu_path = os.path.join(os.path.dirname(__file__), 'data', 'menu.json')
+    try:
+        if os.path.exists(menu_path):
+            with open(menu_path, 'r', encoding='utf-8') as mf:
+                menu_json_data = json.load(mf)
+                for mi in menu_json_data.get('items', []):
+                    if mi.get('id'):
+                        code_map[str(mi['id'])] = mi.get('code', '')
+                    if mi.get('name'):
+                        code_map[str(mi['name']).strip().lower()] = mi.get('code', '')
+    except Exception as ex:
+        print(f"Warning chargement menu.json map: {ex}", flush=True)
+    _MENU_CODE_MAP = code_map
+    return _MENU_CODE_MAP
 
 def safe_float(val, default=0.0):
     try:
@@ -26,6 +51,9 @@ def safe_int(val, default=1):
         return int(val)
     except Exception:
         return default
+
+def format_euro_fr(val):
+    return f"{safe_float(val):.2f}".replace('.', ',') + ' €'
 
 def get_ssl_context():
     try:
@@ -73,27 +101,27 @@ def dispatch_resend_email(api_key, registered_account_email, requested_email, su
     initial_target = requested_email or registered_account_email
     try:
         resend_res = call_resend(initial_target)
-        print(f"E-mail envoyé avec succès à {initial_target} (Resend ID: {resend_res.get('id')})")
+        print(f"E-mail envoyé avec succès à {initial_target} (Resend ID: {resend_res.get('id')})", flush=True)
         return resend_res
     except urllib.error.HTTPError as e:
         err_body = e.read().decode('utf-8')
         match = re.search(r'\(([^)]+@[^)]+)\)', err_body)
         if match:
             allowed_email = match.group(1).strip()
-            print(f"Resend 403 (compte gratuit) -> Redirection vers l'adresse autorisée : {allowed_email}")
+            print(f"Resend 403 (compte gratuit) -> Redirection vers l'adresse autorisée : {allowed_email}", flush=True)
             resend_res = call_resend(allowed_email)
-            print(f"E-mail envoyé avec succès à {allowed_email} (Resend ID: {resend_res.get('id')})")
+            print(f"E-mail envoyé avec succès à {allowed_email} (Resend ID: {resend_res.get('id')})", flush=True)
             return resend_res
         else:
             resend_res = call_resend("mickael.lin@icloud.com")
-            print(f"E-mail envoyé avec succès à mickael.lin@icloud.com (Resend ID: {resend_res.get('id')})")
+            print(f"E-mail envoyé avec succès à mickael.lin@icloud.com (Resend ID: {resend_res.get('id')})", flush=True)
             return resend_res
 
 class SushiLinHandler(SimpleHTTPRequestHandler):
     def end_headers(self):
-        # Enable CORS and disable caching in local development
+        # Enable CORS and disable caching in development
         self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, PATCH, OPTIONS')
         self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
         self.send_header('Cache-Control', 'no-cache, no-store, must-revalidate')
         self.send_header('Pragma', 'no-cache')
@@ -104,6 +132,69 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
         self.send_response(200)
         self.end_headers()
 
+    def do_GET(self):
+        # --- API : LECTURE DES UTILISATEURS (POSTGRESQL) ---
+        if self.path.startswith('/api/users'):
+            users = db.get_users()
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({'users': users}, default=str).encode('utf-8'))
+            return
+
+        # --- API : LECTURE DES COMMANDES (POSTGRESQL) ---
+        if self.path.startswith('/api/orders'):
+            orders = db.get_orders()
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({'orders': orders}, default=str).encode('utf-8'))
+            return
+
+        # --- API : LECTURE DES RÉSERVATIONS (POSTGRESQL) ---
+        if self.path.startswith('/api/reservations'):
+            reservations = db.get_reservations()
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({'reservations': reservations}, default=str).encode('utf-8'))
+            return
+
+        super().do_GET()
+
+    def do_PATCH(self):
+        content_length = int(self.headers.get('Content-Length', 0))
+        body = self.rfile.read(content_length).decode('utf-8') if content_length > 0 else '{}'
+        try:
+            data = json.loads(body)
+            item_id = str(data.get('id', '')).strip()
+            status = str(data.get('status', '')).strip()
+
+            if self.path == '/api/orders' and item_id:
+                success = db.update_order_status(item_id, status)
+                self.send_response(200 if success else 400)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({'success': success}).encode('utf-8'))
+                return
+
+            if self.path == '/api/reservations' and item_id:
+                success = db.update_reservation_status(item_id, status)
+                self.send_response(200 if success else 400)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({'success': success}).encode('utf-8'))
+                return
+        except Exception as e:
+            self.send_response(500)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({'error': str(e)}).encode('utf-8'))
+            return
+
+        self.send_response(404)
+        self.end_headers()
+
     def do_POST(self):
         env = load_env()
         api_key = env.get('RESEND_API_KEY') or os.environ.get('RESEND_API_KEY')
@@ -112,31 +203,42 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
         content_length = int(self.headers.get('Content-Length', 0))
         body = self.rfile.read(content_length).decode('utf-8') if content_length > 0 else '{}'
 
-        # --- ENDPOINT 1 : ENVOI EMAIL COMMANDE ---
-        if self.path == '/api/send-order-email':
+        # --- ENDPOINT : CRÉATION / MISE À JOUR UTILISATEUR ---
+        if self.path == '/api/users':
+            try:
+                user_data = json.loads(body)
+                success = db.save_user(user_data)
+                self.send_response(200 if success else 400)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({'success': success}).encode('utf-8'))
+            except Exception as e:
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({'error': str(e)}).encode('utf-8'))
+            return
+
+        # --- ENDPOINT 1 : ENREGISTREMENT POSTGRESQL & ENVOI EMAIL COMMANDE ---
+        if self.path in ('/api/send-order-email', '/api/orders'):
             try:
                 data = json.loads(body)
-                requested_email = str(data.get('toEmail', '')).strip()
-                order = data.get('order', {})
+                requested_email = str(data.get('toEmail', '') or data.get('customerEmail', '')).strip()
+                order = data.get('order', data)
+                if requested_email and not order.get('customerEmail'):
+                    order['customerEmail'] = requested_email
                 items = order.get('items', [])
 
-                # Map canonical codes from menu.json as fallback
-                menu_code_map = {}
-                try:
-                    with open(os.path.join(os.path.dirname(__file__), 'data', 'menu.json'), 'r', encoding='utf-8') as mf:
-                        menu_json_data = json.load(mf)
-                        for mi in menu_json_data.get('items', []):
-                            if mi.get('id'):
-                                menu_code_map[mi['id']] = mi.get('code', '')
-                            if mi.get('name'):
-                                menu_code_map[mi['name'].strip().lower()] = mi.get('code', '')
-                except Exception as ex:
-                    print(f"Warning menu.json map: {ex}")
+                menu_code_map = get_menu_code_map()
                 subtotal = safe_float(order.get('subtotal', 0))
                 discount = safe_float(order.get('discount', 0))
                 total = safe_float(order.get('total', 0))
+                order_id_clean = html.escape(str(order.get('id', 'CMD-XXX')).strip())
 
-                print(f"\n[COMMANDE SUSHI LIN] #{order.get('id', 'CMD-XXX')} - {len(items)} article(s):")
+                # Sauvegarde immédiate dans PostgreSQL
+                db_saved = db.save_order(order)
+
+                print(f"\n[COMMANDE SUSHI LIN] #{order_id_clean} - {len(items)} article(s) (DB: {'OK' if db_saved else 'N/A'}):", flush=True)
                 rows = []
                 for it in items:
                     qty = safe_int(it.get('qty', 1))
@@ -144,14 +246,14 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
                     item_total = price * qty
                     item_id = str(it.get('id', '')).strip()
                     item_name_key = str(it.get('name', '')).strip().lower()
-                    code = str(it.get('code', '')).strip() or menu_code_map.get(item_id, '') or menu_code_map.get(item_name_key, '')
-                    name = str(it.get('name', 'Article')).strip()
+                    code = html.escape(str(it.get('code', '')).strip() or menu_code_map.get(item_id, '') or menu_code_map.get(item_name_key, ''))
+                    name = html.escape(str(it.get('name', 'Article')).strip())
                     code_badge = f'<span class="code-pill" style="display:inline-block; font-size:10.5px; font-weight:700; color:#E11D48; background:#FFF0F3; border:1px solid #FFCCD5; border-radius:4px; padding:1px 5px; margin-right:6px;">{code}</span>' if code else ''
                     
                     details_list = it.get('details', [])
                     details_str = ""
                     if details_list and isinstance(details_list, list):
-                        flavor_parts = [f"{d.get('quantity', 1)}x {d.get('flavor', '')}" for d in details_list if d.get('quantity', 0) > 0]
+                        flavor_parts = [f"{html.escape(str(d.get('quantity', 1)))}x {html.escape(str(d.get('flavor', '')))}" for d in details_list if d.get('quantity', 0) > 0]
                         if flavor_parts:
                             details_str = f'<div style="font-size: 12px; color: #E11D48; margin-top: 3px; font-weight: 600;">{", ".join(flavor_parts)}</div>'
 
@@ -163,26 +265,30 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
                           </div>
                         </td>
                         <td style="padding: 11px 0; text-align: right; vertical-align: middle; white-space: nowrap;">
-                          <span class="text-main" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Source Sans 3', sans-serif; font-size: 13.5px; font-weight: 600; color: #0D1127;">{item_total:.2f} €</span>
+                          <span class="text-main" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Source Sans 3', sans-serif; font-size: 13.5px; font-weight: 600; color: #0D1127;">{format_euro_fr(item_total)}</span>
                         </td>
                     </tr>""")
 
                 items_html = ''.join(rows)
 
-                sauce_choice = order.get('sauceChoice', 'Sauce sucrée')
-                baguettes_choice = order.get('baguettesChoice', '1 paire')
+                sauce_choice = html.escape(str(order.get('sauceChoice', 'Sauce sucrée')).strip())
+                baguettes_choice = html.escape(str(order.get('baguettesChoice', '1 paire')).strip())
                 sauces_couverts = f"{sauce_choice} / {baguettes_choice}"
 
-                comment_val = order.get('comment', '').strip()
+                comment_val = html.escape(str(order.get('comment', '')).strip())
                 comment_row = f"""<tr>
                   <td class="text-muted" style="padding: 7px 0; color: #64748B; vertical-align: top; width: 120px;">Remarques</td>
                   <td class="text-main" style="padding: 7px 0; color: #0D1127;">{comment_val}</td>
                 </tr>""" if comment_val else ""
 
+                requested_email_clean = html.escape(requested_email)
                 client_email_row = f"""<tr>
                   <td class="text-muted" style="padding: 7px 0; color: #64748B; width: 120px;">E-mail client</td>
-                  <td class="text-main" style="padding: 7px 0; color: #0D1127;">{requested_email}</td>
+                  <td class="text-main" style="padding: 7px 0; color: #0D1127;">{requested_email_clean}</td>
                 </tr>""" if requested_email else ""
+
+                order_date_formatted = html.escape(str(order.get('dateFormatted', '')).strip())
+                pickup_time_formatted = html.escape(str(order.get('pickupTime', 'Dès que possible')).strip())
 
                 html_content = f"""<!DOCTYPE html>
 <html lang="fr" xmlns="http://www.w3.org/1999/xhtml">
@@ -243,15 +349,15 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
               <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0">
                 <tr>
                   <td class="text-muted" style="padding: 3px 0; font-size: 12.5px; color: #64748B;">N° Commande</td>
-                  <td class="text-main" style="padding: 3px 0; font-size: 13px; font-weight: 700; color: #0D1127; text-align: right;">{order.get('id', 'N/A')}</td>
+                  <td class="text-main" style="padding: 3px 0; font-size: 13px; font-weight: 700; color: #0D1127; text-align: right;">{order_id_clean}</td>
                 </tr>
                 <tr>
                   <td class="text-muted" style="padding: 3px 0; font-size: 12.5px; color: #64748B;">Date</td>
-                  <td class="text-main" style="padding: 3px 0; font-size: 12.5px; font-weight: 700; color: #0D1127; text-align: right;">{order.get('dateFormatted', '')}</td>
+                  <td class="text-main" style="padding: 3px 0; font-size: 12.5px; font-weight: 700; color: #0D1127; text-align: right;">{order_date_formatted}</td>
                 </tr>
                 <tr>
                   <td class="text-muted" style="padding: 3px 0; font-size: 12.5px; color: #64748B;">Retrait prévu</td>
-                  <td class="text-main" style="padding: 3px 0; font-size: 12.5px; font-weight: 700; color: #0D1127; text-align: right;">{order.get('pickupTime', 'Dès que possible')}</td>
+                  <td class="text-main" style="padding: 3px 0; font-size: 12.5px; font-weight: 700; color: #0D1127; text-align: right;">{pickup_time_formatted}</td>
                 </tr>
               </table>
             </td>
@@ -267,18 +373,18 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
         <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse; font-size: 13px; margin-bottom: 22px;">
           <tr>
             <td class="text-muted" style="padding: 4px 0; color: #64748B;">Sous-total</td>
-            <td class="text-main" style="padding: 4px 0; text-align: right; color: #0D1127;">{subtotal:.2f} €</td>
+            <td class="text-main" style="padding: 4px 0; text-align: right; color: #0D1127;">{format_euro_fr(subtotal)}</td>
           </tr>
           <tr>
             <td class="text-discount" style="padding: 4px 0; color: #059669; font-weight: 600;">Remise à emporter (–10%)</td>
-            <td class="text-discount" style="padding: 4px 0; text-align: right; color: #059669; font-weight: 600;">–{discount:.2f} €</td>
+            <td class="text-discount" style="padding: 4px 0; text-align: right; color: #059669; font-weight: 600;">–{format_euro_fr(discount)}</td>
           </tr>
           <tr>
             <td colspan="2" style="padding-top: 14px;"><div class="border-row" style="border-top: 1px solid #F5E6EA;"></div></td>
           </tr>
           <tr>
             <td class="text-main" style="padding: 12px 0; font-size: 14px; font-weight: 700; color: #0D1127;">Total à régler</td>
-            <td class="text-total" style="padding: 12px 0; font-size: 17px; font-weight: 700; color: #E11D48; text-align: right; white-space: nowrap;">{total:.2f} €</td>
+            <td class="text-total" style="padding: 12px 0; font-size: 17px; font-weight: 700; color: #E11D48; text-align: right; white-space: nowrap;">{format_euro_fr(total)}</td>
           </tr>
           <tr>
             <td colspan="2" style="padding-bottom: 4px;"><div class="border-row" style="border-top: 1px solid #F5E6EA;"></div></td>
@@ -313,14 +419,14 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
 </body>
 </html>"""
 
-                resend_res = dispatch_resend_email(api_key, registered_account_email, requested_email, f"Confirmation de votre commande Sushi Lin ({order.get('id', '')})", html_content)
+                resend_res = dispatch_resend_email(api_key, registered_account_email, requested_email, f"Confirmation de votre commande Sushi Lin ({order_id_clean})", html_content)
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json')
                 self.end_headers()
-                self.wfile.write(json.dumps({'success': True, 'resend': resend_res}).encode('utf-8'))
+                self.wfile.write(json.dumps({'success': True, 'db': db_saved, 'resend': resend_res}).encode('utf-8'))
 
             except Exception as e:
-                print(f"Erreur commande email: {e}")
+                print(f"Erreur commande email / db: {e}", flush=True)
                 traceback.print_exc()
                 self.send_response(500)
                 self.send_header('Content-Type', 'application/json')
@@ -328,25 +434,38 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
                 self.wfile.write(json.dumps({'error': str(e)}).encode('utf-8'))
             return
 
-        # --- ENDPOINT 2 : ENVOI EMAIL RÉSERVATION DE TABLE ---
-        if self.path == '/api/send-reservation-email':
+        # --- ENDPOINT 2 : ENREGISTREMENT POSTGRESQL & ENVOI EMAIL RÉSERVATION ---
+        if self.path in ('/api/send-reservation-email', '/api/reservations'):
             try:
                 data = json.loads(body)
-                requested_email = str(data.get('toEmail', '')).strip()
-                res_data = data.get('reservation', {})
+                requested_email = str(data.get('toEmail', '') or data.get('email', '')).strip()
+                res_data = data.get('reservation', data)
+                if requested_email and not res_data.get('email'):
+                    res_data['email'] = requested_email
 
-                print(f"\n[RÉSERVATION TABLE SUSHI LIN] #{res_data.get('id', 'RES-XXX')} - {res_data.get('name')} ({res_data.get('guests')} couverts):")
-                print(f"   Date: {res_data.get('date')} | Créneau: {res_data.get('service')} | Tél: {res_data.get('phone')}")
+                res_id_clean = html.escape(str(res_data.get('id', 'RES-XXX')).strip())
+                res_name_clean = html.escape(str(res_data.get('name', '')).strip())
+                res_guests_clean = html.escape(str(res_data.get('guests', '2')).strip())
+                res_date_clean = html.escape(str(res_data.get('date', '')).strip())
+                res_service_clean = html.escape(str(res_data.get('service', '19h00')).strip())
+                res_phone_clean = html.escape(str(res_data.get('phone', '')).strip())
 
-                notes_val = str(res_data.get('notes', '')).strip()
+                # Sauvegarde immédiate dans PostgreSQL
+                db_saved = db.save_reservation(res_data)
+
+                print(f"\n[RÉSERVATION TABLE SUSHI LIN] #{res_id_clean} - {res_name_clean} ({res_guests_clean} couverts, DB: {'OK' if db_saved else 'N/A'}):", flush=True)
+                print(f"   Date: {res_date_clean} | Créneau: {res_service_clean} | Tél: {res_phone_clean}", flush=True)
+
+                notes_val = html.escape(str(res_data.get('notes', '')).strip())
                 notes_row = f"""<tr>
                   <td class="text-muted" style="padding: 7px 0; color: #64748B; vertical-align: top; width: 130px;">Demandes</td>
                   <td class="text-main" style="padding: 7px 0; color: #0D1127;">{notes_val}</td>
                 </tr>""" if notes_val else ""
 
+                requested_email_clean = html.escape(requested_email)
                 client_email_row = f"""<tr>
                   <td class="text-muted" style="padding: 7px 0; color: #64748B; width: 130px;">E-mail de contact</td>
-                  <td class="text-main" style="padding: 7px 0; color: #0D1127;">{requested_email}</td>
+                  <td class="text-main" style="padding: 7px 0; color: #0D1127;">{requested_email_clean}</td>
                 </tr>""" if requested_email else ""
 
                 html_res_content = f"""<!DOCTYPE html>
@@ -404,15 +523,15 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
               <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0">
                 <tr>
                   <td class="text-muted" style="padding: 3px 0; font-size: 12.5px; color: #64748B;">N° Réservation</td>
-                  <td class="text-main" style="padding: 3px 0; font-size: 13px; font-weight: 700; color: #0D1127; text-align: right;">{res_data.get('id', 'N/A')}</td>
+                  <td class="text-main" style="padding: 3px 0; font-size: 13px; font-weight: 700; color: #0D1127; text-align: right;">{res_id_clean}</td>
                 </tr>
                 <tr>
                   <td class="text-muted" style="padding: 3px 0; font-size: 12.5px; color: #64748B;">Date</td>
-                  <td class="text-main" style="padding: 3px 0; font-size: 12.5px; font-weight: 700; color: #0D1127; text-align: right;">{res_data.get('date', '')}</td>
+                  <td class="text-main" style="padding: 3px 0; font-size: 12.5px; font-weight: 700; color: #0D1127; text-align: right;">{res_date_clean}</td>
                 </tr>
                 <tr>
                   <td class="text-muted" style="padding: 3px 0; font-size: 12.5px; color: #64748B;">Créneau</td>
-                  <td class="text-main" style="padding: 3px 0; font-size: 12.5px; font-weight: 700; color: #0D1127; text-align: right;">{res_data.get('service', '19h00')}</td>
+                  <td class="text-main" style="padding: 3px 0; font-size: 12.5px; font-weight: 700; color: #0D1127; text-align: right;">{res_service_clean}</td>
                 </tr>
               </table>
             </td>
@@ -424,15 +543,15 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
         <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse; font-size: 13px; margin-bottom: 22px;">
           <tr class="border-row" style="border-bottom: 1px solid #F5E6EA;">
             <td class="text-muted" style="padding: 10px 0; color: #64748B; width: 130px;">Nombre de couverts</td>
-            <td class="text-main" style="padding: 10px 0; font-weight: 700; color: #0D1127; text-align: right;">{res_data.get('guests', '2')} personne(s)</td>
+            <td class="text-main" style="padding: 10px 0; font-weight: 700; color: #0D1127; text-align: right;">{res_guests_clean} personne(s)</td>
           </tr>
           <tr class="border-row" style="border-bottom: 1px solid #F5E6EA;">
             <td class="text-muted" style="padding: 10px 0; color: #64748B;">Nom du client</td>
-            <td class="text-main" style="padding: 10px 0; font-weight: 600; color: #0D1127; text-align: right;">{res_data.get('name', '')}</td>
+            <td class="text-main" style="padding: 10px 0; font-weight: 600; color: #0D1127; text-align: right;">{res_name_clean}</td>
           </tr>
           <tr class="border-row" style="border-bottom: 1px solid #F5E6EA;">
             <td class="text-muted" style="padding: 10px 0; color: #64748B;">Téléphone</td>
-            <td class="text-main" style="padding: 10px 0; color: #0D1127; text-align: right;">{res_data.get('phone', '')}</td>
+            <td class="text-main" style="padding: 10px 0; color: #0D1127; text-align: right;">{res_phone_clean}</td>
           </tr>
           <tr>
             <td colspan="2" style="padding-top: 14px;"><div class="border-row" style="border-top: 1px solid #F5E6EA;"></div></td>
@@ -470,14 +589,14 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
 </body>
 </html>"""
 
-                resend_res = dispatch_resend_email(api_key, registered_account_email, requested_email, f"Confirmation de votre réservation Sushi Lin ({res_data.get('id', '')})", html_res_content)
+                resend_res = dispatch_resend_email(api_key, registered_account_email, requested_email, f"Confirmation de votre réservation Sushi Lin ({res_id_clean})", html_res_content)
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json')
                 self.end_headers()
-                self.wfile.write(json.dumps({'success': True, 'resend': resend_res}).encode('utf-8'))
+                self.wfile.write(json.dumps({'success': True, 'db': db_saved, 'resend': resend_res}).encode('utf-8'))
 
             except Exception as e:
-                print(f"Erreur réservation email: {e}")
+                print(f"Erreur réservation email / db: {e}", flush=True)
                 traceback.print_exc()
                 self.send_response(500)
                 self.send_header('Content-Type', 'application/json')
@@ -488,6 +607,7 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
         super().do_POST()
 
 if __name__ == '__main__':
+    db.init_db()
     server = HTTPServer(('0.0.0.0', PORT), SushiLinHandler)
-    print(f"Serveur Sushi Lin prêt sur http://localhost:{PORT}")
+    print(f"Serveur Sushi Lin prêt sur http://0.0.0.0:{PORT}", flush=True)
     server.serve_forever()

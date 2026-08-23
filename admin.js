@@ -574,14 +574,30 @@ function switchOrdersSubtab(type) {
   }
 }
 
-// ---- RENDU DES COMMANDES EN DIRECT ----
-function renderAdminOrders() {
+// ---- RENDU DES COMMANDES EN DIRECT (POSTGRESQL & LOCALSTORAGE) ----
+async function syncAndGetOrders() {
+  try {
+    const res = await fetch('/api/orders');
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data.orders) && data.orders.length > 0) {
+        localStorage.setItem('sushilin_orders', JSON.stringify(data.orders));
+        return data.orders;
+      }
+    }
+  } catch (err) {
+    // Mode hors-ligne ou fallback localStorage
+  }
+  return JSON.parse(localStorage.getItem('sushilin_orders') || '[]');
+}
+
+async function renderAdminOrders() {
   const container = document.getElementById('admin-orders-list');
   const badgeNav = document.getElementById('total-orders-count');
   const badgeSubtab = document.getElementById('badge-subtab-orders');
   if (!container) return;
 
-  const orders = JSON.parse(localStorage.getItem('sushilin_orders') || '[]');
+  const orders = await syncAndGetOrders();
   const newCount = orders.filter(o => o.status === 'new').length;
 
   if (badgeNav) badgeNav.textContent = newCount > 0 ? `${newCount} NEW` : orders.length;
@@ -603,60 +619,46 @@ function renderAdminOrders() {
   container.innerHTML = `
     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 20px;">
       ${orders.map(order => `
-        <div style="background: #FFFFFF; border: 1.5px solid ${order.status === 'new' ? 'var(--sakura-vibrant)' : 'var(--sakura-border)'}; border-radius: var(--radius-lg); padding: 22px; box-shadow: var(--shadow-card); position: relative; display: flex; flex-direction: column; justify-content: space-between;">
-          <div>
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px dashed var(--sakura-border);">
-              <div>
-                <span style="font-family: var(--font-heading); font-size: 17px; font-weight: 900; color: var(--indigo-dark);">${order.id}</span>
-                <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">${order.dateFormatted || ''}</div>
-              </div>
-              <select onchange="updateOrderStatus('${order.id}', this.value)" style="font-size: 12px; font-weight: 800; padding: 4px 10px; border-radius: 20px; border: 1.5px solid ${order.status === 'new' ? 'var(--sakura-vibrant)' : 'var(--sakura-border)'}; background: ${order.status === 'new' ? 'var(--sakura-bg-soft)' : '#fff'}; color: var(--indigo-dark); cursor: pointer;">
-                <option value="new" ${order.status === 'new' ? 'selected' : ''}>Nouvelle</option>
-                <option value="preparing" ${order.status === 'preparing' ? 'selected' : ''}>En préparation</option>
-                <option value="ready" ${order.status === 'ready' ? 'selected' : ''}>Prête</option>
-                <option value="completed" ${order.status === 'completed' ? 'selected' : ''}>Terminée</option>
-              </select>
+        <div style="background: #FFFFFF; border: 1.5px solid var(--sakura-border); border-radius: var(--radius-lg); padding: 22px; box-shadow: var(--shadow-card); display: flex; flex-direction: column;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px dashed var(--sakura-border);">
+            <div>
+              <span style="font-family: var(--font-heading); font-size: 18px; font-weight: 900; color: var(--indigo-dark);">#${order.id}</span>
+              <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">${order.dateFormatted || (order.timestamp ? new Date(order.timestamp).toLocaleString('fr-FR') : 'Aujourd\'hui')}</div>
+              ${order.customerEmail ? `<div style="font-size: 11.5px; color: var(--indigo-primary); font-weight: 600; margin-top: 2px;">✉ ${order.customerEmail}</div>` : ''}
             </div>
-
-            <div style="background: var(--sakura-bg-soft); border-radius: var(--radius-md); padding: 10px 14px; font-size: 13px; margin-bottom: 14px;">
-              <div><strong>Heure de retrait :</strong> ${order.pickupTime || 'Dès que possible'}</div>
-              <div><strong>Baguettes :</strong> ${order.baguettesChoice || '1'}</div>
-              <div><strong>Sauces :</strong> ${order.sauceChoice || 'Sauce sucrée'}</div>
-              ${order.comment ? `<div style="margin-top: 4px; color: #D32F2F;"><strong>Note client :</strong> ${order.comment}</div>` : ''}
-            </div>
-
-            <div style="margin-bottom: 16px;">
-              <strong style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-secondary); display: block; margin-bottom: 8px;">Détail des plats (${order.itemCount || order.items.length}) :</strong>
-              <ul style="list-style: none; padding: 0; margin: 0; font-size: 13.5px;">
-                ${order.items.map(it => {
-                  let detailsHtml = '';
-                  if (Array.isArray(it.details) && it.details.length > 0) {
-                    const flavorStr = it.details.map(d => `${d.quantity}× ${d.flavor}`).join(', ');
-                    detailsHtml = `<div style="font-size: 11.5px; color: var(--sakura-vibrant); font-weight: 600; margin-top: 2px;">${flavorStr}</div>`;
-                  }
-                  return `
-                  <li style="padding: 5px 0; border-bottom: 1px solid rgba(0,0,0,0.04);">
-                    <div style="display: flex; justify-content: space-between;">
-                      <span><strong>${it.qty}×</strong> ${it.name}</span>
-                      <span style="font-weight: 700; color: var(--indigo-dark);">${(it.price * it.qty).toFixed(2).replace('.', ',')} €</span>
-                    </div>
-                    ${detailsHtml}
-                  </li>
-                `;}).join('')}
-              </ul>
-            </div>
+            <select onchange="updateOrderStatus('${order.id}', this.value)" style="padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 800; border: none; cursor: pointer; background: ${order.status === 'new' ? '#FFEBEE' : order.status === 'preparing' ? '#FFF8E1' : order.status === 'ready' ? '#E8F5E9' : '#ECEFF1'}; color: ${order.status === 'new' ? '#C62828' : order.status === 'preparing' ? '#F57F17' : order.status === 'ready' ? '#2E7D32' : '#455A64'};">
+              <option value="new" ${order.status === 'new' ? 'selected' : ''}>🔴 Nouvelle</option>
+              <option value="preparing" ${order.status === 'preparing' ? 'selected' : ''}>🟡 En préparation</option>
+              <option value="ready" ${order.status === 'ready' ? 'selected' : ''}>🟢 Prête (Retrait)</option>
+              <option value="completed" ${order.status === 'completed' ? 'selected' : ''}>⚪ Terminée</option>
+              <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>❌ Annulée</option>
+            </select>
           </div>
 
-          <div style="padding-top: 12px; border-top: 1.5px solid var(--sakura-border);">
-            <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--text-secondary); margin-bottom: 4px;">
-              <span>Sous-total :</span>
-              <span>${(order.subtotal || 0).toFixed(2).replace('.', ',')} €</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--sakura-vibrant); font-weight: 700; margin-bottom: 8px;">
-              <span>Remise emporter (-10%) :</span>
-              <span>-${(order.discount || 0).toFixed(2).replace('.', ',')} €</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; font-size: 18px; font-weight: 900; color: var(--indigo-dark); margin-bottom: 14px;">
+          <div style="background: var(--sakura-bg-soft); border-radius: var(--radius-md); padding: 10px 14px; font-size: 13px; margin-bottom: 14px;">
+            <div><strong>Heure de retrait :</strong> ${order.pickupTime || 'Dès que possible'}</div>
+            <div><strong>Baguettes :</strong> ${order.baguettesChoice === '0' || order.baguettesChoice === 'Sans baguette' ? 'Sans baguette' : (order.baguettesChoice && !order.baguettesChoice.includes('paire') ? (order.baguettesChoice + (parseInt(order.baguettesChoice) > 1 ? ' paires' : ' paire')) : (order.baguettesChoice || '1 paire'))}</div>
+            <div><strong>Sauces :</strong> ${order.sauceChoice || 'Sauce sucrée'}</div>
+            ${order.comment ? `<div style="margin-top: 4px; color: #D32F2F;"><strong>Note client :</strong> ${order.comment}</div>` : ''}
+          </div>
+
+          <div style="margin-bottom: 16px;">
+            <strong style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-secondary); display: block; margin-bottom: 8px;">Détail des plats (${order.itemCount || (order.items && order.items.length) || 1}) :</strong>
+            <ul style="list-style: none; padding: 0; margin: 0; font-size: 13.5px;">
+              ${(order.items || []).map(item => `
+                <li style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px dotted var(--sakura-border-soft);">
+                  <span>
+                    <strong>${item.qty || 1}x</strong> ${item.code ? `<span style="display:inline-block; font-size:10px; font-weight:700; color:#E11D48; background:#FFF0F3; border:1px solid #FFCCD5; border-radius:4px; padding:1px 4px; margin-right:4px;">${item.code}</span>` : ''}${item.name}
+                    ${item.details ? `<div style="font-size: 11px; color: #D32F2F; margin-left: 18px;">${item.details.map(d => `${d.quantity}x ${d.flavor}`).join(', ')}</div>` : ''}
+                  </span>
+                  <span style="font-weight: 700;">${((item.price || item.unitPrice || 0) * (item.qty || item.totalQuantity || 1)).toFixed(2).replace('.', ',')} €</span>
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+
+          <div style="margin-top: auto; padding-top: 14px; border-top: 1.5px solid var(--sakura-border);">
+            <div style="display: flex; justify-content: space-between; font-size: 15px; font-weight: 900; color: var(--indigo-dark); margin-bottom: 12px;">
               <span>Total :</span>
               <span>${(order.total || 0).toFixed(2).replace('.', ',')} €</span>
             </div>
@@ -676,13 +678,29 @@ function renderAdminOrders() {
   `;
 }
 
-// ---- RENDU DES RÉSERVATIONS DE TABLES ----
-function renderAdminReservations() {
+// ---- RENDU DES RÉSERVATIONS DE TABLES (POSTGRESQL & LOCALSTORAGE) ----
+async function syncAndGetReservations() {
+  try {
+    const res = await fetch('/api/reservations');
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data.reservations) && data.reservations.length > 0) {
+        localStorage.setItem('sushilin_reservations', JSON.stringify(data.reservations));
+        return data.reservations;
+      }
+    }
+  } catch (err) {
+    // Mode hors-ligne ou fallback localStorage
+  }
+  return JSON.parse(localStorage.getItem('sushilin_reservations') || '[]');
+}
+
+async function renderAdminReservations() {
   const container = document.getElementById('admin-res-list');
   const badgeSubtab = document.getElementById('badge-subtab-res');
   if (!container) return;
 
-  const resList = JSON.parse(localStorage.getItem('sushilin_reservations') || '[]');
+  const resList = await syncAndGetReservations();
   if (badgeSubtab) badgeSubtab.textContent = resList.length;
 
   if (resList.length === 0) {
@@ -703,9 +721,10 @@ function renderAdminReservations() {
             <div>
               <span style="font-family: var(--font-heading); font-size: 16px; font-weight: 900; color: var(--indigo-dark);">${res.name}</span>
               <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">Réf : ${res.id}</div>
+              ${res.email ? `<div style="font-size: 11.5px; color: var(--indigo-primary); font-weight: 600; margin-top: 2px;">✉ ${res.email}</div>` : ''}
             </div>
             <span style="background: rgba(76, 175, 80, 0.12); color: #2E7D32; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 800;">
-              Confirmée
+              ${res.status === 'confirmed' ? 'Confirmée' : res.status || 'Confirmée'}
             </span>
           </div>
 
@@ -730,6 +749,14 @@ function renderAdminReservations() {
 
 // Actions Commandes
 function updateOrderStatus(orderId, newStatus) {
+  // 1. Mise à jour dans PostgreSQL via API
+  fetch('/api/orders', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: orderId, status: newStatus })
+  }).catch(e => console.warn('Erreur update PostgreSQL:', e));
+
+  // 2. Mise à jour dans localStorage
   const orders = JSON.parse(localStorage.getItem('sushilin_orders') || '[]');
   const idx = orders.findIndex(o => o.id === orderId);
   if (idx !== -1) {
@@ -742,6 +769,12 @@ function updateOrderStatus(orderId, newStatus) {
 
 function deleteOrder(orderId) {
   if (!confirm(`Supprimer la commande ${orderId} ?`)) return;
+  fetch('/api/orders', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: orderId, status: 'deleted' })
+  }).catch(() => {});
+
   let orders = JSON.parse(localStorage.getItem('sushilin_orders') || '[]');
   orders = orders.filter(o => o.id !== orderId);
   localStorage.setItem('sushilin_orders', JSON.stringify(orders));
