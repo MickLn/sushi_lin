@@ -260,6 +260,7 @@ function renderProductsTable(items) {
 
     const tr = document.createElement('tr');
     tr.id = `admin-row-${item.id}`;
+    tr.className = 'admin-product-row';
 
     const thumbHtml = item.img
       ? `<img src="${item.img}" class="table-img-thumb" alt="${item.name}" onerror="this.outerHTML='<div class=\\'table-img-placeholder\\'></div>'">`
@@ -268,35 +269,48 @@ function renderProductsTable(items) {
     const itemCode = item.code || (item.id ? item.id.replace(/^[a-z]+-/, '').toUpperCase() : '—');
 
     tr.innerHTML = `
-      <td>${thumbHtml}</td>
-      <td style="text-align: center;">
+      <td class="col-thumb">${thumbHtml}</td>
+      <td class="col-code" style="text-align: center;">
         <span class="table-code-badge">${itemCode}</span>
       </td>
-      <td>
-        <div class="table-product-name">${item.name}</div>
-        ${item.desc ? `<div class="table-product-desc" title="${item.desc}">${item.desc}</div>` : ''}
-        ${(item.allergens && item.allergens.length > 0) ? `<div style="font-size: 11px; color: var(--sakura-vibrant); margin-top: 3px; font-weight: 600;">Allergènes : ${item.allergens.join(', ')}</div>` : ''}
+      <td class="col-info">
+        <div class="card-mobile-top">
+          <div class="card-mobile-thumb">${thumbHtml}</div>
+          <div class="card-mobile-details">
+            <div class="table-product-title-row">
+              <span class="mobile-code-badge">${itemCode}</span>
+              <span class="table-product-name">${item.name}</span>
+            </div>
+            <div class="table-mobile-meta">
+              <span class="mobile-cat">${catLabel}</span>
+              ${item.pieces ? `<span class="mobile-dot">•</span><span class="mobile-pieces">${item.pieces}</span>` : ''}
+            </div>
+            ${item.desc ? `<div class="table-product-desc" title="${item.desc}">${item.desc}</div>` : ''}
+            ${(item.allergens && item.allergens.length > 0) ? `<div class="table-allergens-line">Allergènes : ${item.allergens.join(', ')}</div>` : ''}
+          </div>
+        </div>
       </td>
-      <td>
+      <td class="col-cat" style="text-align: center;">
         <span class="table-cat-badge">${catLabel}</span>
       </td>
-      <td>
-        <span style="font-weight: 600; color: var(--text-sub); font-size: 12.5px;">${item.pieces || '—'}</span>
+      <td class="col-pieces" style="text-align: center;">
+        <span class="table-pieces-text">${item.pieces || '—'}</span>
       </td>
-      <td>
+      <td class="col-price" style="text-align: center;">
         <div class="price-input-wrap">
           <input type="number" step="0.10" min="0" value="${item.price.toFixed(2)}" onchange="handleInlinePriceChange('${item.id}', this.value)" aria-label="Prix de ${item.name}">
           <span class="price-unit">€</span>
         </div>
       </td>
-      <td>
+      <td class="col-stock" style="text-align: center;">
         <button class="stock-toggle-btn ${item.available ? 'in-stock' : 'out-of-stock'}" onclick="toggleProductStock('${item.id}')">
           <span>${item.available ? 'En stock' : 'En rupture'}</span>
         </button>
       </td>
-      <td style="text-align: right;">
+      <td class="col-actions" style="text-align: center;">
         <button class="btn-edit-item" onclick="openEditProductModal('${item.id}')" title="Modifier les détails">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          <span class="mobile-edit-label">Modifier</span>
         </button>
       </td>
     `;
@@ -598,9 +612,8 @@ async function renderAdminOrders() {
   if (!container) return;
 
   const orders = await syncAndGetOrders();
-  const newCount = orders.filter(o => o.status === 'new').length;
 
-  if (badgeNav) badgeNav.textContent = newCount > 0 ? `${newCount} NEW` : orders.length;
+  if (badgeNav) badgeNav.textContent = orders.length;
   if (badgeSubtab) badgeSubtab.textContent = orders.length;
 
   if (orders.length === 0) {
@@ -619,55 +632,65 @@ async function renderAdminOrders() {
   container.innerHTML = `
     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 20px;">
       ${orders.map(order => `
-        <div style="background: #FFFFFF; border: 1.5px solid var(--sakura-border); border-radius: var(--radius-lg); padding: 22px; box-shadow: var(--shadow-card); display: flex; flex-direction: column;">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px dashed var(--sakura-border);">
+        <div class="admin-order-card">
+          <div class="admin-order-card-header">
             <div>
-              <span style="font-family: var(--font-heading); font-size: 18px; font-weight: 900; color: var(--indigo-dark);">#${order.id}</span>
-              <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">${order.dateFormatted || (order.timestamp ? new Date(order.timestamp).toLocaleString('fr-FR') : 'Aujourd\'hui')}</div>
-              ${order.customerEmail ? `<div style="font-size: 11.5px; color: var(--indigo-primary); font-weight: 600; margin-top: 2px;">✉ ${order.customerEmail}</div>` : ''}
+              <span class="admin-order-id">#${order.id}</span>
+              <div class="admin-order-date">${order.dateFormatted || (order.timestamp ? new Date(order.timestamp).toLocaleString('fr-FR') : 'Aujourd\'hui')}</div>
+              ${order.customerEmail ? `<div class="admin-order-email">${order.customerEmail}</div>` : ''}
             </div>
-            <select onchange="updateOrderStatus('${order.id}', this.value)" style="padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 800; border: none; cursor: pointer; background: ${order.status === 'new' ? '#FFEBEE' : order.status === 'preparing' ? '#FFF8E1' : order.status === 'ready' ? '#E8F5E9' : '#ECEFF1'}; color: ${order.status === 'new' ? '#C62828' : order.status === 'preparing' ? '#F57F17' : order.status === 'ready' ? '#2E7D32' : '#455A64'};">
-              <option value="new" ${order.status === 'new' ? 'selected' : ''}>🔴 Nouvelle</option>
-              <option value="preparing" ${order.status === 'preparing' ? 'selected' : ''}>🟡 En préparation</option>
-              <option value="ready" ${order.status === 'ready' ? 'selected' : ''}>🟢 Prête (Retrait)</option>
-              <option value="completed" ${order.status === 'completed' ? 'selected' : ''}>⚪ Terminée</option>
-              <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>❌ Annulée</option>
-            </select>
+            <span class="admin-order-type-badge">A emporter</span>
           </div>
 
-          <div style="background: var(--sakura-bg-soft); border-radius: var(--radius-md); padding: 10px 14px; font-size: 13px; margin-bottom: 14px;">
-            <div><strong>Heure de retrait :</strong> ${order.pickupTime || 'Dès que possible'}</div>
-            <div><strong>Baguettes :</strong> ${order.baguettesChoice === '0' || order.baguettesChoice === 'Sans baguette' ? 'Sans baguette' : (order.baguettesChoice && !order.baguettesChoice.includes('paire') ? (order.baguettesChoice + (parseInt(order.baguettesChoice) > 1 ? ' paires' : ' paire')) : (order.baguettesChoice || '1 paire'))}</div>
-            <div><strong>Sauces :</strong> ${order.sauceChoice || 'Sauce sucrée'}</div>
-            ${order.comment ? `<div style="margin-top: 4px; color: #D32F2F;"><strong>Note client :</strong> ${order.comment}</div>` : ''}
+          <div class="admin-order-info-box">
+            <div class="admin-info-row">
+              <span class="admin-info-label">Heure de retrait :</span>
+              <span class="admin-info-val admin-info-highlight">${order.pickupTime || 'Des que possible'}</span>
+            </div>
+            <div class="admin-info-row">
+              <span class="admin-info-label">Baguettes :</span>
+              <span class="admin-info-val">${order.baguettesChoice === '0' || order.baguettesChoice === 'Sans baguette' ? 'Sans baguette' : (order.baguettesChoice && !order.baguettesChoice.includes('paire') ? (order.baguettesChoice + (parseInt(order.baguettesChoice) > 1 ? ' paires' : ' paire')) : (order.baguettesChoice || '1 paire'))}</span>
+            </div>
+            <div class="admin-info-row">
+              <span class="admin-info-label">Sauces :</span>
+              <span class="admin-info-val">${order.sauceChoice || 'Sauce sucree'}</span>
+            </div>
+            ${order.comment ? `
+            <div class="admin-info-row admin-note-row">
+              <span class="admin-info-label">Note client :</span>
+              <span class="admin-info-val admin-note-val">${order.comment}</span>
+            </div>
+            ` : ''}
           </div>
 
-          <div style="margin-bottom: 16px;">
-            <strong style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-secondary); display: block; margin-bottom: 8px;">Détail des plats (${order.itemCount || (order.items && order.items.length) || 1}) :</strong>
-            <ul style="list-style: none; padding: 0; margin: 0; font-size: 13.5px;">
+          <div class="admin-order-items-wrap">
+            <div class="admin-items-title">Detail des plats (${order.itemCount || (order.items && order.items.length) || 1}) :</div>
+            <div class="admin-items-list">
               ${(order.items || []).map(item => `
-                <li style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px dotted var(--sakura-border-soft);">
-                  <span>
-                    <strong>${item.qty || 1}x</strong> ${item.code ? `<span style="display:inline-block; font-size:10px; font-weight:700; color:#E11D48; background:#FFF0F3; border:1px solid #FFCCD5; border-radius:4px; padding:1px 4px; margin-right:4px;">${item.code}</span>` : ''}${item.name}
-                    ${item.details ? `<div style="font-size: 11px; color: #D32F2F; margin-left: 18px;">${item.details.map(d => `${d.quantity}x ${d.flavor}`).join(', ')}</div>` : ''}
-                  </span>
-                  <span style="font-weight: 700;">${((item.price || item.unitPrice || 0) * (item.qty || item.totalQuantity || 1)).toFixed(2).replace('.', ',')} €</span>
-                </li>
+                <div class="admin-item-row">
+                  <div class="admin-item-left">
+                    <span class="admin-item-qty">${item.qty || 1}x</span>
+                    ${item.code ? `<span class="admin-item-code-tag">${item.code}</span>` : ''}
+                    <span class="admin-item-name">${item.name}</span>
+                    ${item.details ? `<div class="admin-item-details-list">${item.details.map(d => `${d.quantity}x ${d.flavor}`).join(', ')}</div>` : ''}
+                  </div>
+                  <div class="admin-item-price">${((item.price || item.unitPrice || 0) * (item.qty || item.totalQuantity || 1)).toFixed(2).replace('.', ',')} €</div>
+                </div>
               `).join('')}
-            </ul>
+            </div>
           </div>
 
-          <div style="margin-top: auto; padding-top: 14px; border-top: 1.5px solid var(--sakura-border);">
-            <div style="display: flex; justify-content: space-between; font-size: 15px; font-weight: 900; color: var(--indigo-dark); margin-bottom: 12px;">
+          <div class="admin-order-card-footer">
+            <div class="admin-order-total-row">
               <span>Total :</span>
               <span>${(order.total || 0).toFixed(2).replace('.', ',')} €</span>
             </div>
 
-            <div style="display: flex; gap: 8px;">
-              <button onclick="window.print()" style="flex: 1; padding: 8px; font-size: 12px; font-weight: 800; background: var(--sakura-bg-soft); border: 1px solid var(--sakura-border); border-radius: var(--radius-md); color: var(--indigo-dark); cursor: pointer;">
+            <div class="admin-order-actions">
+              <button onclick="window.print()" class="btn-order-print">
                 Imprimer ticket
               </button>
-              <button onclick="deleteOrder('${order.id}')" style="padding: 8px 12px; font-size: 12px; font-weight: 700; background: #FFF0F0; border: 1px solid #FFCDD2; border-radius: var(--radius-md); color: #D32F2F; cursor: pointer;">
+              <button onclick="deleteOrder('${order.id}')" class="btn-order-delete">
                 Supprimer
               </button>
             </div>
@@ -706,8 +729,8 @@ async function renderAdminReservations() {
   if (resList.length === 0) {
     container.innerHTML = `
       <div style="background: #FFFFFF; border: 1.5px dashed var(--sakura-border); border-radius: var(--radius-lg); padding: 48px 24px; text-align: center; color: var(--text-secondary);">
-        <p style="font-size: 16px; font-weight: 700; color: var(--indigo-dark); margin-bottom: 6px;">Aucune réservation enregistrée</p>
-        <p style="font-size: 13.5px;">Les demandes faites depuis la page de réservation s'afficheront ici en direct.</p>
+        <p style="font-size: 16px; font-weight: 700; color: var(--indigo-dark); margin-bottom: 6px;">Aucune reservation enregistree</p>
+        <p style="font-size: 13.5px;">Les demandes faites depuis la page de reservation s'afficheront ici en direct.</p>
       </div>
     `;
     return;
@@ -716,28 +739,45 @@ async function renderAdminReservations() {
   container.innerHTML = `
     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px;">
       ${resList.map(res => `
-        <div style="background: #FFFFFF; border: 1.5px solid var(--sakura-border); border-radius: var(--radius-lg); padding: 22px; box-shadow: var(--shadow-card);">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px dashed var(--sakura-border);">
+        <div class="admin-order-card">
+          <div class="admin-order-card-header">
             <div>
-              <span style="font-family: var(--font-heading); font-size: 16px; font-weight: 900; color: var(--indigo-dark);">${res.name}</span>
-              <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">Réf : ${res.id}</div>
-              ${res.email ? `<div style="font-size: 11.5px; color: var(--indigo-primary); font-weight: 600; margin-top: 2px;">✉ ${res.email}</div>` : ''}
+              <span class="admin-order-id">${res.name}</span>
+              <div class="admin-order-date">Ref : ${res.id}</div>
+              ${res.email ? `<div class="admin-order-email">${res.email}</div>` : ''}
             </div>
             <span style="background: rgba(76, 175, 80, 0.12); color: #2E7D32; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 800;">
-              ${res.status === 'confirmed' ? 'Confirmée' : res.status || 'Confirmée'}
+              ${res.status === 'confirmed' ? 'Confirmee' : res.status || 'Confirmee'}
             </span>
           </div>
 
-          <div style="font-size: 13.5px; line-height: 1.6; margin-bottom: 16px;">
-            <div><strong>Date :</strong> ${res.date}</div>
-            <div><strong>Créneau :</strong> ${res.service}</div>
-            <div><strong>Couverts :</strong> ${res.guests} personne(s)</div>
-            <div><strong>Téléphone :</strong> <a href="tel:${res.phone}" style="color: var(--indigo-primary); font-weight: 700;">${res.phone}</a></div>
-            ${res.notes ? `<div style="margin-top: 6px; padding: 8px 10px; background: var(--sakura-bg-soft); border-radius: var(--radius-md);"><strong>Remarques :</strong> ${res.notes}</div>` : ''}
+          <div class="admin-order-info-box" style="margin-bottom: 16px;">
+            <div class="admin-info-row">
+              <span class="admin-info-label">Date :</span>
+              <span class="admin-info-val">${res.date}</span>
+            </div>
+            <div class="admin-info-row">
+              <span class="admin-info-label">Creneau :</span>
+              <span class="admin-info-val">${res.service}</span>
+            </div>
+            <div class="admin-info-row">
+              <span class="admin-info-label">Couverts :</span>
+              <span class="admin-info-val">${res.guests} personne(s)</span>
+            </div>
+            <div class="admin-info-row">
+              <span class="admin-info-label">Telephone :</span>
+              <span class="admin-info-val"><a href="tel:${res.phone}" style="color: var(--indigo-primary); font-weight: 700;">${res.phone}</a></span>
+            </div>
+            ${res.notes ? `
+            <div class="admin-info-row admin-note-row" style="margin-top: 6px;">
+              <span class="admin-info-label">Remarques :</span>
+              <span class="admin-info-val">${res.notes}</span>
+            </div>
+            ` : ''}
           </div>
 
-          <div style="display: flex; justify-content: flex-end;">
-            <button onclick="deleteReservation('${res.id}')" style="padding: 6px 12px; font-size: 12px; font-weight: 700; background: #FFF0F0; border: 1px solid #FFCDD2; border-radius: var(--radius-md); color: #D32F2F; cursor: pointer;">
+          <div style="display: flex; justify-content: flex-end; margin-top: auto; padding-top: 12px; border-top: 1px dashed var(--sakura-border);">
+            <button onclick="deleteReservation('${res.id}')" class="btn-order-delete">
               Supprimer
             </button>
           </div>
