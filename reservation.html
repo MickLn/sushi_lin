@@ -23,10 +23,12 @@
       position: relative;
     }
     .res-page-header {
-      background: #FFFFFF;
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       border-bottom: 1.5px solid var(--sakura-border);
-      padding: 16px 24px;
-      box-shadow: var(--shadow-sm);
+      padding: 14px 20px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
       position: sticky;
       top: 0;
       z-index: 100;
@@ -34,9 +36,10 @@
     .res-page-header-inner {
       max-width: var(--max-width);
       margin: 0 auto;
-      display: grid;
-      grid-template-columns: 1fr auto 1fr;
+      display: flex;
       align-items: center;
+      justify-content: space-between;
+      position: relative;
     }
     .res-back-btn {
       display: flex;
@@ -49,8 +52,9 @@
       color: var(--indigo-dark);
       border: 1.5px solid var(--sakura-border-strong);
       transition: all 0.2s ease;
-      justify-self: start;
       text-decoration: none;
+      flex-shrink: 0;
+      z-index: 2;
     }
     .res-back-btn:hover {
       background: var(--sakura-primary);
@@ -59,6 +63,121 @@
       transform: translateY(-1px);
       box-shadow: var(--shadow-sm);
     }
+    .res-brand-logo {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--font-logo);
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--indigo-dark);
+      text-decoration: none;
+      transition: color 0.2s ease;
+      line-height: 1;
+      white-space: nowrap;
+      text-align: center;
+      z-index: 1;
+    }
+    .res-brand-logo:hover {
+      color: var(--sakura-vibrant);
+    }
+    .res-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+      z-index: 2;
+    }
+    .res-account-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      height: 44px;
+      padding: 0 16px;
+      border-radius: var(--radius-md);
+      background: #FFFFFF;
+      color: var(--indigo-dark);
+      border: 1.5px solid var(--sakura-border-strong);
+      font-family: var(--font-heading);
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+      text-decoration: none;
+      box-sizing: border-box;
+    }
+    .res-account-btn:hover {
+      background: var(--sakura-bg-soft);
+      border-color: var(--sakura-vibrant);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(240, 98, 146, 0.2);
+    }
+    .res-account-btn svg {
+      stroke: var(--indigo-dark);
+      transition: stroke 0.2s ease;
+    }
+    .res-account-btn:hover svg {
+      stroke: var(--sakura-vibrant);
+    }
+    .res-account-btn.logged-in {
+      background: #FFFFFF;
+      border-color: var(--sakura-vibrant);
+      color: var(--indigo-dark);
+    }
+    .res-phone-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-md);
+      background: var(--indigo-primary);
+      color: #FFFFFF;
+      box-shadow: 0 4px 14px rgba(39, 47, 97, 0.25);
+      transition: all 0.2s ease;
+      text-decoration: none;
+      border: none;
+      box-sizing: border-box;
+    }
+    .res-phone-btn:hover {
+      background: var(--indigo-dark);
+      transform: translateY(-1px) scale(1.03);
+      box-shadow: 0 6px 18px rgba(39, 47, 97, 0.35);
+    }
+    .res-phone-btn svg {
+      stroke: #FFFFFF;
+    }
+
+    @media (max-width: 600px) {
+      .res-page-header {
+        padding: 10px 14px;
+      }
+      .res-back-btn,
+      .res-phone-btn {
+        width: 42px;
+        height: 42px;
+      }
+      .res-account-btn {
+        width: 42px;
+        height: 42px;
+        padding: 0;
+        border-radius: var(--radius-md);
+      }
+      .res-account-btn span {
+        display: none;
+      }
+      .res-header-actions {
+        gap: 8px;
+      }
+      .res-brand-logo {
+        font-size: 19px;
+        letter-spacing: 1.5px;
+      }
+    }
+
     .res-page-container {
       max-width: 860px;
       margin: 40px auto 80px;
@@ -94,97 +213,6 @@
       background: #FFFFFF !important;
       border-color: var(--sakura-vibrant);
       box-shadow: 0 0 0 3px rgba(240, 98, 146, 0.18);
-    }
-    .res-header-actions {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      justify-self: end;
-    }
-    .res-account-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 18px;
-      height: 44px;
-      border-radius: 50px;
-      background: #FFFFFF;
-      color: var(--indigo-dark);
-      border: 1.5px solid var(--sakura-border-strong);
-      font-family: var(--font-heading);
-      font-size: 14px;
-      font-weight: 800;
-      cursor: pointer;
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-      text-decoration: none;
-      box-sizing: border-box;
-    }
-    .res-account-btn:hover {
-      background: var(--sakura-bg-soft);
-      border-color: var(--sakura-vibrant);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(240, 98, 146, 0.2);
-    }
-    .res-account-btn svg {
-      stroke: var(--indigo-dark);
-      transition: stroke 0.2s ease;
-    }
-    .res-account-btn:hover svg {
-      stroke: var(--sakura-vibrant);
-    }
-    .res-account-btn.logged-in {
-      background: #FFFFFF;
-      border-color: var(--sakura-vibrant);
-      color: var(--indigo-dark);
-    }
-    @media (max-width: 520px) {
-      .res-account-btn span {
-        display: none;
-      }
-      .res-account-btn {
-        padding: 0;
-        width: 44px;
-        justify-content: center;
-      }
-    }
-    .res-phone-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 44px;
-      height: 44px;
-      border-radius: var(--radius-md);
-      background: var(--indigo-primary);
-      color: #FFFFFF;
-      box-shadow: 0 4px 14px rgba(39, 47, 97, 0.25);
-      transition: all 0.2s ease;
-      text-decoration: none;
-      border: none;
-      box-sizing: border-box;
-    }
-    .res-phone-btn:hover {
-      background: var(--indigo-dark);
-      transform: translateY(-1px) scale(1.03);
-      box-shadow: 0 6px 18px rgba(39, 47, 97, 0.35);
-    }
-    .res-phone-btn svg {
-      stroke: #FFFFFF;
-    }
-    .res-brand-logo {
-      font-family: var(--font-logo);
-      font-size: 24px;
-      font-weight: 700;
-      letter-spacing: 2px;
-      color: var(--indigo-dark);
-      text-decoration: none;
-      transition: color 0.2s ease;
-      line-height: 1;
-      justify-self: center;
-      text-align: center;
-    }
-    .res-brand-logo:hover {
-      color: var(--sakura-vibrant);
     }
     @media (max-width: 768px) {
       .res-page-container { margin: 20px auto 60px; padding: 0 14px; }
