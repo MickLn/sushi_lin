@@ -95,6 +95,59 @@
       border-color: var(--sakura-vibrant);
       box-shadow: 0 0 0 3px rgba(240, 98, 146, 0.18);
     }
+    .res-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      justify-self: end;
+    }
+    .res-account-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 18px;
+      height: 44px;
+      border-radius: 50px;
+      background: #FFFFFF;
+      color: var(--indigo-dark);
+      border: 1.5px solid var(--sakura-border-strong);
+      font-family: var(--font-heading);
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+      text-decoration: none;
+      box-sizing: border-box;
+    }
+    .res-account-btn:hover {
+      background: var(--sakura-bg-soft);
+      border-color: var(--sakura-vibrant);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(240, 98, 146, 0.2);
+    }
+    .res-account-btn svg {
+      stroke: var(--indigo-dark);
+      transition: stroke 0.2s ease;
+    }
+    .res-account-btn:hover svg {
+      stroke: var(--sakura-vibrant);
+    }
+    .res-account-btn.logged-in {
+      background: #FFFFFF;
+      border-color: var(--sakura-vibrant);
+      color: var(--indigo-dark);
+    }
+    @media (max-width: 520px) {
+      .res-account-btn span {
+        display: none;
+      }
+      .res-account-btn {
+        padding: 0;
+        width: 44px;
+        justify-content: center;
+      }
+    }
     .res-phone-btn {
       display: flex;
       align-items: center;
@@ -107,8 +160,8 @@
       box-shadow: 0 4px 14px rgba(39, 47, 97, 0.25);
       transition: all 0.2s ease;
       text-decoration: none;
-      justify-self: end;
       border: none;
+      box-sizing: border-box;
     }
     .res-phone-btn:hover {
       background: var(--indigo-dark);
@@ -286,9 +339,16 @@
         SUSHI LIN
       </a>
 
-      <a href="tel:0130790088" class="res-phone-btn" title="Appeler le restaurant" aria-label="Téléphone">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-      </a>
+      <div class="res-header-actions">
+        <button type="button" class="res-account-btn" id="btn-account" onclick="openAuthModal()" aria-label="Mon Compte">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span id="res-account-label">Compte</span>
+        </button>
+
+        <a href="tel:0130790088" class="res-phone-btn" title="Appeler le restaurant" aria-label="Téléphone">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        </a>
+      </div>
     </div>
   </header>
 
@@ -349,7 +409,7 @@
         <div class="form-grid-2">
           <div class="form-field">
             <label for="res-name">Nom et prénom <span class="res-required-star">*</span></label>
-            <input type="text" id="res-name" class="res-input" placeholder="Ex. Mickaël Lin" required autocomplete="name">
+            <input type="text" id="res-name" class="res-input" placeholder="Ex. Sophie Martin" required autocomplete="name">
           </div>
           <div class="form-field">
             <label for="res-phone">Numéro de téléphone <span class="res-required-star">*</span></label>
@@ -510,7 +570,274 @@
     </div>
   </div>
 
+  <!-- AUTH MODAL (CONNEXION, INSCRIPTION & ESPACE CLIENT) -->
+  <div class="modal-backdrop" id="auth-overlay" onclick="closeAuthModal()" aria-hidden="true"></div>
+  <div class="auth-modal" id="auth-modal" role="dialog" aria-modal="true" aria-label="Espace Client et Connexion">
+    <button class="modal-close-icon" id="auth-close" onclick="closeAuthModal()" aria-label="Fermer">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="auth-modal-content" id="auth-modal-content">
+      
+      <!-- ÉCRAN NON CONNECTÉ -->
+      <div id="auth-guest-view">
+        <div class="auth-header">
+          <div class="auth-icon-badge">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+          <h2>Espace client Sushi Lin</h2>
+          <p>Connectez-vous pour pré-remplir vos coordonnées automatiquement.</p>
+        </div>
+
+        <div class="auth-tabs">
+          <button class="auth-tab-btn active" id="tab-login" onclick="switchAuthTab('login')">Connexion</button>
+          <button class="auth-tab-btn" id="tab-register" onclick="switchAuthTab('register')">Créer un compte</button>
+        </div>
+
+        <!-- BOUTON COMPTE DE TEST EN 1 CLIC -->
+        <div style="margin-bottom: 16px;">
+          <button type="button" onclick="loginWithTestAccount()" style="width: 100%; padding: 10px 14px; background: var(--sakura-bg-soft); border: 1.5px dashed var(--sakura-border-strong); border-radius: var(--radius-md); font-family: var(--font-heading); font-size: 13px; font-weight: 800; color: var(--indigo-dark); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease;">
+            <span>Se connecter avec le compte test (Mickaël)</span>
+          </button>
+        </div>
+
+        <!-- LOGIN FORM -->
+        <form class="auth-form" id="form-login" onsubmit="handleAuthSubmit(event, 'login')">
+          <div class="form-group">
+            <label for="login-phone">Numéro de téléphone ou email</label>
+            <input type="text" id="login-phone" class="custom-input" placeholder="06 12 34 56 78 ou client@test.fr" required>
+          </div>
+          <div class="form-group">
+            <label for="login-password">Mot de passe</label>
+            <input type="password" id="login-password" class="custom-input" placeholder="••••••••" required>
+          </div>
+          <button type="submit" class="btn-auth-submit">Se connecter</button>
+        </form>
+
+        <!-- REGISTER FORM -->
+        <form class="auth-form" id="form-register" style="display: none;" onsubmit="handleAuthSubmit(event, 'register')">
+          <div class="form-group">
+            <label for="reg-name">Nom complet</label>
+            <input type="text" id="reg-name" class="custom-input" placeholder="Ex: Sophie Martin" required>
+          </div>
+          <div class="form-group">
+            <label for="reg-phone">Numéro de téléphone</label>
+            <input type="tel" id="reg-phone" class="custom-input" placeholder="06 12 34 56 78" required>
+          </div>
+          <div class="form-group">
+            <label for="reg-email">Adresse email</label>
+            <input type="email" id="reg-email" class="custom-input" placeholder="exemple@gmail.com" required>
+          </div>
+          <div class="form-group">
+            <label for="reg-password">Créer un mot de passe</label>
+            <input type="password" id="reg-password" class="custom-input" placeholder="Minimum 6 caractères" required minlength="6">
+          </div>
+          <button type="submit" class="btn-auth-submit">Créer mon compte</button>
+        </form>
+
+        <div class="auth-features-box">
+          <div class="auth-feature-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Pré-remplissage immédiat de vos coordonnées</span>
+          </div>
+          <div class="auth-feature-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Sauvegarde de vos réservations et préférences</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ÉCRAN CONNECTÉ : PROFIL CLIENT -->
+      <div id="auth-logged-view" style="display: none;">
+        <div class="auth-header" style="margin-bottom: 20px;">
+          <div class="auth-icon-badge" style="background: linear-gradient(135deg, var(--sakura-primary) 0%, var(--sakura-vibrant) 100%); color: #fff;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+          <h2 id="logged-user-name">Mon compte</h2>
+          <p id="logged-user-contact">client@test.fr</p>
+        </div>
+
+        <button type="button" onclick="handleUserLogout()" style="width: 100%; padding: 12px; background: #FFF0F0; border: 1.5px solid #FFCDD2; border-radius: var(--radius-md); color: #D32F2F; font-family: var(--font-heading); font-size: 13.5px; font-weight: 800; cursor: pointer; transition: all 0.2s ease;">
+          Se déconnecter
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div class="toast-notification" id="toast" role="alert" aria-live="polite"></div>
+
   <script>
+    // ---- Authentification & Espace Client ----
+    const TEST_CLIENT_ACCOUNT = {
+      name: "Mickaël Lin",
+      phone: "06 12 34 56 78",
+      email: "client@test.fr",
+      password: "test"
+    };
+
+    function getLoggedUser() {
+      try {
+        const saved = localStorage.getItem('sushilin_logged_user');
+        return saved ? JSON.parse(saved) : null;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function showToastNotification(msg) {
+      const toast = document.getElementById('toast');
+      if (!toast) return;
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3200);
+    }
+
+    function openAuthModal() {
+      updateUserAccountUI();
+      const authModal = document.getElementById('auth-modal');
+      const authOverlay = document.getElementById('auth-overlay');
+      authModal?.classList.add('open');
+      authOverlay?.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeAuthModal() {
+      const authModal = document.getElementById('auth-modal');
+      const authOverlay = document.getElementById('auth-overlay');
+      authModal?.classList.remove('open');
+      authOverlay?.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    function switchAuthTab(tab) {
+      const tabLogin = document.getElementById('tab-login');
+      const tabReg = document.getElementById('tab-register');
+      const formLogin = document.getElementById('form-login');
+      const formReg = document.getElementById('form-register');
+
+      if (tab === 'login') {
+        tabLogin?.classList.add('active');
+        tabReg?.classList.remove('active');
+        if (formLogin) formLogin.style.display = 'flex';
+        if (formReg) formReg.style.display = 'none';
+      } else {
+        tabLogin?.classList.remove('active');
+        tabReg?.classList.add('active');
+        if (formLogin) formLogin.style.display = 'none';
+        if (formReg) formReg.style.display = 'flex';
+      }
+    }
+
+    function loginWithTestAccount() {
+      localStorage.setItem('sushilin_logged_user', JSON.stringify(TEST_CLIENT_ACCOUNT));
+      updateUserAccountUI();
+      prefillReservationFields(true);
+      closeAuthModal();
+      showToastNotification('Connecté avec le compte test Mickaël Lin !');
+    }
+
+    function handleAuthSubmit(event, mode) {
+      event.preventDefault();
+      if (mode === 'login') {
+        const phoneOrEmail = document.getElementById('login-phone')?.value.trim();
+        const password = document.getElementById('login-password')?.value;
+
+        const registeredUsers = JSON.parse(localStorage.getItem('sushilin_registered_users') || '[]');
+        let foundUser = registeredUsers.find(u => (u.phone === phoneOrEmail || u.email === phoneOrEmail) && u.password === password);
+
+        if (!foundUser && (phoneOrEmail === 'client@test.fr' || phoneOrEmail === '0612345678' || phoneOrEmail === '06 12 34 56 78') && (password === '123456' || password === 'test')) {
+          foundUser = TEST_CLIENT_ACCOUNT;
+        }
+
+        if (foundUser) {
+          localStorage.setItem('sushilin_logged_user', JSON.stringify(foundUser));
+          updateUserAccountUI();
+          prefillReservationFields(true);
+          closeAuthModal();
+          showToastNotification(`Bienvenue ${foundUser.name} ! Vos coordonnées ont été pré-remplies.`);
+        } else {
+          alert('Identifiants incorrects. Astuce : utilisez le bouton "Compte test" pour vous connecter en 1 clic.');
+        }
+      } else {
+        const name = document.getElementById('reg-name')?.value.trim();
+        const phone = document.getElementById('reg-phone')?.value.trim();
+        const email = document.getElementById('reg-email')?.value.trim();
+        const password = document.getElementById('reg-password')?.value;
+
+        const newUser = { name, phone, email, password };
+        const registeredUsers = JSON.parse(localStorage.getItem('sushilin_registered_users') || '[]');
+        registeredUsers.push(newUser);
+        localStorage.setItem('sushilin_registered_users', JSON.stringify(registeredUsers));
+        localStorage.setItem('sushilin_logged_user', JSON.stringify(newUser));
+
+        updateUserAccountUI();
+        prefillReservationFields(true);
+        closeAuthModal();
+        showToastNotification(`Compte créé avec succès ! Bienvenue ${name}`);
+      }
+    }
+
+    function handleUserLogout() {
+      localStorage.removeItem('sushilin_logged_user');
+      updateUserAccountUI();
+      closeAuthModal();
+      showToastNotification('Vous êtes déconnecté.');
+    }
+
+    function updateUserAccountUI() {
+      const user = getLoggedUser();
+      const guestView = document.getElementById('auth-guest-view');
+      const loggedView = document.getElementById('auth-logged-view');
+      const btnAccountEl = document.getElementById('btn-account');
+      const accountLabel = document.getElementById('res-account-label');
+      const loggedName = document.getElementById('logged-user-name');
+      const loggedContact = document.getElementById('logged-user-contact');
+
+      if (user) {
+        if (guestView) guestView.style.display = 'none';
+        if (loggedView) loggedView.style.display = 'block';
+        if (loggedName) loggedName.textContent = user.name || 'Mon compte';
+        if (loggedContact) loggedContact.textContent = user.email || user.phone || '';
+        if (btnAccountEl) btnAccountEl.classList.add('logged-in');
+        if (accountLabel) accountLabel.textContent = user.name ? user.name.split(' ')[0] : 'Compte';
+      } else {
+        if (guestView) guestView.style.display = 'block';
+        if (loggedView) loggedView.style.display = 'none';
+        if (btnAccountEl) btnAccountEl.classList.remove('logged-in');
+        if (accountLabel) accountLabel.textContent = 'Compte';
+      }
+    }
+
+    function prefillReservationFields(force = false) {
+      const user = getLoggedUser();
+      if (!user) return;
+
+      const nameInput = document.getElementById('res-name');
+      const phoneInput = document.getElementById('res-phone');
+      const emailInput = document.getElementById('res-email');
+
+      if (nameInput && (force || !nameInput.value)) {
+        nameInput.value = user.name || '';
+      }
+      if (phoneInput && (force || !phoneInput.value)) {
+        let digits = (user.phone || '').replace(/\D/g, '');
+        if (digits.length > 10) digits = digits.slice(0, 10);
+        const parts = [];
+        for (let i = 0; i < digits.length; i += 2) {
+          parts.push(digits.slice(i, i + 2));
+        }
+        phoneInput.value = parts.join(' ');
+      }
+      if (emailInput && (force || !emailInput.value)) {
+        emailInput.value = user.email || '';
+      }
+    }
+
+    // Initialisation au chargement
+    updateUserAccountUI();
+    prefillReservationFields();
+
     // Formulaire de réservation
     const form = document.getElementById('res-page-form');
     const successBox = document.getElementById('res-success-box');
