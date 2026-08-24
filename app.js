@@ -1240,12 +1240,18 @@ function updateUserAccountUI() {
   const loggedName = document.getElementById('logged-user-name');
   const loggedContact = document.getElementById('logged-user-contact');
 
+  const cartEmailGroup = document.getElementById('cart-email-group');
+  const cartPhoneGroup = document.getElementById('cart-phone-group');
   const orderEmailInput = document.getElementById('order-customer-email');
   const orderPhoneInput = document.getElementById('order-customer-phone');
 
   if (user) {
-    if (orderEmailInput && !orderEmailInput.value) orderEmailInput.value = user.email || '';
-    if (orderPhoneInput && !orderPhoneInput.value) orderPhoneInput.value = user.phone || '';
+    if (orderEmailInput) orderEmailInput.value = user.email || '';
+    if (orderPhoneInput) orderPhoneInput.value = user.phone || '';
+
+    // Masquer les champs téléphone et e-mail dans le panier car ils sont déjà enregistrés dans le compte
+    if (cartEmailGroup) cartEmailGroup.style.display = 'none';
+    if (cartPhoneGroup) cartPhoneGroup.style.display = 'none';
 
     if (guestView) guestView.style.display = 'none';
     if (loggedView) loggedView.style.display = 'block';
@@ -1263,6 +1269,10 @@ function updateUserAccountUI() {
 
     renderUserOrdersHistory();
   } else {
+    // Réafficher les champs téléphone et e-mail pour les commandes invités
+    if (cartEmailGroup) cartEmailGroup.style.display = 'block';
+    if (cartPhoneGroup) cartPhoneGroup.style.display = 'block';
+
     if (guestView) guestView.style.display = 'block';
     if (loggedView) loggedView.style.display = 'none';
 
