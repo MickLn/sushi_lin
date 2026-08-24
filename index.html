@@ -350,9 +350,14 @@
           </select>
         </div>
 
+        <div class="form-group full-width" id="cart-phone-group">
+          <label for="order-customer-phone">Numéro de téléphone <span style="color: var(--sakura-vibrant); font-weight: 700;">*</span></label>
+          <input type="tel" id="order-customer-phone" class="custom-input" placeholder="06 12 34 56 78" inputmode="numeric" maxlength="14" required autocomplete="tel">
+        </div>
+
         <div class="form-group full-width" id="cart-email-group">
-          <label for="order-customer-email">Votre e-mail (pour confirmation)</label>
-          <input type="email" id="order-customer-email" class="custom-input" placeholder="nom@exemple.com">
+          <label for="order-customer-email">Votre e-mail (pour confirmation) <span style="color: var(--sakura-vibrant); font-weight: 700;">*</span></label>
+          <input type="email" id="order-customer-email" class="custom-input" placeholder="nom@exemple.com" required autocomplete="email">
         </div>
 
         <div class="form-group full-width">

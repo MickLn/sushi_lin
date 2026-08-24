@@ -1240,13 +1240,13 @@ function updateUserAccountUI() {
   const loggedName = document.getElementById('logged-user-name');
   const loggedContact = document.getElementById('logged-user-contact');
 
-  // Gérer l'affichage de l'e-mail dans le panier
-  const cartEmailGroup = document.getElementById('cart-email-group');
-  if (cartEmailGroup) {
-    cartEmailGroup.style.display = user ? 'none' : 'block';
-  }
+  const orderEmailInput = document.getElementById('order-customer-email');
+  const orderPhoneInput = document.getElementById('order-customer-phone');
 
   if (user) {
+    if (orderEmailInput && !orderEmailInput.value) orderEmailInput.value = user.email || '';
+    if (orderPhoneInput && !orderPhoneInput.value) orderPhoneInput.value = user.phone || '';
+
     if (guestView) guestView.style.display = 'none';
     if (loggedView) loggedView.style.display = 'block';
     if (loggedName) loggedName.textContent = user.name;
@@ -1298,45 +1298,45 @@ function renderUserOrdersHistory() {
           <strong style="font-weight: 700; font-family: var(--font-heading); font-size: 14px; color: var(--indigo-dark);">${ord.id}</strong>
           <span style="font-weight: 400; font-size: 12.5px; color: var(--text-secondary);">${ord.dateFormatted || ''}</span>
         </div>
-        <div style="font-size: 12.5px; color: var(--text-secondary); margin-top: 4px; display: flex; align-items: center; gap: 14px;">
-          <span style="font-weight: 400; color: var(--indigo-dark); font-size: 13px;">${(ord.total || 0).toFixed(2).replace('.', ',')} €</span>
-          <span style="font-weight: 400; color: var(--text-secondary);">${ord.itemCount || ord.items.length} plat${(ord.itemCount || ord.items.length) > 1 ? 's' : ''}</span>
+        <div style="font-size: 12.5px; color: var(--text-secondary); margin-top: 3px;">
+          ${ord.itemCount || (ord.items ? ord.items.reduce((s, i) => s + (i.qty || 1), 0) : 1)} article(s) · <span style="font-weight: 700; color: var(--indigo-dark);">${(ord.total || 0).toFixed(2).replace('.', ',')} €</span>
         </div>
       </div>
-      <button type="button" class="btn-reorder" onclick="reorderPastOrder('${ord.id}')">
-        Recommander
+      <button class="btn-user-reorder" onclick="reorderPreviousItems('${ord.id}')">
+        Commander à nouveau
       </button>
     </div>
   `).join('');
 }
 
-function reorderPastOrder(orderId) {
+function reorderPreviousItems(orderId) {
   const orders = JSON.parse(localStorage.getItem('sushilin_orders') || '[]');
-  const ord = orders.find(o => o.id === orderId);
-  if (!ord) return;
+  const found = orders.find(o => o.id === orderId);
+  if (!found || !found.items) return;
 
-  cart = [...ord.items];
-  saveCartToStorage();
+  found.items.forEach(item => {
+    const existing = cart.find(c => c.id === item.id);
+    if (existing) {
+      existing.qty += (item.qty || item.totalQuantity || 1);
+    } else {
+      cart.push({ ...item });
+    }
+  });
+
   updateCartUI();
-  MENU_DATA?.items.forEach(item => updateCardBadgeUI(item.id));
   closeAuthModal();
   openCartPanel();
-  showToastNotification('Articles réajoutés à votre panier !');
+  showToastNotification(`Articles de la commande ${orderId} ajoutés à votre panier !`);
 }
 
-// Compteur journalier réinitialisé à 1 chaque jour (1, 2, 3...)
+// Numérotation journalière des commandes (1, 2, 3...) réinitialisée chaque jour
 function getNextDailyOrderNumber() {
-  const today = new Date().toISOString().slice(0, 10);
   try {
-    const raw = localStorage.getItem('sushilin_daily_counter');
-    const data = raw ? JSON.parse(raw) : null;
+    const today = new Date().toISOString().split('T')[0];
+    const savedCounter = JSON.parse(localStorage.getItem('sushilin_daily_counter') || '{}');
     let nextNum = 1;
-    if (data && data.date === today && Number.isInteger(data.count)) {
-      nextNum = data.count + 1;
-    } else {
-      const existing = JSON.parse(localStorage.getItem('sushilin_orders') || '[]');
-      const todayOrders = existing.filter(o => o.timestamp && o.timestamp.slice(0, 10) === today);
-      nextNum = todayOrders.length + 1;
+    if (savedCounter.date === today && typeof savedCounter.count === 'number') {
+      nextNum = savedCounter.count + 1;
     }
     localStorage.setItem('sushilin_daily_counter', JSON.stringify({ date: today, count: nextNum }));
     return String(nextNum);
@@ -1355,8 +1355,24 @@ function handleOrderCheckout() {
   const baguettesChoice = baguettesSelect ? (baguettesSelect.options[baguettesSelect.selectedIndex]?.text || baguettesSelect.value) : '1 paire';
   const pickupTime = document.getElementById('pickup-time')?.value || '12h00';
   const comment = document.getElementById('comment-order')?.value.trim() || '';
+  
   const loggedUser = getLoggedUser();
-  const customerEmail = loggedUser?.email || loggedUser?.contact || document.getElementById('order-customer-email')?.value.trim() || '';
+  const phoneInput = document.getElementById('order-customer-phone');
+  const emailInput = document.getElementById('order-customer-email');
+
+  const customerPhone = loggedUser?.phone || phoneInput?.value.trim() || '';
+  const customerEmail = loggedUser?.email || loggedUser?.contact || emailInput?.value.trim() || '';
+
+  if (!customerPhone) {
+    alert('Veuillez renseigner votre numéro de téléphone afin que nous puissions vous contacter pour votre commande.');
+    phoneInput?.focus();
+    return;
+  }
+  if (!customerEmail) {
+    alert('Veuillez renseigner votre adresse e-mail pour recevoir la confirmation de votre commande.');
+    emailInput?.focus();
+    return;
+  }
 
   // 1. Numérotation journalière réinitialisée à 1 chaque jour (1, 2, 3...)
   const orderId = getNextDailyOrderNumber();
@@ -1369,6 +1385,8 @@ function handleOrderCheckout() {
     id: orderId,
     timestamp: now.toISOString(),
     dateFormatted: dateFormatted,
+    customerName: loggedUser?.name || '',
+    customerPhone: customerPhone,
     customerEmail: customerEmail,
     items: cart.map(item => {
       const canonicalItem = MENU_DATA?.items?.find(m => m.id === item.id || (item.name && m.name.toLowerCase() === item.name.toLowerCase()));
@@ -1814,25 +1832,27 @@ document.getElementById('mochi-overlay')?.addEventListener('click', closeMochiMo
 document.getElementById('mochi-modal-submit')?.addEventListener('click', handleMochiAddToCart);
 
 // Formatage automatique du numéro de téléphone par paires (chiffres uniquement)
-const regPhoneInput = document.getElementById('reg-phone');
-if (regPhoneInput) {
-  regPhoneInput.addEventListener('input', () => {
-    let digits = regPhoneInput.value.replace(/\D/g, '');
-    if (digits.length > 10) digits = digits.slice(0, 10);
-    const parts = [];
-    for (let i = 0; i < digits.length; i += 2) {
-      parts.push(digits.slice(i, i + 2));
-    }
-    regPhoneInput.value = parts.join(' ');
-  });
+['reg-phone', 'order-customer-phone'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) {
+    el.addEventListener('input', () => {
+      let digits = el.value.replace(/\D/g, '');
+      if (digits.length > 10) digits = digits.slice(0, 10);
+      const parts = [];
+      for (let i = 0; i < digits.length; i += 2) {
+        parts.push(digits.slice(i, i + 2));
+      }
+      el.value = parts.join(' ');
+    });
 
-  regPhoneInput.addEventListener('keydown', (e) => {
-    const allowedKeys = ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'];
-    if (allowedKeys.includes(e.key) || e.ctrlKey || e.metaKey) {
-      return;
-    }
-    if (!/[0-9]/.test(e.key)) {
-      e.preventDefault();
-    }
-  });
-}
+    el.addEventListener('keydown', (e) => {
+      const allowedKeys = ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'];
+      if (allowedKeys.includes(e.key) || e.ctrlKey || e.metaKey) {
+        return;
+      }
+      if (!/[0-9]/.test(e.key)) {
+        e.preventDefault();
+      }
+    });
+  }
+});
