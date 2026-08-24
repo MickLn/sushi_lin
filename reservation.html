@@ -255,6 +255,21 @@
       transform: translateY(-2px);
       box-shadow: 0 8px 25px rgba(240, 98, 146, 0.4);
     }
+    .res-required-star {
+      color: var(--sakura-vibrant);
+      font-weight: 700;
+      margin-left: 3px;
+    }
+    .res-required-legend {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 14px;
+      margin-bottom: 2px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      justify-content: flex-start;
+    }
 
   </style>
 </head>
@@ -292,11 +307,11 @@
       <form class="reservation-form" id="res-page-form">
         <div class="form-grid-3">
           <div class="form-field">
-            <label for="res-date">Date de réservation</label>
+            <label for="res-date">Date de réservation <span class="res-required-star">*</span></label>
             <input type="date" id="res-date" class="res-input" required>
           </div>
           <div class="form-field">
-            <label for="res-service">Créneau</label>
+            <label for="res-service">Créneau <span class="res-required-star">*</span></label>
             <select id="res-service" class="res-input" required>
               <optgroup label="Midi (12h00 – 14h00)">
                 <option value="12h00">12h00</option>
@@ -317,7 +332,7 @@
             </select>
           </div>
           <div class="form-field">
-            <label for="res-guests">Nombre de couverts</label>
+            <label for="res-guests">Nombre de couverts <span class="res-required-star">*</span></label>
             <select id="res-guests" class="res-input" required>
               <option value="1">1 personne</option>
               <option value="2" selected>2 personnes</option>
@@ -333,18 +348,18 @@
 
         <div class="form-grid-2">
           <div class="form-field">
-            <label for="res-name">Nom et prénom</label>
-            <input type="text" id="res-name" class="res-input" placeholder="Ex. Mickaël Lin" required>
+            <label for="res-name">Nom et prénom <span class="res-required-star">*</span></label>
+            <input type="text" id="res-name" class="res-input" placeholder="Ex. Mickaël Lin" required autocomplete="name">
           </div>
           <div class="form-field">
-            <label for="res-phone">Numéro de téléphone</label>
-            <input type="tel" id="res-phone" class="res-input" placeholder="Ex. 06 12 34 56 78" required>
+            <label for="res-phone">Numéro de téléphone <span class="res-required-star">*</span></label>
+            <input type="tel" id="res-phone" class="res-input" placeholder="06 12 34 56 78" inputmode="numeric" maxlength="14" required autocomplete="tel">
           </div>
         </div>
 
         <div class="form-field">
-          <label for="res-email">Adresse e-mail (pour recevoir la confirmation)</label>
-          <input type="email" id="res-email" class="res-input" placeholder="nom@exemple.com">
+          <label for="res-email">Adresse e-mail (pour recevoir la confirmation) <span class="res-required-star">*</span></label>
+          <input type="email" id="res-email" class="res-input" placeholder="nom@exemple.com" required autocomplete="email">
         </div>
 
         <div class="form-field">
@@ -352,7 +367,11 @@
           <textarea id="res-notes" class="res-input res-textarea" rows="3" placeholder="Ex. Table au calme, chaise haute enfant, allergies..."></textarea>
         </div>
 
-        <div class="reservation-actions" style="margin-top: 24px;">
+        <div class="res-required-legend">
+          <span class="res-required-star">*</span> Champs obligatoires
+        </div>
+
+        <div class="reservation-actions" style="margin-top: 18px;">
           <button type="submit" class="btn-submit-reservation" id="btn-submit-res">
             <span>Confirmer ma réservation</span>
           </button>
@@ -502,6 +521,30 @@
       const today = new Date().toISOString().split('T')[0];
       dateInput.min = today;
       dateInput.value = today;
+    }
+
+    // Formatage automatique du numéro de téléphone par paires (chiffres uniquement)
+    const phoneInput = document.getElementById('res-phone');
+    if (phoneInput) {
+      phoneInput.addEventListener('input', () => {
+        let digits = phoneInput.value.replace(/\D/g, '');
+        if (digits.length > 10) digits = digits.slice(0, 10);
+        const parts = [];
+        for (let i = 0; i < digits.length; i += 2) {
+          parts.push(digits.slice(i, i + 2));
+        }
+        phoneInput.value = parts.join(' ');
+      });
+
+      phoneInput.addEventListener('keydown', (e) => {
+        const allowedKeys = ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'];
+        if (allowedKeys.includes(e.key) || e.ctrlKey || e.metaKey) {
+          return;
+        }
+        if (!/[0-9]/.test(e.key)) {
+          e.preventDefault();
+        }
+      });
     }
 
     form?.addEventListener('submit', (e) => {

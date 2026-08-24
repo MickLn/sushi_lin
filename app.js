@@ -1812,3 +1812,27 @@ if (footerSiteEl && btnScrollTop && 'IntersectionObserver' in window) {
 document.getElementById('mochi-modal-close')?.addEventListener('click', closeMochiModal);
 document.getElementById('mochi-overlay')?.addEventListener('click', closeMochiModal);
 document.getElementById('mochi-modal-submit')?.addEventListener('click', handleMochiAddToCart);
+
+// Formatage automatique du numéro de téléphone par paires (chiffres uniquement)
+const regPhoneInput = document.getElementById('reg-phone');
+if (regPhoneInput) {
+  regPhoneInput.addEventListener('input', () => {
+    let digits = regPhoneInput.value.replace(/\D/g, '');
+    if (digits.length > 10) digits = digits.slice(0, 10);
+    const parts = [];
+    for (let i = 0; i < digits.length; i += 2) {
+      parts.push(digits.slice(i, i + 2));
+    }
+    regPhoneInput.value = parts.join(' ');
+  });
+
+  regPhoneInput.addEventListener('keydown', (e) => {
+    const allowedKeys = ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'];
+    if (allowedKeys.includes(e.key) || e.ctrlKey || e.metaKey) {
+      return;
+    }
+    if (!/[0-9]/.test(e.key)) {
+      e.preventDefault();
+    }
+  });
+}
