@@ -318,6 +318,25 @@ def update_order_status(order_id, status):
 
 # --- RÉSERVATIONS (RESERVATIONS) ---
 
+def get_next_daily_reservation_id():
+    conn = get_connection()
+    if not conn:
+        return None
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT COUNT(*) FROM reservations 
+                WHERE created_at >= CURRENT_DATE;
+            """)
+            row = cur.fetchone()
+            count = (row[0] if row else 0) + 1
+            return str(count)
+    except Exception as e:
+        print(f"[DB] Erreur get_next_daily_reservation_id: {e}", flush=True)
+        return None
+    finally:
+        conn.close()
+
 def save_reservation(res_data):
     conn = get_connection()
     if not conn:

@@ -573,7 +573,7 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
               <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0">
                 <tr>
                   <td class="text-muted" style="padding: 3px 0; font-size: 12.5px; color: #64748B;">N° Réservation</td>
-                  <td class="text-main" style="padding: 3px 0; font-size: 13px; font-weight: 700; color: #0D1127; text-align: right;">{res_id_clean}</td>
+                  <td class="text-main" style="padding: 3px 0; font-size: 13px; font-weight: 700; color: #0D1127; text-align: right;">#{res_id_clean}</td>
                 </tr>
                 <tr>
                   <td class="text-muted" style="padding: 3px 0; font-size: 12.5px; color: #64748B;">Date</td>

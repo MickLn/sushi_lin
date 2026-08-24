@@ -743,7 +743,7 @@ async function renderAdminReservations() {
           <div class="admin-order-card-header">
             <div>
               <span class="admin-order-id">${res.name}</span>
-              <div class="admin-order-date">Ref : ${res.id}</div>
+              <div class="admin-order-date">Réservation #${res.id}</div>
               ${res.email ? `<div class="admin-order-email">${res.email}</div>` : ''}
             </div>
             <span style="background: rgba(76, 175, 80, 0.12); color: #2E7D32; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 800;">
@@ -968,9 +968,28 @@ function updateReservationStatus(resId, newStatus) {
   }
 }
 
+function getNextDailyReservationNumber() {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const savedCounter = JSON.parse(localStorage.getItem('sushilin_daily_res_counter') || '{}');
+    let nextNum = 1;
+    if (savedCounter.date === today && typeof savedCounter.count === 'number') {
+      nextNum = savedCounter.count + 1;
+    } else {
+      const existing = JSON.parse(localStorage.getItem('sushilin_reservations') || '[]');
+      const todayRes = existing.filter(r => r.timestamp && r.timestamp.slice(0, 10) === today);
+      nextNum = todayRes.length + 1;
+    }
+    localStorage.setItem('sushilin_daily_res_counter', JSON.stringify({ date: today, count: nextNum }));
+    return String(nextNum);
+  } catch {
+    return '1';
+  }
+}
+
 function generateTestReservation() {
   const now = new Date();
-  const resId = 'RES-' + Date.now().toString().slice(-5);
+  const resId = getNextDailyReservationNumber();
   const dateStr = now.toISOString().split('T')[0];
   const testRes = {
     id: resId,
@@ -991,7 +1010,7 @@ function generateTestReservation() {
 
   renderAdminReservations();
   updateAdminBadges();
-  showToast(`Réservation test ${resId} enregistrée !`);
+  showToast(`Réservation test #${resId} enregistrée !`);
 }
 
 function clearAllReservations() {

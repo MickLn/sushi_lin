@@ -1146,6 +1146,26 @@
       });
     }
 
+    // Numérotation journalière des réservations (1, 2, 3...) réinitialisée chaque jour
+    function getNextDailyReservationNumber() {
+      try {
+        const today = new Date().toISOString().split('T')[0];
+        const savedCounter = JSON.parse(localStorage.getItem('sushilin_daily_res_counter') || '{}');
+        let nextNum = 1;
+        if (savedCounter.date === today && typeof savedCounter.count === 'number') {
+          nextNum = savedCounter.count + 1;
+        } else {
+          const existing = JSON.parse(localStorage.getItem('sushilin_reservations') || '[]');
+          const todayRes = existing.filter(r => r.timestamp && r.timestamp.slice(0, 10) === today);
+          nextNum = todayRes.length + 1;
+        }
+        localStorage.setItem('sushilin_daily_res_counter', JSON.stringify({ date: today, count: nextNum }));
+        return String(nextNum);
+      } catch {
+        return '1';
+      }
+    }
+
     form?.addEventListener('submit', (e) => {
       e.preventDefault();
       const date = document.getElementById('res-date').value;
@@ -1155,7 +1175,7 @@
       const phone = document.getElementById('res-phone').value;
       const notes = document.getElementById('res-notes')?.value || '';
 
-      const resId = 'RES-' + Date.now().toString().slice(-5);
+      const resId = getNextDailyReservationNumber();
       const email = document.getElementById('res-email')?.value.trim() || '';
       const resData = {
         id: resId,
@@ -1214,7 +1234,7 @@
           ? `Un e-mail de confirmation vous sera envoyé à <strong>${email}</strong>.`
           : `Un e-mail de confirmation a été transmis à notre équipe, nous vous contacterons au <strong>${phone}</strong> si nécessaire.`;
 
-        successDetails.innerHTML = `Merci <strong>${name}</strong>, votre table pour <strong>${guestText}</strong> le <strong>${fullDateFormatted}</strong> est bien enregistrée. ${emailNotice}`;
+        successDetails.innerHTML = `Merci <strong>${name}</strong>, votre réservation <strong>#${resId}</strong> pour <strong>${guestText}</strong> le <strong>${fullDateFormatted}</strong> est bien enregistrée. ${emailNotice}`;
       }
       form.style.display = 'none';
       if (successBox) successBox.style.display = 'block';
