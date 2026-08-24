@@ -337,7 +337,15 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
                   <td class="text-main" style="padding: 7px 0; color: #0D1127;">{requested_email_clean}</td>
                 </tr>""" if requested_email else ""
 
-                order_date_formatted = html.escape(str(order.get('dateFormatted', '')).strip())
+                raw_order_date = str(order.get('dateFormatted', '') or order.get('date', '')).strip()
+                if len(raw_order_date) >= 10 and raw_order_date[4] == '-' and raw_order_date[7] == '-':
+                    y, m, d = raw_order_date[:10].split('-')
+                    order_date_formatted = f"{d}/{m}/{y}"
+                elif len(raw_order_date) >= 10 and raw_order_date[2] == '/' and raw_order_date[5] == '/':
+                    order_date_formatted = html.escape(raw_order_date[:10])
+                else:
+                    order_date_formatted = html.escape(raw_order_date)
+
                 pickup_time_formatted = html.escape(str(order.get('pickupTime', 'Dès que possible')).strip())
 
                 html_content = f"""<!DOCTYPE html>
@@ -496,7 +504,13 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
                 res_id_clean = html.escape(str(res_data.get('id', 'RES-XXX')).strip())
                 res_name_clean = html.escape(str(res_data.get('name', '')).strip())
                 res_guests_clean = html.escape(str(res_data.get('guests', '2')).strip())
-                res_date_clean = html.escape(str(res_data.get('date', '')).strip())
+                raw_res_date = str(res_data.get('date', '')).strip()
+                if len(raw_res_date) == 10 and raw_res_date[4] == '-' and raw_res_date[7] == '-':
+                    y, m, d = raw_res_date.split('-')
+                    res_date_clean = f"{d}/{m}/{y}"
+                else:
+                    res_date_clean = html.escape(raw_res_date)
+
                 res_service_clean = html.escape(str(res_data.get('service', '19h00')).strip())
                 res_phone_clean = html.escape(str(res_data.get('phone', '')).strip())
 
@@ -599,16 +613,13 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
             <td class="text-muted" style="padding: 10px 0; color: #64748B;">Nom du client</td>
             <td class="text-main" style="padding: 10px 0; font-weight: 600; color: #0D1127; text-align: right;">{res_name_clean}</td>
           </tr>
-          <tr class="border-row" style="border-bottom: 1px solid #F5E6EA;">
+          <tr>
             <td class="text-muted" style="padding: 10px 0; color: #64748B;">Téléphone</td>
             <td class="text-main" style="padding: 10px 0; color: #0D1127; text-align: right;">{res_phone_clean}</td>
           </tr>
           <tr>
-            <td colspan="2" style="padding-top: 14px;"><div class="border-row" style="border-top: 1px solid #F5E6EA;"></div></td>
-          </tr>
-          <tr>
-            <td class="text-main" style="padding: 12px 0; font-size: 14px; font-weight: 700; color: #0D1127;">Statut</td>
-            <td class="text-status" style="padding: 12px 0; font-size: 15px; font-weight: 700; color: #059669; text-align: right; white-space: nowrap;">Table confirmée</td>
+            <td class="text-main" style="padding: 14px 0 10px; font-size: 14px; font-weight: 700; color: #0D1127;">Statut</td>
+            <td class="text-status" style="padding: 14px 0 10px; font-size: 15px; font-weight: 700; color: #059669; text-align: right; white-space: nowrap;">Table confirmée</td>
           </tr>
           <tr>
             <td colspan="2" style="padding-bottom: 4px;"><div class="border-row" style="border-top: 1px solid #F5E6EA;"></div></td>
