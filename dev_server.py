@@ -169,6 +169,45 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
             self.wfile.write(json.dumps({'reservations': reservations}, default=str).encode('utf-8'))
             return
 
+        # --- API : FICHIER CALENDRIER ICS NATIVE APPLE / OUTLOOK ---
+        if self.path.startswith('/api/reservation-calendar.ics'):
+            from urllib.parse import urlparse, parse_qs
+            import datetime
+            query = parse_qs(urlparse(self.path).query)
+            res_date = query.get('date', ['2026-08-24'])[0]
+            res_service = query.get('service', ['19h00'])[0]
+            res_guests = query.get('guests', ['2'])[0]
+            res_name = query.get('name', ['Client'])[0]
+
+            try:
+                y, m, d = [int(x) for x in res_date.split('-')]
+                clean_service = res_service.replace('h', ':')
+                parts = clean_service.split(':')
+                h = int(parts[0]) if len(parts) > 0 and parts[0] else 19
+                mi = int(parts[1]) if len(parts) > 1 and parts[1] else 0
+            except:
+                y, m, d, h, mi = 2026, 8, 24, 19, 0
+
+            dt_start = f"{y:04d}{m:02d}{d:02d}T{h:02d}{mi:02d}00"
+            h_end = (h + 2) % 24
+            dt_end = f"{y:04d}{m:02d}{d:02d}T{h_end:02d}{mi:02d}00"
+            dt_stamp = datetime.datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
+
+            guests_label = '1 couvert' if res_guests == '1' else f"{res_guests} couverts"
+            summary = f"🍣 Réservation Sushi Lin ({guests_label})"
+            description = f"Réservation confirmée au nom de {res_name}. Restaurant SUSHI LIN - Tél: 01 30 79 00 88"
+            location = "SUSHI LIN, 32 Rue des Dames, 78340 Les Clayes-sous-Bois, France"
+
+            ics_body = f"""BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Sushi Lin//Reservation System//FR\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\nBEGIN:VEVENT\r\nUID:res-{dt_start}@sushilin.fr\r\nDTSTAMP:{dt_stamp}\r\nDTSTART:{dt_start}\r\nDTEND:{dt_end}\r\nSUMMARY:{summary}\r\nDESCRIPTION:{description}\r\nLOCATION:{location}\r\nSTATUS:CONFIRMED\r\nBEGIN:VALARM\r\nTRIGGER:-PT2H\r\nACTION:DISPLAY\r\nDESCRIPTION:Rappel Réservation Sushi Lin dans 2 heures\r\nEND:VALARM\r\nEND:VEVENT\r\nEND:VCALENDAR"""
+
+            self.send_response(200)
+            self.send_header('Content-Type', 'text/calendar; charset=utf-8')
+            self.send_header('Content-Disposition', 'inline; filename="reservation-sushi-lin.ics"')
+            self.send_header('Cache-Control', 'no-cache, no-store, must-revalidate')
+            self.end_headers()
+            self.wfile.write(ics_body.encode('utf-8'))
+            return
+
         super().do_GET()
 
     def do_PATCH(self):
