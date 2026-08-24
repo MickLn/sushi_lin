@@ -186,6 +186,76 @@
       }
     }
 
+    /* ---- Boîte de confirmation de réservation (Charte Sushi Lin) ---- */
+    .reservation-success-box {
+      margin-top: 24px;
+      padding: 32px 24px;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), #FFF5F7);
+      border: 1.5px solid var(--sakura-border-strong);
+      border-radius: var(--radius-xl);
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+      animation: fadeInSuccess 0.4s ease-out;
+    }
+    @keyframes fadeInSuccess {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .res-success-icon-badge {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: rgba(225, 29, 72, 0.08);
+      border: 1.5px solid rgba(225, 29, 72, 0.2);
+      color: var(--sakura-vibrant);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 14px;
+    }
+    .res-success-title {
+      color: var(--indigo-dark);
+      font-family: var(--font-heading);
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .res-success-text {
+      color: var(--text-secondary);
+      font-size: 15px;
+      line-height: 1.6;
+      max-width: 620px;
+      margin: 0 auto 24px;
+    }
+    .res-success-text strong {
+      color: var(--indigo-dark);
+      font-weight: 700;
+    }
+    .btn-res-discover {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 14px 32px;
+      background: var(--sakura-primary);
+      color: var(--indigo-dark);
+      font-family: var(--font-heading);
+      font-size: 15.5px;
+      font-weight: 800;
+      border-radius: 50px;
+      text-decoration: none;
+      box-shadow: var(--shadow-sakura);
+      border: 1px solid var(--sakura-border-strong);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
+    }
+    .btn-res-discover:hover {
+      background: var(--sakura-vibrant);
+      color: #FFFFFF;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(240, 98, 146, 0.4);
+    }
+
   </style>
 </head>
 <body class="reservation-page-body">
@@ -289,11 +359,18 @@
         </div>
       </form>
 
-      <!-- Message de confirmation -->
-      <div class="reservation-success-box" id="res-success-box" style="display: none; margin-top: 28px; padding: 24px; background: rgba(76, 175, 80, 0.08); border: 1.5px solid rgba(76, 175, 80, 0.3); border-radius: var(--radius-lg); text-align: center;">
-        <h3 style="color: var(--success); font-family: var(--font-heading); margin-bottom: 8px;">Votre demande de réservation a été envoyée !</h3>
-        <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 16px;" id="res-success-details"></p>
-        <a href="index.html" class="res-back-btn" style="display: inline-flex;">Découvrir la carte</a>
+      <!-- Message de confirmation (Charte Sushi Lin) -->
+      <div class="reservation-success-box" id="res-success-box" style="display: none;">
+        <div class="res-success-icon-badge" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </div>
+        <h3 class="res-success-title">Votre demande de réservation a été envoyée !</h3>
+        <p class="res-success-text" id="res-success-details"></p>
+        <a href="index.html" class="btn-res-discover">
+          Découvrir la carte
+        </a>
       </div>
 
       <!-- Informations pratiques -->
@@ -469,8 +546,31 @@
         console.error('Erreur enregistrement réservation:', err);
       }
 
+      function formatReservationFullDate(dateStr, serviceStr) {
+        if (!dateStr) return serviceStr || '';
+        try {
+          const [year, month, day] = dateStr.split('-').map(Number);
+          const d = new Date(year, month - 1, day);
+          const dateFormatted = d.toLocaleDateString('fr-FR', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+          });
+          return `${dateFormatted} à ${serviceStr || '19h00'}`;
+        } catch {
+          return `${dateStr} à ${serviceStr || '19h00'}`;
+        }
+      }
+
       if (successDetails) {
-        successDetails.textContent = `Merci ${name}, votre table pour ${guests} personne(s) le ${date} (${service}) est bien enregistrée (Réf : ${resId}). Un SMS de confirmation vous sera envoyé au ${phone}.`;
+        const fullDateFormatted = formatReservationFullDate(date, service);
+        const guestText = guests === '1' ? '1 personne' : `${guests} personnes`;
+        const emailNotice = email 
+          ? `Un e-mail de confirmation vous sera envoyé à <strong>${email}</strong>.`
+          : `Un e-mail de confirmation a été transmis à notre équipe, nous vous contacterons au <strong>${phone}</strong> si nécessaire.`;
+
+        successDetails.innerHTML = `Merci <strong>${name}</strong>, votre table pour <strong>${guestText}</strong> le <strong>${fullDateFormatted}</strong> est bien enregistrée. ${emailNotice}`;
       }
       form.style.display = 'none';
       if (successBox) successBox.style.display = 'block';
