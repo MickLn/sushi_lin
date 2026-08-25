@@ -975,7 +975,8 @@ function createProductCard(item) {
     }
     if (e.target.closest('.btn-add-item')) {
       e.stopPropagation();
-      addItemToCart(item);
+      const addBtn = e.target.closest('.btn-add-item');
+      addItemToCart(item, 1, addBtn);
       return;
     }
     openProductModal(item);
@@ -984,8 +985,90 @@ function createProductCard(item) {
   return card;
 }
 
+// ---- Micro-Animation Fly To Cart ----
+function animateFlyToCart(sourceEl, imgSrc) {
+  if (!sourceEl) {
+    triggerCartBadgeBump();
+    return;
+  }
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    triggerCartBadgeBump();
+    return;
+  }
+
+  const sourceRect = sourceEl.getBoundingClientRect();
+  if (sourceRect.width === 0 && sourceRect.height === 0) {
+    triggerCartBadgeBump();
+    return;
+  }
+
+  const isMobile = window.innerWidth <= 960;
+  const headerCartBtn = document.getElementById('btn-cart-header');
+  const mobileCartBar = document.getElementById('cart-bar');
+
+  let targetEl = headerCartBtn;
+  if (isMobile && mobileCartBar && mobileCartBar.classList.contains('visible')) {
+    targetEl = mobileCartBar;
+  } else if (!targetEl) {
+    targetEl = mobileCartBar;
+  }
+
+  const targetRect = (targetEl && targetEl.offsetParent !== null)
+    ? targetEl.getBoundingClientRect()
+    : {
+        left: window.innerWidth - 60,
+        top: 24,
+        width: 36,
+        height: 36
+      };
+
+  const startX = sourceRect.left + sourceRect.width / 2 - 21;
+  const startY = sourceRect.top + sourceRect.height / 2 - 21;
+  const endX = targetRect.left + targetRect.width / 2 - 21;
+  const endY = targetRect.top + targetRect.height / 2 - 21;
+
+  const flyer = document.createElement('div');
+  flyer.className = 'cart-flying-particle';
+  flyer.style.left = `${startX}px`;
+  flyer.style.top = `${startY}px`;
+
+  if (imgSrc) {
+    flyer.innerHTML = `<img src="${imgSrc}" alt="" onerror="this.remove()">`;
+  } else {
+    flyer.innerHTML = `<div class="flying-sakura-dot"></div>`;
+  }
+
+  document.body.appendChild(flyer);
+
+  // Force reflow
+  void flyer.offsetWidth;
+
+  flyer.style.transform = `translate3d(${endX - startX}px, ${endY - startY}px, 0) scale(0.28)`;
+  flyer.style.opacity = '0.08';
+
+  setTimeout(() => {
+    flyer.remove();
+    triggerCartBadgeBump();
+  }, 1150);
+}
+
+function triggerCartBadgeBump() {
+  // Only subtle bump on header cart icon, never touch the mobile bottom bar to prevent movement/teleportation
+  const headerBtn = document.getElementById('btn-cart-header');
+  const headerCount = document.getElementById('header-cart-count');
+
+  [headerBtn, headerCount].forEach(el => {
+    if (el) {
+      el.classList.remove('cart-bump-anim');
+      void el.offsetWidth;
+      el.classList.add('cart-bump-anim');
+      setTimeout(() => el.classList.remove('cart-bump-anim'), 360);
+    }
+  });
+}
+
 // ---- Cart Operations ----
-function addItemToCart(item, quantity = 1) {
+function addItemToCart(item, quantity = 1, sourceElement = null) {
   const existingIndex = cart.findIndex(c => c.id === item.id);
   if (existingIndex > -1) {
     cart[existingIndex].qty += quantity;
@@ -1005,6 +1088,7 @@ function addItemToCart(item, quantity = 1) {
   updateCartUI();
   updateCardBadgeUI(item.id);
   renderCartPanelItems();
+  animateFlyToCart(sourceElement, item.img);
   showToastNotification(`« ${item.name} » ajouté au panier !`);
 }
 
@@ -1290,7 +1374,8 @@ function renderCartCrossSelling() {
       if (isMochiItem(canonical)) {
         openMochiModal(canonical);
       } else {
-        addItemToCart(canonical, 1);
+        const chipBtn = chip.querySelector('.cross-chip-add-btn') || chip;
+        addItemToCart(canonical, 1, chipBtn);
       }
     });
 
@@ -1376,7 +1461,8 @@ function openProductModal(item) {
   });
 
   document.getElementById('btn-modal-add').addEventListener('click', () => {
-    addItemToCart(item, modalQuantity);
+    const btnModal = document.getElementById('btn-modal-add');
+    addItemToCart(item, modalQuantity, btnModal);
     closeProductModal();
     closeMochiModal();
   });
