@@ -987,6 +987,9 @@ function createProductCard(item) {
 
 // ---- Micro-Animation Fly To Cart ----
 function animateFlyToCart(sourceEl, imgSrc) {
+  if (cartDrawer && cartDrawer.classList.contains('open')) {
+    return;
+  }
   if (!sourceEl) {
     triggerCartBadgeBump();
     return;
@@ -1386,6 +1389,10 @@ function renderCartCrossSelling() {
 }
 
 function openCartPanel() {
+  if (toast && toast.classList.contains('show')) {
+    toast.classList.remove('show');
+    if (toastTimeout) clearTimeout(toastTimeout);
+  }
   generatePickupTimeSlots();
   renderCartPanelItems();
   const user = getLoggedUser();
@@ -1896,6 +1903,8 @@ function setActiveCategoryTab(catId) {
 let toastTimeout = null;
 function showToastNotification(message) {
   if (!toast) return;
+  // Ne pas afficher de notification toast si le tiroir du panier est déjà ouvert
+  if (cartDrawer && cartDrawer.classList.contains('open')) return;
   toast.textContent = message;
   toast.classList.add('show');
   if (toastTimeout) clearTimeout(toastTimeout);
