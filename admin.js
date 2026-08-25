@@ -1,7 +1,19 @@
+
+// ---- GESTION DES ALLERGÈNES ET PARFUMS ----
 const ADMIN_MOCHI_FLAVORS = [
-  'Pistache', 'Caramel', 'Thé vert', 'Passion / Mangue',
-  'Noix de coco', 'Mangue', 'Chocolat', 'Yuzu',
-  'Sésame', 'Fraise', 'Vanille', 'Litchi', 'Framboise'
+  'Pistache',
+  'Caramel',
+  'Thé vert',
+  'Passion / Mangue',
+  'Noix de coco',
+  'Mangue',
+  'Chocolat',
+  'Yuzu',
+  'Sésame',
+  'Fraise',
+  'Vanille',
+  'Litchi',
+  'Framboise'
 ];
 
 function isMochiItem(item) {
@@ -12,7 +24,6 @@ function isMochiItem(item) {
   return id === 'desserts-ds22' || id === 'd28' || code === 'd28' || code === 'ds22' || name.includes('mochi');
 }
 
-// ---- GESTION DES ALLERGÈNES PAR PLAT ----
 function toggleAdminAllergensSection() {
   const toggleBtn = document.getElementById('admin-allergens-toggle');
   const body = document.getElementById('admin-allergens-body');
@@ -331,6 +342,13 @@ function renderProductsTable(items) {
       </td>
     `;
 
+    tr.addEventListener('click', (e) => {
+      if (e.target.closest('.price-input-wrap') || e.target.closest('.stock-toggle-btn') || e.target.closest('input')) {
+        return;
+      }
+      openEditProductModal(item.id);
+    });
+
     adminProductsTbody.appendChild(tr);
   });
 }
@@ -401,29 +419,6 @@ function openAddProductModal() {
   document.querySelectorAll('input[name="admin-allergen"]').forEach(cb => cb.checked = false);
   updateAdminAllergensCount();
 
-  // Set mochi flavor stock availability
-  const mochiSection = document.getElementById('admin-mochi-flavors-section');
-  const mochiGrid = document.getElementById('admin-mochi-flavors-grid');
-  const isMochi = isMochiItem(item);
-  if (mochiSection && mochiGrid) {
-    if (isMochi) {
-      mochiSection.style.display = 'block';
-      const unavailable = item.unavailableFlavors || [];
-      mochiGrid.innerHTML = ADMIN_MOCHI_FLAVORS.map(flavor => {
-        const isAvailable = !unavailable.includes(flavor);
-        return `
-          <label class="mochi-flavor-stock-item" style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: ${isAvailable ? 'var(--indigo-dark)' : 'var(--text-muted)'}; background: #FFFFFF; border: 1px solid var(--sakura-border); padding: 6px 8px; border-radius: 6px; cursor: pointer;">
-            <input type="checkbox" name="admin-mochi-flavor" value="${flavor}" ${isAvailable ? 'checked' : ''} onchange="this.parentElement.style.color = this.checked ? 'var(--indigo-dark)' : 'var(--text-muted)'">
-            <span>${flavor}</span>
-          </label>
-        `;
-      }).join('');
-    } else {
-      mochiSection.style.display = 'none';
-      mochiGrid.innerHTML = '';
-    }
-  }
-
   adminProductModal.classList.add('open');
   productModalBackdrop.classList.add('active');
 }
@@ -458,7 +453,14 @@ function openEditProductModal(itemId) {
   if (mochiSection && mochiGrid) {
     if (isMochi) {
       mochiSection.style.display = 'block';
-      const unavailable = item.unavailableFlavors || [];
+      let unavailable = item.unavailableFlavors;
+      if (!unavailable) {
+        try {
+          const raw = localStorage.getItem('sushilin_mochi_unavailable');
+          if (raw) unavailable = JSON.parse(raw);
+        } catch {}
+      }
+      unavailable = unavailable || [];
       mochiGrid.innerHTML = ADMIN_MOCHI_FLAVORS.map(flavor => {
         const isAvailable = !unavailable.includes(flavor);
         return `
@@ -763,7 +765,7 @@ async function renderAdminOrders() {
                 ${topItems.map((item, idx) => `
                   <div style="flex: 1; min-width: 140px; background: var(--sakura-bg-soft); border: 1px solid var(--sakura-border); border-radius: var(--radius-md); padding: 10px; display: flex; flex-direction: column; justify-content: space-between;">
                     <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
-                      <span style="width: 18px; height: 18px; border-radius: 50%; background: ${idx === 0 ? 'var(--primary)' : 'var(--indigo)'}; color: #fff; font-size: 10px; font-weight: 900; display: flex; align-items: center; justify-content: center;">${idx + 1}</span>
+                      <span style="width: 20px; height: 20px; border-radius: 50%; background: ${idx === 0 ? 'var(--sakura-vibrant, #EB5E82)' : 'var(--indigo-primary, #272F61)'}; color: #FFFFFF; font-size: 11px; font-weight: 900; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 4px rgba(0,0,0,0.15);">${idx + 1}</span>
                       <span style="font-size: 11px; font-weight: 800; color: var(--indigo-dark);">${item.code ? `[${item.code}]` : ''}</span>
                     </div>
                     <div style="font-family: var(--font-heading); font-size: 12px; font-weight: 800; color: var(--indigo-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px;" title="${item.name}">${item.name}</div>
@@ -805,7 +807,6 @@ async function renderAdminOrders() {
             <div>
               <span class="admin-order-id">#${order.id}</span>
               <div class="admin-order-date">${order.dateFormatted || (order.timestamp ? new Date(order.timestamp).toLocaleString('fr-FR') : 'Aujourd\'hui')}</div>
-              ${order.customerEmail ? `<div class="admin-order-email">${order.customerEmail}</div>` : ''}
             </div>
             <span class="admin-order-type-badge">A emporter</span>
           </div>
@@ -831,19 +832,19 @@ async function renderAdminOrders() {
             ` : ''}
             <div class="admin-info-row">
               <span class="admin-info-label">Heure de retrait :</span>
-              <span class="admin-info-val admin-info-highlight">${order.pickupTime || 'Des que possible'}</span>
+              <span class="admin-info-val admin-info-highlight">${order.pickupTime || 'Dès que possible'}</span>
             </div>
-            <div class="admin-info-row">
+            <div class="admin-info-row admin-prefs-divider">
               <span class="admin-info-label">Baguettes :</span>
               <span class="admin-info-val">${order.baguettesChoice === '0' || order.baguettesChoice === 'Sans baguette' ? 'Sans baguette' : (order.baguettesChoice && !order.baguettesChoice.includes('paire') ? (order.baguettesChoice + (parseInt(order.baguettesChoice) > 1 ? ' paires' : ' paire')) : (order.baguettesChoice || '1 paire'))}</span>
             </div>
             <div class="admin-info-row">
               <span class="admin-info-label">Sauces :</span>
-              <span class="admin-info-val">${order.sauceChoice || 'Sauce sucree'}</span>
+              <span class="admin-info-val">${order.sauceChoice || 'Sauce sucrée'}</span>
             </div>
             ${order.comment ? `
             <div class="admin-info-row admin-note-row">
-              <span class="admin-info-label">Note client :</span>
+              <span class="admin-info-label">Remarques :</span>
               <span class="admin-info-val admin-note-val">${order.comment}</span>
             </div>
             ` : ''}
@@ -1085,6 +1086,9 @@ function generateTestOrder() {
     id: orderId,
     timestamp: now.toISOString(),
     dateFormatted: now.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+    customerName: 'Jean Dupont',
+    customerPhone: '06 12 34 56 78',
+    customerEmail: 'jean.dupont@gmail.com',
     items: testItems,
     itemCount: testItems.reduce((acc, it) => acc + it.qty, 0),
     subtotal: subtotal,

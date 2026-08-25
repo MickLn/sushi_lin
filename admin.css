@@ -562,8 +562,18 @@ button {
   vertical-align: middle;
 }
 
+.products-table tr {
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
 .products-table tr:hover td {
   background: var(--sakura-dim);
+}
+
+.products-table .price-input-wrap,
+.products-table .stock-toggle-btn {
+  cursor: default;
 }
 
 .table-img-thumb {
@@ -1003,10 +1013,14 @@ button {
   color: var(--indigo-dark);
 }
 
-.admin-note-row {
-  margin-top: 4px;
+.admin-prefs-divider {
+  margin-top: 6px;
   padding-top: 8px;
   border-top: 1px dashed var(--sakura-border);
+}
+
+.admin-note-row {
+  margin-top: 4px;
 }
 
 .admin-note-val {
