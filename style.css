@@ -1494,18 +1494,24 @@ img {
 
 .product-code-badge {
   position: absolute;
-  top: 8px;
-  left: 8px;
+  top: 10px;
+  left: 10px;
+  height: 24px;
+  min-width: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: var(--indigo-primary);
   color: #FFFFFF;
   font-family: var(--font-heading);
-  font-size: 11px;
+  font-size: 11.5px;
   font-weight: 800;
-  padding: 2px 7px;
+  padding: 0 7px;
   border-radius: 6px;
   letter-spacing: 0.5px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   z-index: 2;
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
 }
 
 .product-pieces-badge {
@@ -1624,16 +1630,17 @@ img {
   background: var(--indigo-primary);
   color: #FFFFFF;
   font-family: var(--font-heading);
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 800;
-  width: 26px;
-  height: 26px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   border: 2px solid #FFFFFF;
+  z-index: 2;
 }
 
 /* --- RESTAURANT INFO SECTION --- */
