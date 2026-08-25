@@ -931,11 +931,26 @@ img {
   font-size: 88px;
   font-weight: 700;
   letter-spacing: 16px;
+  text-indent: 16px;
   color: #FFFFFF;
   line-height: 1;
   text-transform: uppercase;
   text-shadow: 0 6px 30px rgba(0, 0, 0, 0.7), 0 0 50px rgba(255, 193, 215, 0.25);
-  margin-bottom: 20px;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.hero-location-subtitle {
+  font-family: var(--font-body);
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: 10px;
+  text-indent: 10px;
+  color: rgba(255, 255, 255, 0.92);
+  text-transform: uppercase;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.8), 0 0 24px rgba(0, 0, 0, 0.6);
+  margin: 0;
+  text-align: center;
 }
 
 .hero-main-sub {
@@ -3212,6 +3227,13 @@ img {
   .hero-main-title {
     font-size: 68px;
     letter-spacing: 10px;
+    text-indent: 10px;
+  }
+
+  .hero-location-subtitle {
+    font-size: 13px;
+    letter-spacing: 6px;
+    text-indent: 6px;
   }
 
   .hero-kanji-block {
@@ -3314,8 +3336,15 @@ img {
   }
 
   .hero-main-title {
-    font-size: 48px;
+    font-size: 46px;
     letter-spacing: 6px;
+    text-indent: 6px;
+  }
+
+  .hero-location-subtitle {
+    font-size: 11.5px;
+    letter-spacing: 4px;
+    text-indent: 4px;
   }
 
   .hero-main-sub {
