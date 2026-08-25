@@ -2412,18 +2412,10 @@ textarea, textarea.admin-input, #form-product-desc {
 .admin-orders-grid,
 .admin-res-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 16px;
   width: 100%;
   box-sizing: border-box;
-}
-
-@media (max-width: 1280px) {
-  .admin-orders-grid,
-  .admin-res-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
-  }
 }
 
 @media (max-width: 768px) {
