@@ -1396,7 +1396,11 @@ function openCartPanel() {
   generatePickupTimeSlots();
   renderCartPanelItems();
   const user = getLoggedUser();
+  const cartNameGroup = document.getElementById('cart-name-group');
   const cartEmailGroup = document.getElementById('cart-email-group');
+  if (cartNameGroup) {
+    cartNameGroup.style.display = user ? 'none' : 'block';
+  }
   if (cartEmailGroup) {
     cartEmailGroup.style.display = user ? 'none' : 'block';
   }
@@ -1730,12 +1734,19 @@ function handleOrderCheckout() {
   const comment = document.getElementById('comment-order')?.value.trim() || '';
   
   const loggedUser = getLoggedUser();
+  const nameInput = document.getElementById('order-customer-name');
   const phoneInput = document.getElementById('order-customer-phone');
   const emailInput = document.getElementById('order-customer-email');
 
+  const customerName = loggedUser?.name || nameInput?.value.trim() || '';
   const customerPhone = loggedUser?.phone || phoneInput?.value.trim() || '';
   const customerEmail = loggedUser?.email || loggedUser?.contact || emailInput?.value.trim() || '';
 
+  if (!customerName) {
+    alert('Veuillez renseigner votre nom et prénom.');
+    nameInput?.focus();
+    return;
+  }
   if (!customerPhone) {
     alert('Veuillez renseigner votre numéro de téléphone afin que nous puissions vous contacter pour votre commande.');
     phoneInput?.focus();
@@ -1786,7 +1797,7 @@ function handleOrderCheckout() {
     id: orderId,
     timestamp: now.toISOString(),
     dateFormatted: dateFormatted,
-    customerName: loggedUser?.name || '',
+    customerName: customerName,
     customerPhone: customerPhone,
     customerEmail: customerEmail,
     items: cart.map(item => {

@@ -568,6 +568,15 @@
         </label>
       </div>
 
+        <div class="form-group-admin full-width" id="admin-mochi-flavors-section" style="display: none;">
+          <label style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <span>Disponibilité par parfum (13 parfums)</span>
+            <span style="font-size: 11.5px; font-weight: 600; color: var(--text-secondary);">Décochez pour déclarer un parfum épuisé</span>
+          </label>
+          <div id="admin-mochi-flavors-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; background: var(--sakura-bg-soft); border: 1px solid var(--sakura-border); padding: 12px; border-radius: var(--radius-md);">
+          </div>
+        </div>
+
       <div class="admin-modal-actions mt-20">
         <button type="button" class="btn-secondary-admin" onclick="closeProductModal()">Annuler</button>
         <button type="submit" class="btn-primary-admin">Enregistrer le plat</button>

@@ -1,3 +1,16 @@
+const ADMIN_MOCHI_FLAVORS = [
+  'Pistache', 'Caramel', 'Thé vert', 'Passion / Mangue',
+  'Noix de coco', 'Mangue', 'Chocolat', 'Yuzu',
+  'Sésame', 'Fraise', 'Vanille', 'Litchi', 'Framboise'
+];
+
+function isMochiItem(item) {
+  if (!item) return false;
+  const id = (item.id || '').toLowerCase();
+  const code = (item.code || '').toLowerCase();
+  const name = (item.name || '').toLowerCase();
+  return id === 'desserts-ds22' || id === 'd28' || code === 'd28' || code === 'ds22' || name.includes('mochi');
+}
 
 // ---- GESTION DES ALLERGÈNES PAR PLAT ----
 function toggleAdminAllergensSection() {
@@ -388,6 +401,29 @@ function openAddProductModal() {
   document.querySelectorAll('input[name="admin-allergen"]').forEach(cb => cb.checked = false);
   updateAdminAllergensCount();
 
+  // Set mochi flavor stock availability
+  const mochiSection = document.getElementById('admin-mochi-flavors-section');
+  const mochiGrid = document.getElementById('admin-mochi-flavors-grid');
+  const isMochi = isMochiItem(item);
+  if (mochiSection && mochiGrid) {
+    if (isMochi) {
+      mochiSection.style.display = 'block';
+      const unavailable = item.unavailableFlavors || [];
+      mochiGrid.innerHTML = ADMIN_MOCHI_FLAVORS.map(flavor => {
+        const isAvailable = !unavailable.includes(flavor);
+        return `
+          <label class="mochi-flavor-stock-item" style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: ${isAvailable ? 'var(--indigo-dark)' : 'var(--text-muted)'}; background: #FFFFFF; border: 1px solid var(--sakura-border); padding: 6px 8px; border-radius: 6px; cursor: pointer;">
+            <input type="checkbox" name="admin-mochi-flavor" value="${flavor}" ${isAvailable ? 'checked' : ''} onchange="this.parentElement.style.color = this.checked ? 'var(--indigo-dark)' : 'var(--text-muted)'">
+            <span>${flavor}</span>
+          </label>
+        `;
+      }).join('');
+    } else {
+      mochiSection.style.display = 'none';
+      mochiGrid.innerHTML = '';
+    }
+  }
+
   adminProductModal.classList.add('open');
   productModalBackdrop.classList.add('active');
 }
@@ -414,6 +450,29 @@ function openEditProductModal(itemId) {
     cb.checked = itemAllergens.some(a => a.toLowerCase() === cb.value.toLowerCase() || (cb.value === 'Céréales' && a.toLowerCase().includes('gluten')) || (cb.value === 'Poissons' && a.toLowerCase().includes('poisson')));
   });
   updateAdminAllergensCount();
+
+  // Set mochi flavor stock availability
+  const mochiSection = document.getElementById('admin-mochi-flavors-section');
+  const mochiGrid = document.getElementById('admin-mochi-flavors-grid');
+  const isMochi = isMochiItem(item);
+  if (mochiSection && mochiGrid) {
+    if (isMochi) {
+      mochiSection.style.display = 'block';
+      const unavailable = item.unavailableFlavors || [];
+      mochiGrid.innerHTML = ADMIN_MOCHI_FLAVORS.map(flavor => {
+        const isAvailable = !unavailable.includes(flavor);
+        return `
+          <label class="mochi-flavor-stock-item" style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: ${isAvailable ? 'var(--indigo-dark)' : 'var(--text-muted)'}; background: #FFFFFF; border: 1px solid var(--sakura-border); padding: 6px 8px; border-radius: 6px; cursor: pointer;">
+            <input type="checkbox" name="admin-mochi-flavor" value="${flavor}" ${isAvailable ? 'checked' : ''} onchange="this.parentElement.style.color = this.checked ? 'var(--indigo-dark)' : 'var(--text-muted)'">
+            <span>${flavor}</span>
+          </label>
+        `;
+      }).join('');
+    } else {
+      mochiSection.style.display = 'none';
+      mochiGrid.innerHTML = '';
+    }
+  }
 
   adminProductModal.classList.add('open');
   productModalBackdrop.classList.add('active');
@@ -455,6 +514,11 @@ function handleSaveProductForm(e) {
       item.desc = desc;
       item.available = available;
       item.allergens = Array.from(document.querySelectorAll('input[name="admin-allergen"]:checked')).map(cb => cb.value);
+      if (isMochiItem(item)) {
+        const allFlavors = ADMIN_MOCHI_FLAVORS;
+        const checkedFlavors = Array.from(document.querySelectorAll('input[name="admin-mochi-flavor"]:checked')).map(cb => cb.value);
+        item.unavailableFlavors = allFlavors.filter(f => !checkedFlavors.includes(f));
+      }
     }
   } else {
     // Create new
@@ -746,6 +810,24 @@ async function renderAdminOrders() {
           </div>
 
           <div class="admin-order-info-box">
+            ${order.customerName ? `
+            <div class="admin-info-row">
+              <span class="admin-info-label">Client :</span>
+              <span class="admin-info-val" style="font-weight: 800; color: var(--indigo-dark);">${order.customerName}</span>
+            </div>
+            ` : ''}
+            ${order.customerPhone ? `
+            <div class="admin-info-row">
+              <span class="admin-info-label">Téléphone :</span>
+              <span class="admin-info-val"><a href="tel:${order.customerPhone}" style="color: var(--sakura-vibrant); font-weight: 800; text-decoration: none;">${order.customerPhone}</a></span>
+            </div>
+            ` : ''}
+            ${order.customerEmail ? `
+            <div class="admin-info-row">
+              <span class="admin-info-label">E-mail :</span>
+              <span class="admin-info-val" style="font-size: 12.5px; word-break: break-all; color: var(--text-secondary);">${order.customerEmail}</span>
+            </div>
+            ` : ''}
             <div class="admin-info-row">
               <span class="admin-info-label">Heure de retrait :</span>
               <span class="admin-info-val admin-info-highlight">${order.pickupTime || 'Des que possible'}</span>
