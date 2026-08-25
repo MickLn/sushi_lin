@@ -180,6 +180,7 @@ function handleMochiAddToCart() {
   updateCartUI();
   updateCardBadgeUI('desserts-ds22');
   updateCardBadgeUI('D28');
+  renderCartPanelItems();
   closeMochiModal();
   showToastNotification(`${totalItems} mochi(s) glacé(s) ajouté(s) au panier !`);
 }
@@ -580,7 +581,7 @@ function renderCategoryNavigation() {
     allLink.addEventListener('click', () => selectCategoryFilter('all'));
     sidebarCatList.appendChild(allLink);
 
-    // Sidebar Option "Best-sellers"
+    // Sidebar Option "Les plus vendus"
     const bsLink = document.createElement('button');
     bsLink.className = `sidebar-link ${selectedCategory === 'bestsellers' ? 'active' : ''}`;
     bsLink.id = 'sidebar-link-bestsellers';
@@ -588,7 +589,7 @@ function renderCategoryNavigation() {
     bsLink.innerHTML = `
       <span style="display: flex; align-items: center; gap: 7px;">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="color: var(--primary);"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-        Best-sellers
+        Les plus vendus
       </span>
       <span class="sidebar-count">${bestSellers.length}</span>
     `;
@@ -596,7 +597,7 @@ function renderCategoryNavigation() {
     sidebarCatList.appendChild(bsLink);
   }
 
-  // 2. Mobile Pill "Tous les plats" & "Best-sellers"
+  // 2. Mobile Pill "Tous les plats" & "Les plus vendus"
   if (mobileCatNavInner) {
     const allPill = document.createElement('button');
     allPill.className = `cat-pill ${selectedCategory === 'all' ? 'active' : ''}`;
@@ -611,7 +612,7 @@ function renderCategoryNavigation() {
     bsPill.dataset.cat = 'bestsellers';
     bsPill.innerHTML = `
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="margin-right: 4px; vertical-align: -1px; color: var(--primary);"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-      Best-sellers
+      Les plus vendus
     `;
     bsPill.addEventListener('click', () => selectCategoryFilter('bestsellers'));
     mobileCatNavInner.appendChild(bsPill);
@@ -736,7 +737,7 @@ function renderProductsMenu() {
     const catHeader = document.createElement('div');
     catHeader.className = 'cat-section-header';
     catHeader.innerHTML = `
-      <h2 class="cat-section-title">Les Incontournables</h2>
+      <h2 class="cat-section-title">Les plus vendus</h2>
       <span class="cat-section-count">${bestSellers.length} plats</span>
     `;
     section.appendChild(catHeader);
@@ -1003,6 +1004,7 @@ function addItemToCart(item, quantity = 1) {
   saveCartToStorage();
   updateCartUI();
   updateCardBadgeUI(item.id);
+  renderCartPanelItems();
   showToastNotification(`« ${item.name} » ajouté au panier !`);
 }
 
@@ -1151,6 +1153,9 @@ function renderCartPanelItems() {
   }
 
   cartDrawerBody.innerHTML = '';
+  const itemsContainer = document.createElement('div');
+  itemsContainer.className = 'cart-items-list';
+
   cart.forEach(item => {
     const row = document.createElement('div');
     row.className = 'cart-item-row';
@@ -1182,8 +1187,10 @@ function renderCartPanelItems() {
       }
     });
 
-    cartDrawerBody.appendChild(row);
+    itemsContainer.appendChild(row);
   });
+
+  cartDrawerBody.appendChild(itemsContainer);
 
   // Inject Smart Cross-Selling Suggestions (Compact, No Emojis, Responsive)
   const crossSellEl = renderCartCrossSelling();
@@ -1254,8 +1261,7 @@ function renderCartCrossSelling() {
   box.className = 'cart-cross-selling-box';
   box.innerHTML = `
     <div class="cross-selling-header">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-      <span>Compléter votre commande</span>
+      <span>Pour accompagner votre repas</span>
     </div>
     <div class="cross-selling-chips-track"></div>
   `;
@@ -1274,7 +1280,9 @@ function renderCartCrossSelling() {
         <span class="cross-chip-name">${canonical.name}</span>
         <span class="cross-chip-price">${formatEuro(canonical.price)}</span>
       </div>
-      <span class="cross-chip-add-btn" title="Ajouter">+</span>
+      <button type="button" class="cross-chip-add-btn" aria-label="Ajouter ${canonical.name}">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+      </button>
     `;
 
     chip.addEventListener('click', (e) => {
@@ -1282,8 +1290,7 @@ function renderCartCrossSelling() {
       if (isMochiItem(canonical)) {
         openMochiModal(canonical);
       } else {
-        addToCart(canonical);
-        showToastNotification(`${canonical.name} ajouté au panier !`);
+        addItemToCart(canonical, 1);
       }
     });
 

@@ -2412,17 +2412,22 @@ img {
   border: 1px solid var(--sakura-border);
 }
 
+.cart-items-list {
+  display: flex;
+  flex-direction: column;
+}
+
 .cart-item-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
   padding: 14px 0;
-  border-bottom: 1px solid var(--sakura-border);
+  border: none !important;
 }
 
-.cart-item-row:last-child {
-  border-bottom: none;
+.cart-item-row + .cart-item-row {
+  border-top: 1px solid var(--sakura-border) !important;
 }
 
 .cart-item-details {
@@ -2487,15 +2492,12 @@ img {
 
 /* Cart Cross-Selling Suggestions (Compact, No Emojis, Horizontal Scroll) */
 .cart-cross-selling-box {
-  margin-top: 14px;
-  padding-top: 12px;
-  border-top: 1px dashed var(--sakura-border-strong);
+  margin-top: 8px;
+  padding-top: 14px;
+  border-top: 1.5px dashed var(--sakura-border-strong);
 }
 
 .cross-selling-header {
-  display: flex;
-  align-items: center;
-  gap: 6px;
   font-family: var(--font-heading);
   font-size: 11px;
   font-weight: 800;
@@ -2503,11 +2505,6 @@ img {
   letter-spacing: 0.6px;
   color: var(--text-secondary);
   margin-bottom: 8px;
-}
-
-.cross-selling-header svg {
-  color: var(--primary);
-  flex-shrink: 0;
 }
 
 .cross-selling-chips-track {
@@ -2530,7 +2527,7 @@ img {
   gap: 8px;
   height: 38px;
   background: #FFFFFF;
-  border: 1px solid var(--sakura-border-strong);
+  border: 1.5px solid var(--sakura-border-strong);
   border-radius: 24px;
   padding: 3px 6px 3px 4px;
   flex-shrink: 0;
@@ -2540,10 +2537,10 @@ img {
 }
 
 .cross-chip:hover {
-  border-color: var(--primary);
+  border-color: var(--sakura-vibrant);
   background: var(--sakura-bg-soft);
   transform: translateY(-1px);
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 3px 8px rgba(235, 94, 130, 0.12);
 }
 
 .cross-chip-img {
@@ -2580,12 +2577,12 @@ img {
 }
 
 .cross-chip-add-btn {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
-  background: var(--sakura-bg-soft);
-  border: 1px solid var(--sakura-border-strong);
-  color: var(--primary);
+  background: var(--sakura-primary);
+  border: 1.5px solid var(--sakura-border-strong);
+  color: #FFFFFF;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2593,12 +2590,23 @@ img {
   flex-shrink: 0;
   margin-left: 2px;
   transition: all 0.15s ease;
+  box-shadow: var(--shadow-sakura);
 }
 
-.cross-chip:hover .cross-chip-add-btn {
-  background: var(--primary);
-  border-color: var(--primary);
+.cross-chip-add-btn svg {
+  width: 12px;
+  height: 12px;
+  stroke-width: 2.8;
+  display: block;
+  pointer-events: none;
+}
+
+.cross-chip:hover .cross-chip-add-btn,
+.cross-chip-add-btn:hover {
+  background: var(--sakura-vibrant);
+  border-color: var(--sakura-vibrant);
   color: #FFFFFF;
+  transform: scale(1.08);
 }
 
 /* Panel Footer */
