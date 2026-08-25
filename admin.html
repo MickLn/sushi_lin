@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="admin.css?v=20260825_rowclick">
+  <link rel="stylesheet" href="admin.css?v=20260825_photo_match">
 </head>
 <body>
 
@@ -464,15 +464,45 @@
         </div>
       </div>
 
-      <div class="form-row mt-12">
-        <div class="form-field">
-          <label for="form-product-pieces">Quantité / Format :</label>
-          <input type="text" id="form-product-pieces" class="admin-input" placeholder="Ex: 6 pièces, 75 cl, 33 cl, 2 pièces...">
-        </div>
+      <div class="form-field mt-12">
+        <label for="form-product-pieces">Quantité / Format :</label>
+        <input type="text" id="form-product-pieces" class="admin-input" placeholder="Ex: 6 pièces, 75 cl, 33 cl, 2 pièces...">
+      </div>
 
-        <div class="form-field">
-          <label for="form-product-img">URL de l'image (facultatif) :</label>
-          <input type="text" id="form-product-img" class="admin-input" placeholder="https://...">
+      <div class="form-field full-width mt-12">
+        <label>Photo du plat (facultatif) :</label>
+        <div class="admin-image-upload-wrapper" id="admin-image-upload-wrapper">
+          <div class="admin-image-preview-box" id="admin-image-preview-box">
+            <img id="admin-image-preview" src="" alt="Aperçu du plat" style="display: none;">
+            <div id="admin-image-placeholder" class="admin-image-placeholder">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              <span>Aucune photo</span>
+            </div>
+          </div>
+          
+          <div class="admin-image-actions">
+            <input type="file" id="form-product-file" accept="image/*" style="display: none;" onchange="handleProductFileSelected(event)">
+            <input type="hidden" id="form-product-img">
+            
+            <div class="admin-image-btns">
+              <button type="button" class="btn-upload-photo" onclick="document.getElementById('form-product-file').click()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <span id="btn-upload-text">Choisir une photo</span>
+              </button>
+              <button type="button" class="btn-remove-photo" id="btn-remove-photo" style="display: none;" onclick="removeProductPhoto()">
+                Supprimer la photo
+              </button>
+            </div>
+            
+            <div class="admin-image-url-toggle">
+              <button type="button" class="btn-url-toggle" onclick="toggleImageUrlInput()">
+                Ou coller une URL d'image ▾
+              </button>
+              <div id="admin-url-input-container" style="display: none; margin-top: 6px;">
+                <input type="text" id="form-product-url-input" class="admin-input" placeholder="https://..." oninput="handleManualUrlInput(this.value)">
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -589,6 +619,6 @@
   <!-- TOAST NOTIFICATION -->
   <div class="admin-toast" id="admin-toast"></div>
 
-  <script src="admin.js?v=20260825_rowclick"></script>
+  <script src="admin.js?v=20260825_photo_upload"></script>
 </body>
 </html>

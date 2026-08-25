@@ -1245,6 +1245,136 @@ button {
   cursor: pointer;
 }
 
+/* Image Upload Zone */
+.admin-image-upload-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--admin-bg);
+  border: 1.5px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  margin-top: 6px;
+  transition: all 0.2s ease;
+}
+
+.admin-image-upload-wrapper:hover {
+  border-color: var(--indigo);
+  background: #FFFFFF;
+}
+
+.admin-image-preview-box {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-sm);
+  background: #FFFFFF;
+  border: 1.5px solid var(--border-strong);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.admin-image-preview-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.admin-image-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: var(--text-muted);
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.admin-image-placeholder svg {
+  stroke: var(--text-muted);
+}
+
+.admin-image-actions {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.admin-image-btns {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn-upload-photo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #FFFFFF;
+  border: 1.5px solid var(--border-strong);
+  color: var(--indigo-dark);
+  padding: 7px 14px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-heading);
+  font-size: 12.5px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+.btn-upload-photo:hover {
+  background: var(--admin-bg);
+  border-color: var(--indigo);
+  color: var(--indigo);
+}
+
+.btn-remove-photo {
+  background: transparent;
+  border: none;
+  color: #E11D48;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.btn-remove-photo:hover {
+  background: #FFE4E6;
+}
+
+.admin-image-url-toggle {
+  display: flex;
+  flex-direction: column;
+}
+
+.btn-url-toggle {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+  text-decoration: underline;
+  transition: color 0.15s ease;
+}
+
+.btn-url-toggle:hover {
+  color: var(--indigo-dark);
+}
+
 .admin-modal-actions {
   display: flex;
   justify-content: flex-end;

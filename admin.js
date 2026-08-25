@@ -411,7 +411,7 @@ function openAddProductModal() {
   document.getElementById('form-product-name').value = '';
   document.getElementById('form-product-price').value = '';
   document.getElementById('form-product-pieces').value = '';
-  document.getElementById('form-product-img').value = '';
+  removeProductPhoto();
   document.getElementById('form-product-desc').value = '';
   document.getElementById('form-product-available').checked = true;
 
@@ -435,7 +435,7 @@ function openEditProductModal(itemId) {
   document.getElementById('form-product-cat').value = item.cat;
   document.getElementById('form-product-price').value = item.price.toFixed(2);
   document.getElementById('form-product-pieces').value = item.pieces || '';
-  document.getElementById('form-product-img').value = item.img || '';
+  setProductPhotoPreview(item.img || '');
   document.getElementById('form-product-desc').value = item.desc || '';
   document.getElementById('form-product-available').checked = item.available !== false;
 
@@ -483,6 +483,144 @@ function openEditProductModal(itemId) {
 function closeProductModal() {
   adminProductModal.classList.remove('open');
   productModalBackdrop.classList.remove('active');
+}
+
+// ---- PRODUCT PHOTO UPLOAD & PREVIEW ----
+function compressAndSetImage(file) {
+  if (!file) return;
+
+  const previewImg = document.getElementById('admin-image-preview');
+  const placeholder = document.getElementById('admin-image-placeholder');
+  const hiddenInput = document.getElementById('form-product-img');
+  const removeBtn = document.getElementById('btn-remove-photo');
+  const uploadBtnText = document.getElementById('btn-upload-text');
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = new Image();
+    img.onload = function() {
+      const MAX_WIDTH = 600;
+      const MAX_HEIGHT = 600;
+      let width = img.width;
+      let height = img.height;
+
+      if (width > height) {
+        if (width > MAX_WIDTH) {
+          height = Math.round((height * MAX_WIDTH) / width);
+          width = MAX_WIDTH;
+        }
+      } else {
+        if (height > MAX_HEIGHT) {
+          width = Math.round((width * MAX_HEIGHT) / height);
+          height = MAX_HEIGHT;
+        }
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+
+      const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.82);
+
+      if (hiddenInput) hiddenInput.value = compressedDataUrl;
+      if (previewImg) {
+        previewImg.src = compressedDataUrl;
+        previewImg.style.display = 'block';
+      }
+      if (placeholder) placeholder.style.display = 'none';
+      if (removeBtn) removeBtn.style.display = 'inline-flex';
+      if (uploadBtnText) uploadBtnText.textContent = 'Changer la photo';
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function handleProductFileSelected(e) {
+  const file = e.target.files && e.target.files[0];
+  if (file) {
+    compressAndSetImage(file);
+  }
+}
+
+function removeProductPhoto() {
+  const previewImg = document.getElementById('admin-image-preview');
+  const placeholder = document.getElementById('admin-image-placeholder');
+  const hiddenInput = document.getElementById('form-product-img');
+  const removeBtn = document.getElementById('btn-remove-photo');
+  const uploadBtnText = document.getElementById('btn-upload-text');
+  const fileInput = document.getElementById('form-product-file');
+  const urlInput = document.getElementById('form-product-url-input');
+
+  if (hiddenInput) hiddenInput.value = '';
+  if (fileInput) fileInput.value = '';
+  if (urlInput) urlInput.value = '';
+  if (previewImg) {
+    previewImg.src = '';
+    previewImg.style.display = 'none';
+  }
+  if (placeholder) placeholder.style.display = 'flex';
+  if (removeBtn) removeBtn.style.display = 'none';
+  if (uploadBtnText) uploadBtnText.textContent = 'Choisir une photo';
+}
+
+function setProductPhotoPreview(imgSrc) {
+  const previewImg = document.getElementById('admin-image-preview');
+  const placeholder = document.getElementById('admin-image-placeholder');
+  const hiddenInput = document.getElementById('form-product-img');
+  const removeBtn = document.getElementById('btn-remove-photo');
+  const uploadBtnText = document.getElementById('btn-upload-text');
+  const urlInput = document.getElementById('form-product-url-input');
+
+  if (imgSrc && imgSrc.trim()) {
+    const val = imgSrc.trim();
+    if (hiddenInput) hiddenInput.value = val;
+    if (urlInput) urlInput.value = val.startsWith('http') ? val : '';
+    if (previewImg) {
+      previewImg.src = val;
+      previewImg.style.display = 'block';
+      previewImg.onerror = () => {
+        previewImg.style.display = 'none';
+        if (placeholder) placeholder.style.display = 'flex';
+      };
+    }
+    if (placeholder) placeholder.style.display = 'none';
+    if (removeBtn) removeBtn.style.display = 'inline-flex';
+    if (uploadBtnText) uploadBtnText.textContent = 'Changer la photo';
+  } else {
+    removeProductPhoto();
+  }
+}
+
+function toggleImageUrlInput() {
+  const container = document.getElementById('admin-url-input-container');
+  if (container) {
+    container.style.display = container.style.display === 'none' ? 'block' : 'none';
+  }
+}
+
+function handleManualUrlInput(url) {
+  const hiddenInput = document.getElementById('form-product-img');
+  const previewImg = document.getElementById('admin-image-preview');
+  const placeholder = document.getElementById('admin-image-placeholder');
+  const removeBtn = document.getElementById('btn-remove-photo');
+  const uploadBtnText = document.getElementById('btn-upload-text');
+
+  if (url && url.trim()) {
+    const val = url.trim();
+    if (hiddenInput) hiddenInput.value = val;
+    if (previewImg) {
+      previewImg.src = val;
+      previewImg.style.display = 'block';
+    }
+    if (placeholder) placeholder.style.display = 'none';
+    if (removeBtn) removeBtn.style.display = 'inline-flex';
+    if (uploadBtnText) uploadBtnText.textContent = 'Changer la photo';
+  } else {
+    removeProductPhoto();
+  }
 }
 
 function handleSaveProductForm(e) {
