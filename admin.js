@@ -74,7 +74,10 @@ let ADMIN_SETTINGS = {
   midiEnd: '14:30',
   soirStart: '18:30',
   soirEnd: '22:00',
+  maxOrdersPerSlotWeek: 5,
+  maxOrdersPerSlotWeekend: 3,
   maxOrdersPerSlot: 5,
+  maxReservationsPerSlot: 5,
   discount: 10,
   phone: '01 30 79 00 88',
   whatsapp: '33130790088',
@@ -491,8 +494,12 @@ function populateSettingsFields() {
   document.getElementById('soir-start').value = ADMIN_SETTINGS.soirStart || '18:30';
   document.getElementById('soir-end').value = ADMIN_SETTINGS.soirEnd || '22:00';
   document.getElementById('discount-input').value = ADMIN_SETTINGS.discount || 10;
-  const maxOrdersEl = document.getElementById('max-orders-slot-input');
-  if (maxOrdersEl) maxOrdersEl.value = ADMIN_SETTINGS.maxOrdersPerSlot || 5;
+  const maxOrdersWeekEl = document.getElementById('max-orders-week-input');
+  if (maxOrdersWeekEl) maxOrdersWeekEl.value = ADMIN_SETTINGS.maxOrdersPerSlotWeek || ADMIN_SETTINGS.maxOrdersPerSlot || 5;
+  const maxOrdersWeekendEl = document.getElementById('max-orders-weekend-input');
+  if (maxOrdersWeekendEl) maxOrdersWeekendEl.value = ADMIN_SETTINGS.maxOrdersPerSlotWeekend || 3;
+  const maxResEl = document.getElementById('max-reservations-slot-input');
+  if (maxResEl) maxResEl.value = ADMIN_SETTINGS.maxReservationsPerSlot || 5;
   document.getElementById('phone-display-input').value = ADMIN_SETTINGS.phone || '01 30 79 00 88';
   document.getElementById('whatsapp-number-input').value = ADMIN_SETTINGS.whatsapp || '33130790088';
   document.getElementById('address-input').value = ADMIN_SETTINGS.address || '32 Rue des Dames, 78340 Les Clayes-sous-Bois';
@@ -508,8 +515,13 @@ function collectSettingsFromForm() {
   ADMIN_SETTINGS.soirStart = document.getElementById('soir-start').value;
   ADMIN_SETTINGS.soirEnd = document.getElementById('soir-end').value;
   ADMIN_SETTINGS.discount = parseInt(document.getElementById('discount-input').value, 10) || 10;
-  const maxOrdersInput = document.getElementById('max-orders-slot-input');
-  ADMIN_SETTINGS.maxOrdersPerSlot = maxOrdersInput ? (parseInt(maxOrdersInput.value, 10) || 5) : 5;
+  const maxOrdersWeekInput = document.getElementById('max-orders-week-input');
+  ADMIN_SETTINGS.maxOrdersPerSlotWeek = maxOrdersWeekInput ? (parseInt(maxOrdersWeekInput.value, 10) || 5) : 5;
+  const maxOrdersWeekendInput = document.getElementById('max-orders-weekend-input');
+  ADMIN_SETTINGS.maxOrdersPerSlotWeekend = maxOrdersWeekendInput ? (parseInt(maxOrdersWeekendInput.value, 10) || 3) : 3;
+  ADMIN_SETTINGS.maxOrdersPerSlot = ADMIN_SETTINGS.maxOrdersPerSlotWeek;
+  const maxResInput = document.getElementById('max-reservations-slot-input');
+  ADMIN_SETTINGS.maxReservationsPerSlot = maxResInput ? (parseInt(maxResInput.value, 10) || 5) : 5;
   ADMIN_SETTINGS.phone = document.getElementById('phone-display-input').value.trim();
   ADMIN_SETTINGS.whatsapp = document.getElementById('whatsapp-number-input').value.trim();
   ADMIN_SETTINGS.address = document.getElementById('address-input').value.trim();

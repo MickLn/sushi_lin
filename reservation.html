@@ -1081,7 +1081,67 @@
       const today = new Date().toISOString().split('T')[0];
       dateInput.min = today;
       dateInput.value = today;
+      dateInput.addEventListener('change', updateReservationSlotsAvailability);
     }
+
+    // Gestion de la capacité maximale des créneaux de réservation
+    function updateReservationSlotsAvailability() {
+      const dateInp = document.getElementById('res-date');
+      const serviceSelect = document.getElementById('res-service');
+      if (!dateInp || !serviceSelect) return;
+
+      const selectedDate = dateInp.value;
+      if (!selectedDate) return;
+
+      let maxResPerSlot = 5;
+      try {
+        const savedSettings = JSON.parse(localStorage.getItem('sushilin_admin_settings') || '{}');
+        if (typeof savedSettings.maxReservationsPerSlot === 'number' && savedSettings.maxReservationsPerSlot > 0) {
+          maxResPerSlot = savedSettings.maxReservationsPerSlot;
+        }
+      } catch {}
+
+      const reservations = JSON.parse(localStorage.getItem('sushilin_reservations') || '[]');
+      const countsPerSlot = {};
+      reservations.forEach(r => {
+        if (r.date === selectedDate && r.status !== 'cancelled') {
+          const s = (r.service || '').trim();
+          if (s) {
+            countsPerSlot[s] = (countsPerSlot[s] || 0) + 1;
+          }
+        }
+      });
+
+      const options = Array.from(serviceSelect.options);
+      let hasValidSelected = false;
+
+      options.forEach(opt => {
+        const slotValue = opt.value;
+        const count = countsPerSlot[slotValue] || 0;
+        const baseLabel = slotValue;
+
+        if (count >= maxResPerSlot) {
+          opt.disabled = true;
+          opt.textContent = `${baseLabel} (Complet)`;
+        } else {
+          opt.disabled = false;
+          opt.textContent = baseLabel;
+          if (opt.value === serviceSelect.value && !opt.disabled) {
+            hasValidSelected = true;
+          }
+        }
+      });
+
+      if (!hasValidSelected) {
+        const firstAvailable = options.find(o => !o.disabled);
+        if (firstAvailable) {
+          serviceSelect.value = firstAvailable.value;
+        }
+      }
+    }
+
+    // Synchronisation initiale des créneaux disponibles
+    updateReservationSlotsAvailability();
 
     // Formatage automatique du numéro de téléphone par paires (chiffres uniquement)
     const phoneInput = document.getElementById('res-phone');
@@ -1135,6 +1195,23 @@
       const name = document.getElementById('res-name').value;
       const phone = document.getElementById('res-phone').value;
       const notes = document.getElementById('res-notes')?.value || '';
+
+      // Vérification du quota du créneau
+      let maxResPerSlot = 5;
+      try {
+        const savedSettings = JSON.parse(localStorage.getItem('sushilin_admin_settings') || '{}');
+        if (typeof savedSettings.maxReservationsPerSlot === 'number' && savedSettings.maxReservationsPerSlot > 0) {
+          maxResPerSlot = savedSettings.maxReservationsPerSlot;
+        }
+      } catch {}
+
+      const existingRes = JSON.parse(localStorage.getItem('sushilin_reservations') || '[]');
+      const currentCount = existingRes.filter(r => r.date === date && r.service === service && r.status !== 'cancelled').length;
+      if (currentCount >= maxResPerSlot) {
+        showToastNotification(`Le créneau de ${service} est désormais complet. Veuillez choisir un autre horaire.`);
+        updateReservationSlotsAvailability();
+        return;
+      }
 
       const resId = getNextDailyReservationNumber();
       const email = document.getElementById('res-email')?.value.trim() || '';

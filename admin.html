@@ -328,12 +328,30 @@
               </div>
               <div class="card-body">
                 <div class="form-field">
-                  <label for="max-orders-slot-input">Nombre max de commandes par créneau (15 min) :</label>
+                  <label for="max-orders-week-input">Commandes max par créneau · SEMAINE (Lun - Ven) :</label>
                   <div class="input-unit-wrap">
-                    <input type="number" id="max-orders-slot-input" class="admin-input" value="5" min="1" max="50">
+                    <input type="number" id="max-orders-week-input" class="admin-input" value="5" min="1" max="50">
                     <span class="input-unit" style="right: 10px; font-size: 11px; font-weight: 700;">cmd</span>
                   </div>
-                  <span class="field-hint">Dès que ce quota est atteint sur un créneau, il est automatiquement grisé (Complet) dans le panier client.</span>
+                  <span class="field-hint">Limite automatique appliquée du lundi au vendredi.</span>
+                </div>
+
+                <div class="form-field mt-16">
+                  <label for="max-orders-weekend-input">Commandes max par créneau · WEEK-END (Sam - Dim) :</label>
+                  <div class="input-unit-wrap">
+                    <input type="number" id="max-orders-weekend-input" class="admin-input" value="3" min="1" max="50">
+                    <span class="input-unit" style="right: 10px; font-size: 11px; font-weight: 700; color: var(--primary);">cmd</span>
+                  </div>
+                  <span class="field-hint">Limite automatique appliquée le samedi et le dimanche.</span>
+                </div>
+
+                <div class="form-field mt-16">
+                  <label for="max-reservations-slot-input">Réservations de table max par créneau :</label>
+                  <div class="input-unit-wrap">
+                    <input type="number" id="max-reservations-slot-input" class="admin-input" value="5" min="1" max="50">
+                    <span class="input-unit" style="right: 10px; font-size: 11px; font-weight: 700;">tables</span>
+                  </div>
+                  <span class="field-hint">Dès que ce quota est atteint pour une date et un créneau, il est automatiquement grisé (Complet) sur le formulaire de réservation.</span>
                 </div>
               </div>
             </div>

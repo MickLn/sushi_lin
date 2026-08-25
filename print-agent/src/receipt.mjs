@@ -38,17 +38,20 @@ function printRestaurantHeader(printer, header) {
 }
 
 function printCustomerBlock(printer, order) {
+  const pickupTime = formatPickupTime(order.timeWindow || order.pickupTime) || '19h30';
+  printer.alignCenter();
+  printer.setTextQuadArea();
   printer.bold(true);
-  printer.println(`N. commande :   ${order.number}`);
+  printer.println(`COMMANDE #${String(order.number).replace(/^#/, '')}`);
+  printer.println(`RETRAIT : ${pickupTime}`);
+  printer.setTextNormal();
   printer.bold(false);
+  printer.alignLeft();
+  printer.drawLine("-");
 
   const serviceDate = formatServiceDate(order);
   if (serviceDate !== undefined) {
     printer.println(`Date :          ${serviceDate}`);
-  }
-  const pickupTime = formatPickupTime(order.timeWindow || order.pickupTime);
-  if (pickupTime !== undefined) {
-    printer.println(`Heure retrait : ${pickupTime}`);
   }
 
   printer.println(`Nom client :    ${stripAccents(order.customerName)}`);
@@ -63,14 +66,14 @@ function printCustomerBlock(printer, order) {
 
 function printPreferencesBlock(printer, order) {
   const preferences = [];
-  if (isPresent(order.note)) {
-    preferences.push(`Commentaires :  ${stripAccents(order.note)}`);
+  if (isPresent(order.sauceChoice || order.sauce)) {
+    preferences.push(`Sauce :         ${formatSauce(order.sauceChoice || order.sauce)}`);
   }
-  if (isPresent(order.flatwareQty) && order.flatwareQty > 0) {
-    preferences.push(`Nb. couverts :  ${order.flatwareQty}`);
+  if (isPresent(order.baguettesChoice || order.flatwareQty) && (order.flatwareQty > 0 || order.baguettesChoice)) {
+    preferences.push(`Baguettes :     ${order.baguettesChoice || order.flatwareQty}`);
   }
-  if (isPresent(order.sauce)) {
-    preferences.push(`Sauce :         ${formatSauce(order.sauce)}`);
+  if (isPresent(order.comment || order.note)) {
+    preferences.push(`Remarques :     ${stripAccents(order.comment || order.note)}`);
   }
 
   if (preferences.length === 0) {
@@ -206,6 +209,78 @@ function printTotals(printer, order) {
   printer.alignLeft();
 }
 
+export function renderKitchenTicket(printer, order, header = getRestaurantHeader()) {
+  printer.setTypeFontA();
+  printer.setTextNormal();
+  printer.alignCenter();
+  printer.bold(true);
+  printer.println(stripAccents("SUSHI LIN - CUISINE"));
+  printer.bold(false);
+  printer.drawLine("-");
+
+  printer.setTextQuadArea(); // Double Width + Double Height
+  printer.bold(true);
+  printer.println(`COMMANDE #${order.id || order.number || '1'}`);
+  const pickupTime = formatPickupTime(order.timeWindow || order.pickupTime || '19h30');
+  printer.println(`RETRAIT : ${pickupTime}`);
+  printer.setTextNormal();
+  printer.bold(false);
+  printer.alignLeft();
+  printer.drawLine("-");
+
+  const serviceDate = formatServiceDate(order);
+  if (serviceDate) {
+    printer.println(`Date : ${serviceDate}`);
+  }
+  const custName = stripAccents(order.customerName || order.name || 'Client');
+  const custPhone = order.customerPhone || order.phone || '';
+  printer.println(`Client : ${custName}${custPhone ? ` (${custPhone})` : ''}`);
+
+  if (order.sauceChoice || order.sauce) {
+    printer.println(`Sauce :     ${stripAccents(order.sauceChoice || order.sauce)}`);
+  }
+  if (order.baguettesChoice || order.flatwareQty) {
+    printer.println(`Baguettes : ${stripAccents(String(order.baguettesChoice || order.flatwareQty))}`);
+  }
+  if (order.comment || order.note) {
+    printer.bold(true);
+    printer.println(`Remarques : ${stripAccents(order.comment || order.note)}`);
+    printer.bold(false);
+  }
+  printer.drawLine("-");
+  printer.newLine();
+
+  let totalQty = 0;
+  for (const it of (order.items || [])) {
+    const qty = Number(it.qty || it.quantity || 1);
+    totalQty += qty;
+    const code = stripAccents(it.code || '—');
+    const name = stripAccents(it.name || 'Article').toUpperCase();
+
+    printer.setTextQuadArea(); // Double Width + Double Height
+    printer.bold(true);
+    printer.println(`[ ${code} ]  ${qty}x`);
+    printer.println(name);
+    printer.setTextNormal();
+    printer.bold(false);
+
+    const details = it.details || it.selectedOptions || [];
+    for (const d of details) {
+      const dStr = typeof d === 'string' ? d : `${d.quantity || 1}x ${d.flavor || d.name || ''}`;
+      printer.println(`     - ${stripAccents(dStr)}`);
+    }
+    printer.newLine();
+  }
+
+  printer.drawLine("-");
+  printer.alignCenter();
+  printer.bold(true);
+  printer.println(`Total articles : ${totalQty}`);
+  printer.bold(false);
+  printer.alignLeft();
+  printer.newLine();
+}
+
 export function renderThermalTicket(printer, order, header = getRestaurantHeader()) {
   printer.setTypeFontA();
   printer.setTextNormal();
@@ -227,6 +302,76 @@ export function renderThermalTicket(printer, order, header = getRestaurantHeader
 
   printer.alignCenter();
   printer.println("Merci de votre visite, a bientot !");
+  printer.alignLeft();
+  printer.newLine();
+}
+
+export function renderReservationTicket(printer, reservation, header = getRestaurantHeader()) {
+  printer.setTypeFontA();
+  printer.setTextNormal();
+  printRestaurantHeader(printer, header);
+  printer.drawLine("-");
+
+  printer.alignCenter();
+  printer.bold(true);
+  printer.println("*** NOUVELLE RESERVATION ***");
+  printer.bold(false);
+  printer.alignLeft();
+  printer.drawLine("-");
+
+  const resNum = reservation.id || reservation.number || '1';
+  printer.bold(true);
+  printer.println(`N. reservation : #${resNum}`);
+  printer.bold(false);
+
+  let dateStr = reservation.date || reservation.reservation_date || '';
+  if (dateStr.length === 10 && dateStr[4] === '-' && dateStr[7] === '-') {
+    const [y, m, d] = dateStr.split('-');
+    dateStr = `${d}/${m}/${y}`;
+  }
+  if (dateStr) {
+    printer.println(`Date :           ${stripAccents(dateStr)}`);
+  }
+
+  const service = reservation.service || reservation.service_time || '19h00';
+  printer.bold(true);
+  printer.println(`Creneau :        ${stripAccents(service)}`);
+  printer.bold(false);
+
+  const guests = String(reservation.guests || reservation.guests_count || 2);
+  const guestsLabel = `${guests} personne${guests !== '1' ? 's' : ''}`;
+  printer.bold(true);
+  printer.println(`Nb. couverts :   ${guestsLabel}`);
+  printer.bold(false);
+  printer.drawLine("-");
+
+  const custName = reservation.name || reservation.customer_name || 'Client';
+  printer.println(`Nom client :     ${stripAccents(custName)}`);
+
+  const custPhone = reservation.phone || reservation.customer_phone || '';
+  if (custPhone) {
+    printer.bold(true);
+    printer.println(`Telephone :      ${stripAccents(custPhone)}`);
+    printer.bold(false);
+  }
+
+  const custEmail = (reservation.email || reservation.customer_email || '').trim();
+  if (custEmail) {
+    printer.println(`Email :          ${custEmail}`);
+  }
+
+  const notes = (reservation.notes || '').trim();
+  if (notes) {
+    printer.drawLine("-");
+    printer.println(`Remarques :      ${stripAccents(notes)}`);
+  }
+
+  printer.drawLine("-");
+  printer.alignCenter();
+  printer.bold(true);
+  printer.println("Statut : TABLE CONFIRMEE");
+  printer.bold(false);
+  printer.println("Enregistre sur sushilin.fr");
   printer.alignLeft();
   printer.newLine();
 }

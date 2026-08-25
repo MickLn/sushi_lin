@@ -556,6 +556,15 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
                 # Sauvegarde immédiate dans PostgreSQL
                 db_saved = db.save_reservation(res_data)
 
+                # Impression automatique directe du ticket thermique de réservation (IP: 192.168.1.210)
+                try:
+                    import threading
+                    import thermal_printer
+                    threading.Thread(target=thermal_printer.send_reservation_to_thermal_printer, args=(res_data, "192.168.1.210", 9100), daemon=True).start()
+                    print(f"[PRINT] 🖨️ Déclenchement automatique de l'impression pour la réservation #{res_id_clean} vers 192.168.1.210...", flush=True)
+                except Exception as p_err:
+                    print(f"[PRINT] Erreur déclenchement impression réservation: {p_err}", flush=True)
+
                 print(f"\n[RÉSERVATION TABLE SUSHI LIN] #{res_id_clean} - {res_name_clean} ({res_guests_clean} couverts, DB: {'OK' if db_saved else 'N/A'}):", flush=True)
                 print(f"   Date: {res_date_clean} | Créneau: {res_service_clean} | Tél: {res_phone_clean}", flush=True)
 

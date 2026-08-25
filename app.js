@@ -274,10 +274,23 @@ function getCategorySvgIcon(catId) {
     </div>`;
 }
 
-// ---- Generate Available Pickup Slots (Dès l'ouverture et jusqu'à 15 min avant fermeture) ----
+// Helper: Convert "12h15" or "12:15" to minutes from midnight
+function timeStrToMinutes(timeStr) {
+  if (!timeStr) return 0;
+  const cleaned = timeStr.replace(/h/i, ':');
+  const [h, m] = cleaned.split(':').map(Number);
+  return (h || 0) * 60 + (m || 0);
+}
+
+// ---- Generate Available Pickup Slots (Clôture 30 min avant fermeture, dernier retrait 15 min avant) ----
 function generatePickupTimeSlots() {
   if (!pickupTimeSelect) return;
-  const maxOrders = APP_SETTINGS.maxOrdersPerSlot || 5;
+  const now = new Date();
+  const dayOfWeek = now.getDay(); // 0 = Dimanche, 6 = Samedi
+  const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
+  const maxOrders = isWeekend 
+    ? (typeof APP_SETTINGS.maxOrdersPerSlotWeekend === 'number' ? APP_SETTINGS.maxOrdersPerSlotWeekend : 3)
+    : (typeof APP_SETTINGS.maxOrdersPerSlotWeek === 'number' ? APP_SETTINGS.maxOrdersPerSlotWeek : (APP_SETTINGS.maxOrdersPerSlot || 5));
 
   // Calcul du nombre de commandes par créneau pour aujourd'hui
   let orders = [];
@@ -286,7 +299,7 @@ function generatePickupTimeSlots() {
   } catch (e) {
     orders = [];
   }
-  const todayStr = new Date().toLocaleDateString('fr-FR');
+  const todayStr = now.toLocaleDateString('fr-FR');
   const slotCounts = {};
 
   orders.forEach(order => {
@@ -298,7 +311,14 @@ function generatePickupTimeSlots() {
   });
 
   pickupTimeSelect.innerHTML = '';
-  
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+  // Heures de fermeture & Clôtures
+  const midiEndMin = timeStrToMinutes(APP_SETTINGS.midiEnd || '14:30');
+  const midiCutoffMin = midiEndMin - 30; // 14h00 par défaut
+  const soirEndMin = timeStrToMinutes(APP_SETTINGS.soirEnd || '22:00');
+  const soirCutoffMin = soirEndMin - 30; // 21h30 par défaut
+
   const midiSlots = [
     '12h00', '12h15', '12h30', '12h45',
     '13h00', '13h15', '13h30', '13h45',
@@ -312,13 +332,25 @@ function generatePickupTimeSlots() {
     '21h00', '21h15', '21h30', '21h45'
   ];
 
+  // 1. Service du Midi
+  const isMidiClosedForOrders = currentMinutes >= midiCutoffMin;
   const midiGroup = document.createElement('optgroup');
-  midiGroup.label = 'Midi (12h00 – 14h15)';
+  midiGroup.label = isMidiClosedForOrders ? 'Midi (Service clôturé à 14h00)' : 'Midi (12h00 – 14h15)';
+
   midiSlots.forEach(slot => {
+    const slotMin = timeStrToMinutes(slot);
     const opt = document.createElement('option');
     opt.value = slot;
     const count = slotCounts[slot] || 0;
-    if (count >= maxOrders) {
+
+    if (isMidiClosedForOrders) {
+      opt.disabled = true;
+      opt.textContent = `À ${slot} (Clôturé)`;
+    } else if (slotMin < currentMinutes + 15) {
+      // Moins de 15 min de préparation ou heure passée
+      opt.disabled = true;
+      opt.textContent = `À ${slot} (Passé)`;
+    } else if (count >= maxOrders) {
       opt.disabled = true;
       opt.textContent = `À ${slot} (Complet)`;
     } else {
@@ -328,13 +360,25 @@ function generatePickupTimeSlots() {
   });
   pickupTimeSelect.appendChild(midiGroup);
 
+  // 2. Service du Soir
+  const isSoirClosedForOrders = currentMinutes >= soirCutoffMin;
   const soirGroup = document.createElement('optgroup');
-  soirGroup.label = 'Soir (18h30 – 21h45)';
+  soirGroup.label = isSoirClosedForOrders ? 'Soir (Service clôturé à 21h30)' : 'Soir (18h30 – 21h45)';
+
   soirSlots.forEach(slot => {
+    const slotMin = timeStrToMinutes(slot);
     const opt = document.createElement('option');
     opt.value = slot;
     const count = slotCounts[slot] || 0;
-    if (count >= maxOrders) {
+
+    if (isSoirClosedForOrders) {
+      opt.disabled = true;
+      opt.textContent = `À ${slot} (Clôturé)`;
+    } else if (slotMin < currentMinutes + 15) {
+      // Moins de 15 min de préparation ou heure passée
+      opt.disabled = true;
+      opt.textContent = `À ${slot} (Passé)`;
+    } else if (count >= maxOrders) {
       opt.disabled = true;
       opt.textContent = `À ${slot} (Complet)`;
     } else {
@@ -344,10 +388,19 @@ function generatePickupTimeSlots() {
   });
   pickupTimeSelect.appendChild(soirGroup);
 
-  // Sélectionner le premier créneau disponible
-  if (pickupTimeSelect.selectedOptions.length === 0 || pickupTimeSelect.selectedOptions[0].disabled) {
-    const firstAvailable = Array.from(pickupTimeSelect.options).find(o => !o.disabled);
-    if (firstAvailable) firstAvailable.selected = true;
+  // Sélectionner automatiquement le premier créneau valide et ouvert
+  const availableOptions = Array.from(pickupTimeSelect.options).filter(o => !o.disabled);
+  if (availableOptions.length > 0) {
+    if (!pickupTimeSelect.value || pickupTimeSelect.selectedOptions[0]?.disabled) {
+      availableOptions[0].selected = true;
+    }
+  } else {
+    // Si aucun créneau n'est disponible (ex: après 21h30)
+    const closedOpt = document.createElement('option');
+    closedOpt.disabled = true;
+    closedOpt.selected = true;
+    closedOpt.textContent = 'Commandes fermées pour aujourd\'hui (Réouverture demain à 12h00)';
+    pickupTimeSelect.appendChild(closedOpt);
   }
 }
 
@@ -357,6 +410,8 @@ let APP_SETTINGS = {
   exceptionalMessage: '',
   scheduleText: 'Ouvert 7j/7 · 12h00–14h30 & 18h30–22h00',
   discount: 10,
+  maxOrdersPerSlotWeek: 5,
+  maxOrdersPerSlotWeekend: 3,
   maxOrdersPerSlot: 5,
   phone: '01 30 79 00 88',
   whatsapp: '33130790088'
@@ -1381,6 +1436,34 @@ function handleOrderCheckout() {
   if (!customerEmail) {
     alert('Veuillez renseigner votre adresse e-mail pour recevoir la confirmation de votre commande.');
     emailInput?.focus();
+    return;
+  }
+
+  // Vérification de la disponibilité du créneau et des heures limites de commande
+  const nowForCheck = new Date();
+  const currentMinutes = nowForCheck.getHours() * 60 + nowForCheck.getMinutes();
+  const slotMin = timeStrToMinutes(pickupTime);
+  const midiEndMin = timeStrToMinutes(APP_SETTINGS.midiEnd || '14:30');
+  const midiCutoffMin = midiEndMin - 30; // 14h00
+  const soirEndMin = timeStrToMinutes(APP_SETTINGS.soirEnd || '22:00');
+  const soirCutoffMin = soirEndMin - 30; // 21h30
+  const soirStartMin = timeStrToMinutes(APP_SETTINGS.soirStart || '18:30');
+
+  const isLunchSlot = slotMin < soirStartMin;
+
+  if (isLunchSlot && currentMinutes >= midiCutoffMin) {
+    alert('Les commandes pour le service du midi sont clôturées depuis 14h00. Veuillez sélectionner un créneau pour le service du soir.');
+    generatePickupTimeSlots();
+    return;
+  }
+  if (!isLunchSlot && currentMinutes >= soirCutoffMin) {
+    alert('Les commandes en ligne pour ce soir sont clôturées (clôture à 21h30). Réouverture demain dès 12h00.');
+    generatePickupTimeSlots();
+    return;
+  }
+  if (slotMin < currentMinutes + 15) {
+    alert('Ce créneau horaire n\'est plus disponible. Veuillez choisir un autre horaire.');
+    generatePickupTimeSlots();
     return;
   }
 
