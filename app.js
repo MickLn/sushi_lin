@@ -64,19 +64,63 @@ function closeMochiModal() {
   document.body.style.overflow = '';
 }
 
+function getMochiUnavailableFlavors() {
+  // 1. Direct dedicated storage key
+  try {
+    const rawDirect = localStorage.getItem('sushilin_mochi_unavailable');
+    if (rawDirect) {
+      const parsed = JSON.parse(rawDirect);
+      if (Array.isArray(parsed)) return parsed;
+    }
+  } catch {}
+
+  // 2. From MENU_DATA items
+  if (typeof MENU_DATA !== 'undefined' && Array.isArray(MENU_DATA?.items)) {
+    const mochi = MENU_DATA.items.find(m => isMochiItem(m));
+    if (mochi && Array.isArray(mochi.unavailableFlavors)) {
+      return mochi.unavailableFlavors;
+    }
+  }
+
+  // 3. From currentMochiItem
+  if (currentMochiItem && Array.isArray(currentMochiItem.unavailableFlavors)) {
+    return currentMochiItem.unavailableFlavors;
+  }
+
+  // 4. From sushilin_admin_menu in localStorage
+  try {
+    const rawAdmin = localStorage.getItem('sushilin_admin_menu');
+    if (rawAdmin) {
+      const parsed = JSON.parse(rawAdmin);
+      const mochi = parsed.items?.find(m => isMochiItem(m));
+      if (mochi && Array.isArray(mochi.unavailableFlavors)) {
+        return mochi.unavailableFlavors;
+      }
+    }
+  } catch {}
+
+  return [];
+}
+
 function renderMochiFlavorsList() {
   const listEl = document.getElementById('mochi-flavors-list');
   if (!listEl) return;
 
+  const unavailableFlavors = getMochiUnavailableFlavors();
+
   listEl.innerHTML = MOCHI_FLAVORS.map(flavor => {
-    const qty = mochiSelection[flavor] || 0;
+    const isOutOfStock = unavailableFlavors.includes(flavor);
+    const qty = isOutOfStock ? 0 : (mochiSelection[flavor] || 0);
     return `
-      <div class="mochi-flavor-row ${qty > 0 ? 'has-qty' : ''}" data-flavor="${flavor}">
-        <span class="mochi-flavor-name">${flavor}</span>
+      <div class="mochi-flavor-row ${qty > 0 ? 'has-qty' : ''} ${isOutOfStock ? 'flavor-out-of-stock' : ''}" data-flavor="${flavor}">
+        <div class="mochi-flavor-left">
+          <span class="mochi-flavor-name">${flavor}</span>
+          ${isOutOfStock ? `<span class="mochi-out-badge">Épuisé</span>` : ''}
+        </div>
         <div class="mochi-flavor-stepper">
-          <button type="button" class="mochi-stepper-btn minus" onclick="updateMochiFlavorQty('${flavor.replace(/'/g, "\'")}', -1)" ${qty === 0 ? 'disabled' : ''} aria-label="Moins de ${flavor}">−</button>
+          <button type="button" class="mochi-stepper-btn minus" onclick="updateMochiFlavorQty('${flavor.replace(/'/g, "\\'")}', -1)" ${qty === 0 || isOutOfStock ? 'disabled' : ''} aria-label="Moins de ${flavor}">−</button>
           <span class="mochi-stepper-val">${qty}</span>
-          <button type="button" class="mochi-stepper-btn plus" onclick="updateMochiFlavorQty('${flavor.replace(/'/g, "\'")}', 1)" aria-label="Plus de ${flavor}">+</button>
+          <button type="button" class="mochi-stepper-btn plus" onclick="updateMochiFlavorQty('${flavor.replace(/'/g, "\\'")}', 1)" ${isOutOfStock ? 'disabled' : ''} aria-label="Plus de ${flavor}">+</button>
         </div>
       </div>
     `;
@@ -84,6 +128,9 @@ function renderMochiFlavorsList() {
 }
 
 function updateMochiFlavorQty(flavor, delta) {
+  const unavailableFlavors = getMochiUnavailableFlavors();
+  if (unavailableFlavors.includes(flavor)) return;
+
   const current = mochiSelection[flavor] || 0;
   const next = Math.max(0, current + delta);
   mochiSelection[flavor] = next;
@@ -473,6 +520,7 @@ async function loadMenuData() {
                 pieces: override.pieces !== undefined ? override.pieces : item.pieces,
                 desc: override.desc !== undefined ? override.desc : item.desc,
                 allergens: Array.isArray(override.allergens) ? override.allergens : item.allergens,
+                unavailableFlavors: Array.isArray(override.unavailableFlavors) ? override.unavailableFlavors : (item.unavailableFlavors || []),
                 img: item.img || override.img,
                 cat: override.cat || item.cat
               };

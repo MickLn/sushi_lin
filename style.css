@@ -3649,10 +3649,48 @@ input[type="date"]::-webkit-date-and-time-value {
   background: #FFF5F8;
 }
 
+.mochi-flavor-row.flavor-out-of-stock {
+  opacity: 0.52 !important;
+  background: #F1F5F9 !important;
+  border-color: #CBD5E1 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+}
+
+.mochi-flavor-row.flavor-out-of-stock .mochi-flavor-name {
+  color: #64748B !important;
+  text-decoration: line-through;
+}
+
+.mochi-flavor-row.flavor-out-of-stock .mochi-stepper-btn {
+  opacity: 0.3 !important;
+  pointer-events: none !important;
+  background: #E2E8F0 !important;
+  border-color: #CBD5E1 !important;
+}
+
+.mochi-flavor-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .mochi-flavor-name {
   font-size: 14px;
   font-weight: 700;
   color: var(--indigo-dark);
+}
+
+.mochi-out-badge {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  background: #FFF1F2;
+  color: #E11D48;
+  border: 1px solid #FECDD3;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
 }
 
 .mochi-flavor-stepper {

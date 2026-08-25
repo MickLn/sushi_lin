@@ -518,6 +518,7 @@ function handleSaveProductForm(e) {
         const allFlavors = ADMIN_MOCHI_FLAVORS;
         const checkedFlavors = Array.from(document.querySelectorAll('input[name="admin-mochi-flavor"]:checked')).map(cb => cb.value);
         item.unavailableFlavors = allFlavors.filter(f => !checkedFlavors.includes(f));
+        localStorage.setItem('sushilin_mochi_unavailable', JSON.stringify(item.unavailableFlavors));
       }
     }
   } else {
