@@ -780,9 +780,674 @@ function switchAdminTab(tabName) {
 
   if (tabName === 'orders') {
     renderAdminOrders();
+  } else if (tabName === 'stats') {
+    renderStatsDashboard();
   } else if (tabName === 'reservations') {
     renderAdminReservations();
   }
+}
+
+// ==========================================================================
+// STATISTIQUES & CHIFFRE D'AFFAIRES DASHBOARD MODULE
+// ==========================================================================
+let currentStatsPeriod = 'today';
+let selectedStatsWeekOffset = 0;
+let selectedStatsMonthKey = '';
+let selectedStatsYear = new Date().getFullYear();
+
+function parseOrderDate(order) {
+  if (order.timestamp) {
+    const d = new Date(order.timestamp);
+    if (!isNaN(d.getTime())) return d;
+  }
+  if (order.dateFormatted) {
+    const match = order.dateFormatted.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+    if (match) {
+      const day = parseInt(match[1], 10);
+      const month = parseInt(match[2], 10) - 1;
+      const year = parseInt(match[3], 10);
+      return new Date(year, month, day);
+    }
+  }
+  return new Date();
+}
+
+function setStatsPeriod(period) {
+  currentStatsPeriod = period;
+  document.querySelectorAll('.stats-period-pills .period-pill').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-period') === period);
+  });
+  renderStatsDashboard();
+}
+
+function handleStatsWeekChange(val) {
+  selectedStatsWeekOffset = parseInt(val, 10) || 0;
+  renderStatsDashboard();
+}
+
+function handleStatsMonthChange(val) {
+  selectedStatsMonthKey = val;
+  renderStatsDashboard();
+}
+
+function handleStatsYearChange(val) {
+  selectedStatsYear = parseInt(val, 10) || new Date().getFullYear();
+  renderStatsDashboard();
+}
+
+function updateStatsSubfilterUI(allOrders) {
+  const container = document.getElementById('stats-subfilter-area');
+  if (!container) return;
+
+  const now = new Date();
+
+  if (currentStatsPeriod === 'today') {
+    const dateFormatted = now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    const capitalized = dateFormatted.charAt(0).toUpperCase() + dateFormatted.slice(1);
+    container.innerHTML = `
+      <div class="stats-subfilter-badge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span>${capitalized}</span>
+      </div>
+    `;
+    return;
+  }
+
+  if (currentStatsPeriod === 'week') {
+    let optionsHtml = '';
+    for (let i = 0; i <= 5; i++) {
+      const day = now.getDay();
+      const diffToMonday = (day === 0 ? -6 : 1) - day;
+      const mon = new Date(now);
+      mon.setDate(now.getDate() + diffToMonday - (i * 7));
+      const sun = new Date(mon);
+      sun.setDate(mon.getDate() + 6);
+
+      const monStr = mon.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
+      const sunStr = sun.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
+
+      let label = '';
+      if (i === 0) label = `Cette semaine (${monStr} au ${sunStr})`;
+      else if (i === 1) label = `Semaine dernière (${monStr} au ${sunStr})`;
+      else label = `Il y a ${i} semaines (${monStr} au ${sunStr})`;
+
+      optionsHtml += `<option value="${i}" ${i === selectedStatsWeekOffset ? 'selected' : ''}>${label}</option>`;
+    }
+
+    container.innerHTML = `
+      <div class="stats-subfilter-select-group">
+        <label for="stats-week-select">Semaine :</label>
+        <select id="stats-week-select" class="stats-select" onchange="handleStatsWeekChange(this.value)">
+          ${optionsHtml}
+        </select>
+      </div>
+    `;
+    return;
+  }
+
+  if (currentStatsPeriod === 'month') {
+    const monthMap = new Map();
+    for (let i = 0; i < 6; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const name = d.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+      const capName = name.charAt(0).toUpperCase() + name.slice(1);
+      monthMap.set(key, i === 0 ? `${capName} (Mois en cours)` : capName);
+    }
+    allOrders.forEach(o => {
+      const d = parseOrderDate(o);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      if (!monthMap.has(key)) {
+        const name = d.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+        monthMap.set(key, name.charAt(0).toUpperCase() + name.slice(1));
+      }
+    });
+
+    if (!selectedStatsMonthKey || !monthMap.has(selectedStatsMonthKey)) {
+      selectedStatsMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    }
+
+    let optionsHtml = '';
+    monthMap.forEach((label, key) => {
+      optionsHtml += `<option value="${key}" ${key === selectedStatsMonthKey ? 'selected' : ''}>${label}</option>`;
+    });
+
+    container.innerHTML = `
+      <div class="stats-subfilter-select-group">
+        <label for="stats-month-select">Mois :</label>
+        <select id="stats-month-select" class="stats-select" onchange="handleStatsMonthChange(this.value)">
+          ${optionsHtml}
+        </select>
+      </div>
+    `;
+    return;
+  }
+
+  if (currentStatsPeriod === 'year') {
+    const currentYear = now.getFullYear();
+    const yearsSet = new Set([currentYear]);
+    allOrders.forEach(o => {
+      const d = parseOrderDate(o);
+      yearsSet.add(d.getFullYear());
+    });
+    const sortedYears = Array.from(yearsSet).sort((a, b) => b - a);
+
+    let optionsHtml = sortedYears.map(yr => {
+      const isCurrent = yr === currentYear;
+      const label = isCurrent ? `${yr} (Année en cours)` : `${yr}`;
+      return `<option value="${yr}" ${yr === selectedStatsYear ? 'selected' : ''}>${label}</option>`;
+    }).join('');
+
+    container.innerHTML = `
+      <div class="stats-subfilter-select-group">
+        <label for="stats-year-select">Année :</label>
+        <select id="stats-year-select" class="stats-select" onchange="handleStatsYearChange(this.value)">
+          ${optionsHtml}
+        </select>
+      </div>
+    `;
+    return;
+  }
+
+  if (currentStatsPeriod === 'all') {
+    container.innerHTML = `
+      <div class="stats-subfilter-badge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <span>Toutes les commandes depuis le lancement</span>
+      </div>
+    `;
+    return;
+  }
+}
+
+function getFilteredOrdersForStats(allOrders) {
+  const now = new Date();
+
+  if (currentStatsPeriod === 'today') {
+    return allOrders.filter(o => {
+      const d = parseOrderDate(o);
+      return d.getFullYear() === now.getFullYear() &&
+             d.getMonth() === now.getMonth() &&
+             d.getDate() === now.getDate();
+    });
+  }
+
+  if (currentStatsPeriod === 'week') {
+    const day = now.getDay();
+    const diffToMonday = (day === 0 ? -6 : 1) - day;
+    const mon = new Date(now);
+    mon.setDate(now.getDate() + diffToMonday - (selectedStatsWeekOffset * 7));
+    mon.setHours(0, 0, 0, 0);
+
+    const sun = new Date(mon);
+    sun.setDate(mon.getDate() + 6);
+    sun.setHours(23, 59, 59, 999);
+
+    return allOrders.filter(o => {
+      const d = parseOrderDate(o);
+      return d >= mon && d <= sun;
+    });
+  }
+
+  if (currentStatsPeriod === 'month') {
+    const targetKey = selectedStatsMonthKey || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    return allOrders.filter(o => {
+      const d = parseOrderDate(o);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      return key === targetKey;
+    });
+  }
+
+  if (currentStatsPeriod === 'year') {
+    return allOrders.filter(o => {
+      const d = parseOrderDate(o);
+      return d.getFullYear() === selectedStatsYear;
+    });
+  }
+
+  // 'all'
+  return allOrders;
+}
+
+async function renderStatsDashboard() {
+  const container = document.getElementById('stats-dashboard-content');
+  if (!container) return;
+
+  const allOrders = await syncAndGetOrders();
+  updateStatsSubfilterUI(allOrders);
+
+  const orders = getFilteredOrdersForStats(allOrders);
+  
+  if (orders.length === 0) {
+    container.innerHTML = `
+      <div style="background: #FFFFFF; border: 1.5px dashed var(--sakura-border); border-radius: var(--radius-lg); padding: 48px 24px; text-align: center; color: var(--text-secondary);">
+        <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--sakura-bg-soft); color: var(--sakura-vibrant); display: flex; align-items: center; justify-content: center; margin: 0 auto 14px;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+        </div>
+        <p style="font-size: 16px; font-weight: 800; color: var(--indigo-dark); margin-bottom: 6px;">Aucune donnée de vente pour cette sélection</p>
+        <p style="font-size: 13px; max-width: 420px; margin: 0 auto 16px;">Sélectionnez une autre semaine, mois ou période, ou simulez une commande de test pour visualiser les statistiques financières.</p>
+        <button onclick="generateTestOrder()" style="background: var(--sakura-bg-soft); color: var(--indigo-primary); border: 1.5px solid var(--sakura-border-strong); padding: 8px 18px; border-radius: var(--radius-md); font-weight: 800; cursor: pointer; font-size: 13px;">
+          + Créer une commande de test
+        </button>
+      </div>
+    `;
+    return;
+  }
+
+  // 1. KPIs
+  let totalRevenue = 0;
+  let totalItemsCount = 0;
+  let midiRevenue = 0;
+  let midiOrdersCount = 0;
+  let soirRevenue = 0;
+  let soirOrdersCount = 0;
+
+  const itemsMap = new Map();
+  const mochiFlavorsMap = new Map();
+  const catRevenueMap = new Map();
+  let saucesCount = { sucree: 0, salee: 0, none: 0 };
+  let baguettesCount = { yes: 0, no: 0 };
+
+  orders.forEach(order => {
+    let orderTotal = parseFloat(order.total);
+    if (isNaN(orderTotal) || orderTotal <= 0) {
+      orderTotal = (order.items || []).reduce((acc, it) => acc + ((parseFloat(it.price) || 0) * (parseInt(it.qty || it.quantity) || 1)), 0);
+    }
+    
+    // Check midi vs soir: pickupTime < 16h or timestamp hour < 16
+    let isMidi = false;
+    if (order.pickupTime) {
+      const match = order.pickupTime.match(/(\d+)h/i);
+      if (match) {
+        isMidi = parseInt(match[1], 10) < 16;
+      }
+    } else {
+      const d = parseOrderDate(order);
+      isMidi = d.getHours() < 16;
+    }
+
+    if (Array.isArray(order.items)) {
+      order.items.forEach(item => {
+        const qty = parseInt(item.qty || item.quantity || item.totalQuantity) || 1;
+        const price = parseFloat(item.price || item.unitPrice) || 0;
+        const lineTotal = price * qty;
+        totalItemsCount += qty;
+
+        // Items map
+        const key = String(item.id || item.code || item.name);
+        const existing = itemsMap.get(key) || {
+          id: item.id,
+          code: item.code || '',
+          name: item.name || 'Plat',
+          cat: item.cat || '',
+          qty: 0,
+          revenue: 0
+        };
+        existing.qty += qty;
+        existing.revenue += lineTotal;
+        itemsMap.set(key, existing);
+
+        // Mochi flavors
+        if (Array.isArray(item.details)) {
+          item.details.forEach(d => {
+            const fName = d.flavor || d.name;
+            const fQty = parseInt(d.quantity) || 1;
+            mochiFlavorsMap.set(fName, (mochiFlavorsMap.get(fName) || 0) + fQty);
+          });
+        }
+
+        // Category breakdown
+        const catKey = item.cat || 'Autre';
+        catRevenueMap.set(catKey, (catRevenueMap.get(catKey) || 0) + lineTotal);
+      });
+    }
+
+    totalRevenue += orderTotal;
+
+    if (isMidi) {
+      midiRevenue += orderTotal;
+      midiOrdersCount++;
+    } else {
+      soirRevenue += orderTotal;
+      soirOrdersCount++;
+    }
+
+    // Sauces & Baguettes
+    const sauce = (order.sauceChoice || '').toLowerCase();
+    if (sauce.includes('sucr')) saucesCount.sucree++;
+    else if (sauce.includes('sal')) saucesCount.salee++;
+    else saucesCount.none++;
+
+    const bag = (order.baguettesChoice || '').toLowerCase();
+    if (bag.includes('sans') || bag === '0') baguettesCount.no++;
+    else baguettesCount.yes++;
+  });
+
+  const ordersCount = orders.length;
+  const avgTicket = ordersCount > 0 ? (totalRevenue / ordersCount) : 0;
+  const midiAvg = midiOrdersCount > 0 ? (midiRevenue / midiOrdersCount) : 0;
+  const soirAvg = soirOrdersCount > 0 ? (soirRevenue / soirOrdersCount) : 0;
+
+  const topItems = Array.from(itemsMap.values())
+    .sort((a, b) => b.qty - a.qty)
+    .slice(0, 10);
+
+  const topMochis = Array.from(mochiFlavorsMap.entries())
+    .map(([flavor, count]) => ({ flavor, count }))
+    .sort((a, b) => b.count - a.count);
+
+  const sortedCats = Array.from(catRevenueMap.entries())
+    .map(([cat, rev]) => ({ cat, rev, pct: totalRevenue > 0 ? Math.round((rev / totalRevenue) * 100) : 0 }))
+    .sort((a, b) => b.rev - a.rev);
+
+  const midiPct = totalRevenue > 0 ? Math.round((midiRevenue / totalRevenue) * 100) : 50;
+  const soirPct = 100 - midiPct;
+
+  container.innerHTML = `
+    <!-- 4 KPI CARDS -->
+    <div class="stats-kpi-grid">
+      <div class="stats-kpi-card highlight">
+        <div class="kpi-icon-wrap">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-label">Chiffre d'Affaires</span>
+          <div class="kpi-val">${totalRevenue.toFixed(2).replace('.', ',')} <span class="kpi-currency">€</span></div>
+        </div>
+      </div>
+
+      <div class="stats-kpi-card">
+        <div class="kpi-icon-wrap">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-label">Commandes validées</span>
+          <div class="kpi-val">${ordersCount}</div>
+        </div>
+      </div>
+
+      <div class="stats-kpi-card">
+        <div class="kpi-icon-wrap">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-label">Panier moyen</span>
+          <div class="kpi-val">${avgTicket.toFixed(2).replace('.', ',')} <span class="kpi-currency">€</span></div>
+        </div>
+      </div>
+
+      <div class="stats-kpi-card">
+        <div class="kpi-icon-wrap">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-label">Portions & Plats vendus</span>
+          <div class="kpi-val">${totalItemsCount}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMPARATIF SERVICE DU MIDI vs SERVICE DU SOIR -->
+    <div class="stats-section-box mt-20">
+      <div class="stats-box-head">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+          <h3>Répartition des ventes : Service du Midi vs Soir</h3>
+        </div>
+      </div>
+      
+      <div class="service-split-bar-wrapper">
+        <div class="service-split-bar">
+          <div class="split-segment midi" style="width: ${midiPct}%;" title="Midi : ${midiPct}%">
+            ${midiPct > 15 ? `<span>Midi (${midiPct}%)</span>` : ''}
+          </div>
+          <div class="split-segment soir" style="width: ${soirPct}%;" title="Soir : ${soirPct}%">
+            ${soirPct > 15 ? `<span>Soir (${soirPct}%)</span>` : ''}
+          </div>
+        </div>
+
+        <div class="service-split-details">
+          <div class="service-col midi">
+            <div class="service-col-title">
+              <span class="service-dot"></span>
+              <span>Service du Midi (12h00 - 14h30)</span>
+            </div>
+            <div class="service-metrics">
+              <div class="service-metric-item">
+                <span class="metric-label">CA Midi :</span>
+                <span class="metric-val">${midiRevenue.toFixed(2).replace('.', ',')} €</span>
+              </div>
+              <div class="service-metric-item">
+                <span class="metric-label">Commandes :</span>
+                <span class="metric-val">${midiOrdersCount}</span>
+              </div>
+              <div class="service-metric-item">
+                <span class="metric-label">Panier moyen :</span>
+                <span class="metric-val">${midiAvg.toFixed(2).replace('.', ',')} €</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="service-col soir">
+            <div class="service-col-title">
+              <span class="service-dot"></span>
+              <span>Service du Soir (18h30 - 22h00)</span>
+            </div>
+            <div class="service-metrics">
+              <div class="service-metric-item">
+                <span class="metric-label">CA Soir :</span>
+                <span class="metric-val">${soirRevenue.toFixed(2).replace('.', ',')} €</span>
+              </div>
+              <div class="service-metric-item">
+                <span class="metric-label">Commandes :</span>
+                <span class="metric-val">${soirOrdersCount}</span>
+              </div>
+              <div class="service-metric-item">
+                <span class="metric-label">Panier moyen :</span>
+                <span class="metric-val">${soirAvg.toFixed(2).replace('.', ',')} €</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2 COLUMNS: TOP 10 ITEMS + CATEGORIES & MOCHIS -->
+    <div class="stats-two-cols mt-20">
+      
+      <!-- TOP 10 BEST SELLERS -->
+      <div class="stats-section-box">
+        <div class="stats-box-head">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.45 1-1 1H7.5"/><path d="M14 14.66V17c0 .55.45 1 1 1h1.5"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+            <h3>Top 10 des Meilleurs Plats</h3>
+          </div>
+          <span style="font-size: 11.5px; font-weight: 700; color: var(--text-secondary);">${topItems.length} plats classés</span>
+        </div>
+
+        <div class="stats-top-table-wrap">
+          <table class="stats-top-table">
+            <thead>
+              <tr>
+                <th style="width: 40px; text-align: center;">Rang</th>
+                <th>Plat</th>
+                <th style="text-align: center;">Ventes</th>
+                <th style="text-align: right;">CA (€)</th>
+                <th style="text-align: right;">Part CA</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${topItems.map((item, idx) => {
+                const pct = totalRevenue > 0 ? Math.round((item.revenue / totalRevenue) * 100) : 0;
+                return `
+                  <tr>
+                    <td style="text-align: center;">
+                      <span class="stats-rank-badge ${idx === 0 ? 'gold' : (idx === 1 ? 'silver' : (idx === 2 ? 'bronze' : ''))}">${idx + 1}</span>
+                    </td>
+                    <td>
+                      <div style="display: flex; align-items: center; gap: 8px;">
+                        ${item.code ? `<span class="stats-code-badge">${item.code}</span>` : ''}
+                        <span style="font-weight: 800; color: var(--indigo-dark);">${item.name}</span>
+                      </div>
+                    </td>
+                    <td style="text-align: center; font-weight: 800; color: var(--sakura-vibrant);">${item.qty}</td>
+                    <td style="text-align: right; font-weight: 800; color: var(--indigo-dark);">${item.revenue.toFixed(2).replace('.', ',')} €</td>
+                    <td style="text-align: right; font-weight: 700; color: var(--text-secondary);">${pct}%</td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN: CATEGORIES + MOCHIS + CONSUMABLES -->
+      <div style="display: flex; flex-direction: column; gap: 20px;">
+        
+        <!-- CATÉGORIES -->
+        <div class="stats-section-box">
+          <div class="stats-box-head">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+              <h3>Répartition par Catégorie</h3>
+            </div>
+          </div>
+
+          <div class="stats-cats-list">
+            ${sortedCats.map(c => `
+              <div class="stats-cat-row">
+                <div class="stats-cat-head">
+                  <span class="cat-name">${c.cat}</span>
+                  <span class="cat-rev">${c.rev.toFixed(2).replace('.', ',')} € <strong>(${c.pct}%)</strong></span>
+                </div>
+                <div class="stats-cat-bar-bg">
+                  <div class="stats-cat-bar-fill" style="width: ${c.pct}%;"></div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <!-- TOP PARFUMS MOCHIS (SI VENTES) -->
+        ${topMochis.length > 0 ? `
+        <div class="stats-section-box">
+          <div class="stats-box-head">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/></svg>
+              <h3>Ventes par Parfum de Mochis</h3>
+            </div>
+          </div>
+          <div class="mochi-stats-grid">
+            ${topMochis.map(m => `
+              <div class="mochi-stat-item">
+                <span class="mochi-stat-name">${m.flavor}</span>
+                <span class="mochi-stat-qty">${m.count} vendus</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        ` : ''}
+
+        <!-- CONSOMMABLES (SAUCES & BAGUETTES) -->
+        <div class="stats-section-box">
+          <div class="stats-box-head">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <h3>Préférences & Consommables</h3>
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div style="background: var(--admin-bg); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+              <div style="font-size: 11.5px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 6px;">Sauces demandées</div>
+              <div style="font-size: 12.5px; font-weight: 700; color: var(--indigo-dark); line-height: 1.6;">
+                <div>• Sucrée : <strong>${saucesCount.sucree}</strong></div>
+                <div>• Salée : <strong>${saucesCount.salee}</strong></div>
+                <div>• Sans sauce : <strong>${saucesCount.none}</strong></div>
+              </div>
+            </div>
+            <div style="background: var(--admin-bg); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+              <div style="font-size: 11.5px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 6px;">Baguettes</div>
+              <div style="font-size: 12.5px; font-weight: 700; color: var(--indigo-dark); line-height: 1.6;">
+                <div>• Avec baguettes : <strong>${baguettesCount.yes}</strong></div>
+                <div>• Sans baguette : <strong style="color: var(--sakura-vibrant);">${baguettesCount.no}</strong></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  `;
+}
+
+async function exportStatsCsv() {
+  const allOrders = await syncAndGetOrders();
+  const orders = getFilteredOrdersForStats(allOrders);
+  if (orders.length === 0) {
+    showToast('Aucune commande à exporter pour cette période.');
+    return;
+  }
+
+  const csvRows = [
+    ['Numero Commande', 'Date', 'Heure', 'Heure Retrait', 'Nom Client', 'Telephone', 'Email', 'Service', 'Nb Articles', 'Total TTC (EUR)', 'Sauces', 'Baguettes', 'Remarques', 'Detail Plats'].join(';')
+  ];
+
+  orders.forEach(order => {
+    let orderTotal = parseFloat(order.total);
+    if (isNaN(orderTotal) || orderTotal <= 0) {
+      orderTotal = (order.items || []).reduce((acc, it) => acc + ((parseFloat(it.price) || 0) * (parseInt(it.qty || it.quantity) || 1)), 0);
+    }
+    let itemsCount = 0;
+    let itemsDetail = [];
+
+    if (Array.isArray(order.items)) {
+      order.items.forEach(i => {
+        const q = parseInt(i.qty || i.quantity) || 1;
+        const p = parseFloat(i.price || i.unitPrice) || 0;
+        itemsCount += q;
+        let dStr = `${q}x ${i.name}`;
+        if (Array.isArray(i.details)) {
+          dStr += ` (${i.details.map(d => `${d.quantity}x ${d.flavor}`).join(', ')})`;
+        }
+        itemsDetail.push(dStr);
+      });
+    }
+
+    const d = parseOrderDate(order);
+    const dateStr = d.toLocaleDateString('fr-FR');
+    const timeStr = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    const isMidi = d.getHours() < 16;
+
+    const row = [
+      `"${order.id}"`,
+      `"${dateStr}"`,
+      `"${timeStr}"`,
+      `"${order.pickupTime || ''}"`,
+      `"${(order.customerName || '').replace(/"/g, '""')}"`,
+      `"${(order.customerPhone || '').replace(/"/g, '""')}"`,
+      `"${(order.customerEmail || '').replace(/"/g, '""')}"`,
+      `"${isMidi ? 'Midi' : 'Soir'}"`,
+      itemsCount,
+      orderTotal.toFixed(2).replace('.', ','),
+      `"${(order.sauceChoice || '').replace(/"/g, '""')}"`,
+      `"${(order.baguettesChoice || '').replace(/"/g, '""')}"`,
+      `"${(order.comment || '').replace(/"/g, '""')}"`,
+      `"${itemsDetail.join(' | ').replace(/"/g, '""')}"`
+    ];
+    csvRows.push(row.join(';'));
+  });
+
+  const csvContent = "\uFEFF" + csvRows.join("\r\n");
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.setAttribute('href', url);
+  link.setAttribute('download', `rapport_ventes_sushilin_${currentStatsPeriod}_${new Date().toISOString().slice(0, 10)}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  showToast('Rapport des ventes exporté avec succès en CSV !');
 }
 
 // ---- SUBTAB SWITCHING (COMMANDES vs RÉSERVATIONS) ----
@@ -822,109 +1487,236 @@ async function syncAndGetOrders() {
   return JSON.parse(localStorage.getItem('sushilin_orders') || '[]');
 }
 
+let currentOrdersDateFilter = 'today';
+let currentOrdersCustomDate = '';
+
+function setOrdersDateFilter(filter) {
+  currentOrdersDateFilter = filter;
+  ['today', 'yesterday', 'week', 'all'].forEach(f => {
+    const pill = document.getElementById(`pill-orders-${f}`);
+    if (pill) pill.classList.toggle('active', f === filter);
+  });
+  const dateInput = document.getElementById('orders-custom-date-picker');
+  if (dateInput && filter !== 'custom') dateInput.value = '';
+  renderAdminOrders();
+}
+
+function setOrdersCustomDate(val) {
+  if (!val) return;
+  currentOrdersCustomDate = val;
+  currentOrdersDateFilter = 'custom';
+  ['today', 'yesterday', 'week', 'all'].forEach(f => {
+    const pill = document.getElementById(`pill-orders-${f}`);
+    if (pill) pill.classList.remove('active');
+  });
+  renderAdminOrders();
+}
+
+let currentResDateFilter = 'today';
+let currentResCustomDate = '';
+
+function setResDateFilter(filter) {
+  currentResDateFilter = filter;
+  ['today', 'upcoming', 'week', 'all'].forEach(f => {
+    const pill = document.getElementById(`pill-res-${f}`);
+    if (pill) pill.classList.toggle('active', f === filter);
+  });
+  const dateInput = document.getElementById('res-custom-date-picker');
+  if (dateInput && filter !== 'custom') dateInput.value = '';
+  renderAdminReservations();
+}
+
+function setResCustomDate(val) {
+  if (!val) return;
+  currentResCustomDate = val;
+  currentResDateFilter = 'custom';
+  ['today', 'upcoming', 'week', 'all'].forEach(f => {
+    const pill = document.getElementById(`pill-res-${f}`);
+    if (pill) pill.classList.remove('active');
+  });
+  renderAdminReservations();
+}
+
+function parseReservationDate(res) {
+  if (res.date) {
+    if (res.date.includes('-')) {
+      const parts = res.date.split('-');
+      const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+      d.setHours(0, 0, 0, 0);
+      return d;
+    }
+    const match = res.date.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+    if (match) {
+      const d = new Date(parseInt(match[3], 10), parseInt(match[2], 10) - 1, parseInt(match[1], 10));
+      d.setHours(0, 0, 0, 0);
+      return d;
+    }
+  }
+  if (res.timestamp) {
+    const d = new Date(res.timestamp);
+    if (!isNaN(d.getTime())) {
+      d.setHours(0, 0, 0, 0);
+      return d;
+    }
+  }
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return today;
+}
+
+function toggleDayGroup(groupId) {
+  const el = document.getElementById(groupId);
+  if (el) {
+    el.classList.toggle('is-open');
+  }
+}
+
+function renderSingleOrderCard(order) {
+  return `
+    <div class="admin-order-card">
+      <div class="admin-order-card-header">
+        <div>
+          <span class="admin-order-id">#${order.id}</span>
+          <div class="admin-order-date">${order.dateFormatted || (order.timestamp ? new Date(order.timestamp).toLocaleString('fr-FR') : 'Aujourd\'hui')}</div>
+        </div>
+        <span class="admin-order-type-badge">A emporter</span>
+      </div>
+
+      <div class="admin-order-info-box">
+        ${order.customerName ? `
+        <div class="admin-info-row">
+          <span class="admin-info-label">Client :</span>
+          <span class="admin-info-val" style="font-weight: 800; color: var(--indigo-dark);">${order.customerName}</span>
+        </div>
+        ` : ''}
+        ${order.customerPhone ? `
+        <div class="admin-info-row">
+          <span class="admin-info-label">Téléphone :</span>
+          <span class="admin-info-val"><a href="tel:${order.customerPhone}" style="color: var(--sakura-vibrant); font-weight: 800; text-decoration: none;">${order.customerPhone}</a></span>
+        </div>
+        ` : ''}
+        ${order.customerEmail ? `
+        <div class="admin-info-row">
+          <span class="admin-info-label">E-mail :</span>
+          <span class="admin-info-val" style="font-size: 12.5px; word-break: break-all; color: var(--text-secondary);">${order.customerEmail}</span>
+        </div>
+        ` : ''}
+        <div class="admin-info-row">
+          <span class="admin-info-label">Heure de retrait :</span>
+          <span class="admin-info-val admin-info-highlight">${order.pickupTime || 'Dès que possible'}</span>
+        </div>
+        <div class="admin-info-row admin-prefs-divider">
+          <span class="admin-info-label">Baguettes :</span>
+          <span class="admin-info-val">${order.baguettesChoice === '0' || order.baguettesChoice === 'Sans baguette' ? 'Sans baguette' : (order.baguettesChoice && !order.baguettesChoice.includes('paire') ? (order.baguettesChoice + (parseInt(order.baguettesChoice) > 1 ? ' paires' : ' paire')) : (order.baguettesChoice || '1 paire'))}</span>
+        </div>
+        <div class="admin-info-row">
+          <span class="admin-info-label">Sauces :</span>
+          <span class="admin-info-val">${order.sauceChoice || 'Sauce sucrée'}</span>
+        </div>
+        ${order.comment ? `
+        <div class="admin-info-row admin-note-row">
+          <span class="admin-info-label">Remarques :</span>
+          <span class="admin-info-val admin-note-val">${order.comment}</span>
+        </div>
+        ` : ''}
+      </div>
+
+      <div class="admin-order-items-wrap">
+        <div class="admin-items-title">Detail des plats (${order.itemCount || (order.items && order.items.length) || 1}) :</div>
+        <div class="admin-items-list">
+          ${(order.items || []).map(item => `
+            <div class="admin-item-row">
+              <div class="admin-item-left">
+                <span class="admin-item-qty">${item.qty || 1}x</span>
+                ${item.code ? `<span class="admin-item-code-tag">${item.code}</span>` : ''}
+                <span class="admin-item-name">${item.name}</span>
+                ${item.details ? `<div class="admin-item-details-list">${item.details.map(d => `${d.quantity}x ${d.flavor}`).join(', ')}</div>` : ''}
+              </div>
+              <div class="admin-item-price">${((item.price || item.unitPrice || 0) * (item.qty || item.totalQuantity || 1)).toFixed(2).replace('.', ',')} €</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <div class="admin-order-card-footer">
+        <div class="admin-order-total-row">
+          <span>Total :</span>
+          <span>${(order.total || 0).toFixed(2).replace('.', ',')} €</span>
+        </div>
+
+        <div class="admin-order-actions">
+          <button onclick="window.print()" class="btn-order-print">
+            Imprimer ticket
+          </button>
+          <button onclick="deleteOrder('${order.id}')" class="btn-order-delete">
+            Supprimer
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderSingleReservationCard(res) {
+  return `
+    <div class="admin-order-card">
+      <div class="admin-order-card-header">
+        <div>
+          <span class="admin-order-id">${res.name}</span>
+          <div class="admin-order-date">Réservation #${res.id}</div>
+          ${res.email ? `<div class="admin-order-email">${res.email}</div>` : ''}
+        </div>
+        <span style="background: rgba(76, 175, 80, 0.12); color: #2E7D32; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 800;">
+          ${res.status === 'confirmed' ? 'Confirmee' : res.status || 'Confirmee'}
+        </span>
+      </div>
+
+      <div class="admin-order-info-box" style="margin-bottom: 16px;">
+        <div class="admin-info-row">
+          <span class="admin-info-label">Date :</span>
+          <span class="admin-info-val" style="font-weight: 800; color: var(--indigo-dark);">${res.date}</span>
+        </div>
+        <div class="admin-info-row">
+          <span class="admin-info-label">Creneau :</span>
+          <span class="admin-info-val admin-info-highlight">${res.service}</span>
+        </div>
+        <div class="admin-info-row">
+          <span class="admin-info-label">Couverts :</span>
+          <span class="admin-info-val" style="font-weight: 800;">${res.guests} personne(s)</span>
+        </div>
+        <div class="admin-info-row">
+          <span class="admin-info-label">Telephone :</span>
+          <span class="admin-info-val"><a href="tel:${res.phone}" style="color: var(--sakura-vibrant); font-weight: 800; text-decoration: none;">${res.phone}</a></span>
+        </div>
+        ${res.notes ? `
+        <div class="admin-info-row admin-note-row" style="margin-top: 6px;">
+          <span class="admin-info-label">Remarques :</span>
+          <span class="admin-info-val">${res.notes}</span>
+        </div>
+        ` : ''}
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; margin-top: auto; padding-top: 12px; border-top: 1px dashed var(--sakura-border);">
+        <button onclick="deleteReservation('${res.id}')" class="btn-order-delete">
+          Supprimer
+        </button>
+      </div>
+    </div>
+  `;
+}
+
 async function renderAdminOrders() {
   const container = document.getElementById('admin-orders-list');
-  const summaryContainer = document.getElementById('admin-orders-stats-summary');
   const badgeNav = document.getElementById('total-orders-count');
   const badgeSubtab = document.getElementById('badge-subtab-orders');
   if (!container) return;
 
-  const orders = await syncAndGetOrders();
+  const allOrders = await syncAndGetOrders();
 
-  if (badgeNav) badgeNav.textContent = orders.length;
-  if (badgeSubtab) badgeSubtab.textContent = orders.length;
+  if (badgeNav) badgeNav.textContent = allOrders.length;
+  if (badgeSubtab) badgeSubtab.textContent = allOrders.length;
 
-  // Calcul des statistiques globales et du Top des ventes
-  let totalRevenue = 0;
-  const itemStats = {};
-
-  orders.forEach(order => {
-    const totalVal = parseFloat(order.total) || 0;
-    totalRevenue += totalVal;
-
-    (order.items || []).forEach(it => {
-      const key = String(it.id || it.code || it.name);
-      const qty = parseInt(it.qty || it.quantity) || 1;
-      if (!itemStats[key]) {
-        itemStats[key] = {
-          id: it.id,
-          code: it.code || '',
-          name: it.name || 'Plat',
-          price: parseFloat(it.price) || 0,
-          img: it.img || 'img/products/nophoto.png',
-          qty: 0,
-          revenue: 0
-        };
-      }
-      itemStats[key].qty += qty;
-      itemStats[key].revenue += (parseFloat(it.price) || 0) * qty;
-    });
-  });
-
-  const topItems = Object.values(itemStats)
-    .sort((a, b) => b.qty - a.qty)
-    .slice(0, 5);
-
-  if (summaryContainer) {
-    if (orders.length > 0) {
-      summaryContainer.innerHTML = `
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
-          
-          <!-- KPI Chiffre d'affaires & Commandes -->
-          <div style="background: #FFFFFF; border: 1.5px solid var(--sakura-border); border-radius: var(--radius-lg); padding: 18px 22px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: var(--shadow-sm);">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-              <span style="font-family: var(--font-heading); font-size: 13px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Activité Commandes</span>
-              <div style="width: 32px; height: 32px; border-radius: 8px; background: var(--sakura-bg-soft); display: flex; align-items: center; justify-content: center; color: var(--primary);">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-              </div>
-            </div>
-            <div style="display: flex; align-items: baseline; gap: 12px;">
-              <span style="font-family: var(--font-heading); font-size: 26px; font-weight: 900; color: var(--indigo-dark);">${orders.length}</span>
-              <span style="font-size: 13.5px; font-weight: 600; color: var(--text-secondary);">commande${orders.length > 1 ? 's' : ''} enregistrée${orders.length > 1 ? 's' : ''}</span>
-            </div>
-            <div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--sakura-border); display: flex; justify-content: space-between; font-size: 13.5px;">
-              <span style="color: var(--text-secondary); font-weight: 600;">Chiffre d'affaires total :</span>
-              <span style="font-family: var(--font-heading); font-weight: 900; color: var(--sakura-vibrant); font-size: 15px;">${totalRevenue.toFixed(2).replace('.', ',')} €</span>
-            </div>
-          </div>
-
-          <!-- Top des ventes -->
-          <div style="background: #FFFFFF; border: 1.5px solid var(--sakura-border); border-radius: var(--radius-lg); padding: 18px 22px; box-shadow: var(--shadow-sm); grid-column: span 2;">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-              <span style="font-family: var(--font-heading); font-size: 13px; font-weight: 800; color: var(--indigo-dark); display: flex; align-items: center; gap: 6px;">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="color: var(--primary);"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                Top 5 des plats les plus vendus
-              </span>
-              <span style="font-size: 11.5px; font-weight: 700; color: var(--text-secondary); background: var(--sakura-bg-soft); padding: 3px 8px; border-radius: 20px;">Temps réel</span>
-            </div>
-
-            ${topItems.length > 0 ? `
-              <div style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px;">
-                ${topItems.map((item, idx) => `
-                  <div style="flex: 1; min-width: 140px; background: var(--sakura-bg-soft); border: 1px solid var(--sakura-border); border-radius: var(--radius-md); padding: 10px; display: flex; flex-direction: column; justify-content: space-between;">
-                    <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
-                      <span style="width: 20px; height: 20px; border-radius: 50%; background: ${idx === 0 ? 'var(--sakura-vibrant, #EB5E82)' : 'var(--indigo-primary, #272F61)'}; color: #FFFFFF; font-size: 11px; font-weight: 900; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 4px rgba(0,0,0,0.15);">${idx + 1}</span>
-                      <span style="font-size: 11px; font-weight: 800; color: var(--indigo-dark);">${item.code ? `[${item.code}]` : ''}</span>
-                    </div>
-                    <div style="font-family: var(--font-heading); font-size: 12px; font-weight: 800; color: var(--indigo-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px;" title="${item.name}">${item.name}</div>
-                    <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 700;">
-                      <span style="color: var(--sakura-vibrant);">${item.qty} vendus</span>
-                      <span style="color: var(--text-secondary);">${item.revenue.toFixed(2).replace('.', ',')} €</span>
-                    </div>
-                  </div>
-                `).join('')}
-              </div>
-            ` : '<p style="font-size: 12.5px; color: var(--text-secondary);">Les statistiques apparaîtront dès la première commande.</p>'}
-          </div>
-
-        </div>
-      `;
-    } else {
-      summaryContainer.innerHTML = '';
-    }
-  }
-
-  if (orders.length === 0) {
+  if (allOrders.length === 0) {
     container.innerHTML = `
       <div style="background: #FFFFFF; border: 1.5px dashed var(--sakura-border); border-radius: var(--radius-lg); padding: 48px 24px; text-align: center; color: var(--text-secondary);">
         <p style="font-size: 16px; font-weight: 700; color: var(--indigo-dark); margin-bottom: 6px;">Aucune commande pour le moment</p>
@@ -937,93 +1729,150 @@ async function renderAdminOrders() {
     return;
   }
 
-  container.innerHTML = `
-    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 20px;">
-      ${orders.map(order => `
-        <div class="admin-order-card">
-          <div class="admin-order-card-header">
-            <div>
-              <span class="admin-order-id">#${order.id}</span>
-              <div class="admin-order-date">${order.dateFormatted || (order.timestamp ? new Date(order.timestamp).toLocaleString('fr-FR') : 'Aujourd\'hui')}</div>
+  const now = new Date();
+  const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  const yesterdayKey = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+
+  const weekAgo = new Date(now);
+  weekAgo.setDate(now.getDate() - 7);
+  weekAgo.setHours(0, 0, 0, 0);
+
+  let filteredOrders = [];
+
+  if (currentOrdersDateFilter === 'today') {
+    filteredOrders = allOrders.filter(o => {
+      const d = parseOrderDate(o);
+      const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      return k === todayKey;
+    });
+  } else if (currentOrdersDateFilter === 'yesterday') {
+    filteredOrders = allOrders.filter(o => {
+      const d = parseOrderDate(o);
+      const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      return k === yesterdayKey;
+    });
+  } else if (currentOrdersDateFilter === 'custom') {
+    filteredOrders = allOrders.filter(o => {
+      const d = parseOrderDate(o);
+      const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      return k === currentOrdersCustomDate;
+    });
+  } else if (currentOrdersDateFilter === 'week') {
+    filteredOrders = allOrders.filter(o => {
+      const d = parseOrderDate(o);
+      return d >= weekAgo;
+    });
+  } else {
+    // 'all'
+    filteredOrders = allOrders;
+  }
+
+  // Direct single day view for Today, Yesterday or Custom Date (No redundant banner)
+  if (currentOrdersDateFilter === 'today' || currentOrdersDateFilter === 'yesterday' || currentOrdersDateFilter === 'custom') {
+    if (filteredOrders.length === 0) {
+      let emptyMsg = "Aucune commande enregistrée pour aujourd'hui";
+      if (currentOrdersDateFilter === 'yesterday') emptyMsg = "Aucune commande enregistrée pour hier";
+      else if (currentOrdersDateFilter === 'custom') emptyMsg = "Aucune commande pour la date sélectionnée";
+
+      container.innerHTML = `
+        <div style="background: #FFFFFF; border: 1.5px dashed var(--sakura-border); border-radius: var(--radius-lg); padding: 36px 20px; text-align: center; color: var(--text-secondary); margin-top: 6px;">
+          <p style="font-size: 15px; font-weight: 700; color: var(--indigo-dark); margin-bottom: 6px;">${emptyMsg}</p>
+          <p style="font-size: 13px;">Sélectionnez une autre date ou cliquez sur "Simuler une commande test" pour tester l'interface.</p>
+        </div>
+      `;
+      return;
+    }
+
+    filteredOrders.sort((a, b) => parseOrderDate(b) - parseOrderDate(a));
+
+    container.innerHTML = `
+      <div class="admin-orders-grid">
+        ${filteredOrders.map(order => renderSingleOrderCard(order)).join('')}
+      </div>
+    `;
+    return;
+  }
+
+  // Multi-day grouped view ('week' or 'all')
+  const groupsMap = new Map();
+  filteredOrders.forEach(order => {
+    const d = parseOrderDate(order);
+    const dateKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    
+    let group = groupsMap.get(dateKey);
+    if (!group) {
+      const isToday = (dateKey === todayKey);
+      const isYesterday = (dateKey === yesterdayKey);
+      let label = d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+      label = label.charAt(0).toUpperCase() + label.slice(1);
+      
+      let title = label;
+      if (isToday) title = `Aujourd'hui — ${label}`;
+      else if (isYesterday) title = `Hier — ${label}`;
+
+      group = {
+        dateKey,
+        d,
+        title,
+        isToday,
+        isYesterday,
+        orders: [],
+        totalRevenue: 0
+      };
+      groupsMap.set(dateKey, group);
+    }
+
+    let oTotal = parseFloat(order.total);
+    if (isNaN(oTotal) || oTotal <= 0) {
+      oTotal = (order.items || []).reduce((acc, it) => acc + ((parseFloat(it.price) || 0) * (parseInt(it.qty || it.quantity) || 1)), 0);
+    }
+    group.totalRevenue += oTotal;
+    group.orders.push(order);
+  });
+
+  const sortedGroups = Array.from(groupsMap.values()).sort((a, b) => b.d - a.d);
+  const hasToday = sortedGroups.some(g => g.isToday);
+
+  if (sortedGroups.length === 0) {
+    container.innerHTML = `
+      <div style="background: #FFFFFF; border: 1.5px dashed var(--sakura-border); border-radius: var(--radius-lg); padding: 36px 20px; text-align: center; color: var(--text-secondary);">
+        <p style="font-size: 15px; font-weight: 700; color: var(--indigo-dark); margin-bottom: 6px;">Aucune commande trouvée</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = sortedGroups.map((group, idx) => {
+    const isOpen = group.isToday || (!hasToday && idx === 0);
+    const groupId = `orders-group-${group.dateKey}`;
+
+    return `
+      <div class="admin-day-group ${group.isToday ? 'is-today' : ''} ${isOpen ? 'is-open' : ''}" id="${groupId}">
+        <div class="admin-day-header" onclick="toggleDayGroup('${groupId}')">
+          <div class="admin-day-title-wrap">
+            <div class="admin-day-chevron">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
             </div>
-            <span class="admin-order-type-badge">A emporter</span>
+            <span class="admin-day-title">${group.title}</span>
           </div>
 
-          <div class="admin-order-info-box">
-            ${order.customerName ? `
-            <div class="admin-info-row">
-              <span class="admin-info-label">Client :</span>
-              <span class="admin-info-val" style="font-weight: 800; color: var(--indigo-dark);">${order.customerName}</span>
-            </div>
-            ` : ''}
-            ${order.customerPhone ? `
-            <div class="admin-info-row">
-              <span class="admin-info-label">Téléphone :</span>
-              <span class="admin-info-val"><a href="tel:${order.customerPhone}" style="color: var(--sakura-vibrant); font-weight: 800; text-decoration: none;">${order.customerPhone}</a></span>
-            </div>
-            ` : ''}
-            ${order.customerEmail ? `
-            <div class="admin-info-row">
-              <span class="admin-info-label">E-mail :</span>
-              <span class="admin-info-val" style="font-size: 12.5px; word-break: break-all; color: var(--text-secondary);">${order.customerEmail}</span>
-            </div>
-            ` : ''}
-            <div class="admin-info-row">
-              <span class="admin-info-label">Heure de retrait :</span>
-              <span class="admin-info-val admin-info-highlight">${order.pickupTime || 'Dès que possible'}</span>
-            </div>
-            <div class="admin-info-row admin-prefs-divider">
-              <span class="admin-info-label">Baguettes :</span>
-              <span class="admin-info-val">${order.baguettesChoice === '0' || order.baguettesChoice === 'Sans baguette' ? 'Sans baguette' : (order.baguettesChoice && !order.baguettesChoice.includes('paire') ? (order.baguettesChoice + (parseInt(order.baguettesChoice) > 1 ? ' paires' : ' paire')) : (order.baguettesChoice || '1 paire'))}</span>
-            </div>
-            <div class="admin-info-row">
-              <span class="admin-info-label">Sauces :</span>
-              <span class="admin-info-val">${order.sauceChoice || 'Sauce sucrée'}</span>
-            </div>
-            ${order.comment ? `
-            <div class="admin-info-row admin-note-row">
-              <span class="admin-info-label">Remarques :</span>
-              <span class="admin-info-val admin-note-val">${order.comment}</span>
-            </div>
-            ` : ''}
-          </div>
-
-          <div class="admin-order-items-wrap">
-            <div class="admin-items-title">Detail des plats (${order.itemCount || (order.items && order.items.length) || 1}) :</div>
-            <div class="admin-items-list">
-              ${(order.items || []).map(item => `
-                <div class="admin-item-row">
-                  <div class="admin-item-left">
-                    <span class="admin-item-qty">${item.qty || 1}x</span>
-                    ${item.code ? `<span class="admin-item-code-tag">${item.code}</span>` : ''}
-                    <span class="admin-item-name">${item.name}</span>
-                    ${item.details ? `<div class="admin-item-details-list">${item.details.map(d => `${d.quantity}x ${d.flavor}`).join(', ')}</div>` : ''}
-                  </div>
-                  <div class="admin-item-price">${((item.price || item.unitPrice || 0) * (item.qty || item.totalQuantity || 1)).toFixed(2).replace('.', ',')} €</div>
-                </div>
-              `).join('')}
-            </div>
-          </div>
-
-          <div class="admin-order-card-footer">
-            <div class="admin-order-total-row">
-              <span>Total :</span>
-              <span>${(order.total || 0).toFixed(2).replace('.', ',')} €</span>
-            </div>
-
-            <div class="admin-order-actions">
-              <button onclick="window.print()" class="btn-order-print">
-                Imprimer ticket
-              </button>
-              <button onclick="deleteOrder('${order.id}')" class="btn-order-delete">
-                Supprimer
-              </button>
-            </div>
+          <div class="admin-day-meta">
+            <span class="admin-day-stat-pill">${group.orders.length} commande${group.orders.length > 1 ? 's' : ''}</span>
+            <span class="admin-day-stat-pill rev">${group.totalRevenue.toFixed(2).replace('.', ',')} €</span>
           </div>
         </div>
-      `).join('')}
-    </div>
-  `;
+
+        <div class="admin-day-content">
+          <div class="admin-orders-grid">
+            ${group.orders.map(order => renderSingleOrderCard(order)).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
 }
 
 // ---- RENDU DES RÉSERVATIONS DE TABLES (POSTGRESQL & LOCALSTORAGE) ----
@@ -1048,68 +1897,153 @@ async function renderAdminReservations() {
   const badgeSubtab = document.getElementById('badge-subtab-res');
   if (!container) return;
 
-  const resList = await syncAndGetReservations();
-  if (badgeSubtab) badgeSubtab.textContent = resList.length;
+  const allRes = await syncAndGetReservations();
+  if (badgeSubtab) badgeSubtab.textContent = allRes.length;
 
-  if (resList.length === 0) {
+  if (allRes.length === 0) {
     container.innerHTML = `
       <div style="background: #FFFFFF; border: 1.5px dashed var(--sakura-border); border-radius: var(--radius-lg); padding: 48px 24px; text-align: center; color: var(--text-secondary);">
-        <p style="font-size: 16px; font-weight: 700; color: var(--indigo-dark); margin-bottom: 6px;">Aucune reservation enregistree</p>
-        <p style="font-size: 13.5px;">Les demandes faites depuis la page de reservation s'afficheront ici en direct.</p>
+        <p style="font-size: 16px; font-weight: 700; color: var(--indigo-dark); margin-bottom: 6px;">Aucune réservation enregistrée</p>
+        <p style="font-size: 13.5px;">Les demandes faites depuis la page de réservation s'afficheront ici en direct.</p>
       </div>
     `;
     return;
   }
 
-  container.innerHTML = `
-    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px;">
-      ${resList.map(res => `
-        <div class="admin-order-card">
-          <div class="admin-order-card-header">
-            <div>
-              <span class="admin-order-id">${res.name}</span>
-              <div class="admin-order-date">Réservation #${res.id}</div>
-              ${res.email ? `<div class="admin-order-email">${res.email}</div>` : ''}
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+  const weekAgo = new Date(now);
+  weekAgo.setDate(now.getDate() - 7);
+
+  let filteredRes = [];
+
+  if (currentResDateFilter === 'today') {
+    filteredRes = allRes.filter(r => {
+      const d = parseReservationDate(r);
+      const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      return k === todayKey;
+    });
+  } else if (currentResDateFilter === 'upcoming') {
+    filteredRes = allRes.filter(r => {
+      const d = parseReservationDate(r);
+      return d >= now;
+    });
+  } else if (currentResDateFilter === 'week') {
+    filteredRes = allRes.filter(r => {
+      const d = parseReservationDate(r);
+      return d >= weekAgo;
+    });
+  } else if (currentResDateFilter === 'custom') {
+    filteredRes = allRes.filter(r => {
+      const d = parseReservationDate(r);
+      const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      return k === currentResCustomDate;
+    });
+  } else {
+    // 'all'
+    filteredRes = allRes;
+  }
+
+  // Direct single day view for Today or Custom Date (No redundant banner)
+  if (currentResDateFilter === 'today' || currentResDateFilter === 'custom') {
+    if (filteredRes.length === 0) {
+      let emptyMsg = "Aucune réservation enregistrée pour aujourd'hui";
+      if (currentResDateFilter === 'custom') emptyMsg = "Aucune réservation pour la date sélectionnée";
+
+      container.innerHTML = `
+        <div style="background: #FFFFFF; border: 1.5px dashed var(--sakura-border); border-radius: var(--radius-lg); padding: 36px 20px; text-align: center; color: var(--text-secondary); margin-top: 6px;">
+          <p style="font-size: 15px; font-weight: 700; color: var(--indigo-dark); margin-bottom: 6px;">${emptyMsg}</p>
+          <p style="font-size: 13px;">Sélectionnez "À venir" ou "Toutes les dates" pour consulter les autres réservations.</p>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = `
+      <div class="admin-res-grid">
+        ${filteredRes.map(res => renderSingleReservationCard(res)).join('')}
+      </div>
+    `;
+    return;
+  }
+
+  // Multi-day grouped view ('upcoming', 'week', 'all')
+  const groupsMap = new Map();
+  filteredRes.forEach(res => {
+    const d = parseReservationDate(res);
+    const dateKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    
+    let group = groupsMap.get(dateKey);
+    if (!group) {
+      const isToday = (dateKey === todayKey);
+      const isFuture = (d > now);
+      const isPast = (d < now && !isToday);
+
+      let label = d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+      label = label.charAt(0).toUpperCase() + label.slice(1);
+
+      let title = label;
+      if (isToday) title = `Aujourd'hui — ${label}`;
+
+      group = {
+        dateKey,
+        d,
+        title,
+        isToday,
+        isFuture,
+        isPast,
+        reservations: [],
+        totalGuests: 0
+      };
+      groupsMap.set(dateKey, group);
+    }
+
+    group.totalGuests += parseInt(res.guests, 10) || 1;
+    group.reservations.push(res);
+  });
+
+  const sortedGroups = Array.from(groupsMap.values()).sort((a, b) => b.d - a.d);
+  const hasTodayOrFuture = sortedGroups.some(g => g.isToday || g.isFuture);
+
+  if (sortedGroups.length === 0) {
+    container.innerHTML = `
+      <div style="background: #FFFFFF; border: 1.5px dashed var(--sakura-border); border-radius: var(--radius-lg); padding: 36px 20px; text-align: center; color: var(--text-secondary);">
+        <p style="font-size: 15px; font-weight: 700; color: var(--indigo-dark); margin-bottom: 6px;">Aucune réservation trouvée</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = sortedGroups.map((group, idx) => {
+    const isOpen = group.isToday || group.isFuture || (!hasTodayOrFuture && idx === 0);
+    const groupId = `res-group-${group.dateKey}`;
+
+    return `
+      <div class="admin-day-group ${group.isToday ? 'is-today' : ''} ${isOpen ? 'is-open' : ''}" id="${groupId}">
+        <div class="admin-day-header" onclick="toggleDayGroup('${groupId}')">
+          <div class="admin-day-title-wrap">
+            <div class="admin-day-chevron">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
             </div>
-            <span style="background: rgba(76, 175, 80, 0.12); color: #2E7D32; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 800;">
-              ${res.status === 'confirmed' ? 'Confirmee' : res.status || 'Confirmee'}
-            </span>
+            <span class="admin-day-title">${group.title}</span>
           </div>
 
-          <div class="admin-order-info-box" style="margin-bottom: 16px;">
-            <div class="admin-info-row">
-              <span class="admin-info-label">Date :</span>
-              <span class="admin-info-val">${res.date}</span>
-            </div>
-            <div class="admin-info-row">
-              <span class="admin-info-label">Creneau :</span>
-              <span class="admin-info-val">${res.service}</span>
-            </div>
-            <div class="admin-info-row">
-              <span class="admin-info-label">Couverts :</span>
-              <span class="admin-info-val">${res.guests} personne(s)</span>
-            </div>
-            <div class="admin-info-row">
-              <span class="admin-info-label">Telephone :</span>
-              <span class="admin-info-val"><a href="tel:${res.phone}" style="color: var(--indigo-primary); font-weight: 700;">${res.phone}</a></span>
-            </div>
-            ${res.notes ? `
-            <div class="admin-info-row admin-note-row" style="margin-top: 6px;">
-              <span class="admin-info-label">Remarques :</span>
-              <span class="admin-info-val">${res.notes}</span>
-            </div>
-            ` : ''}
-          </div>
-
-          <div style="display: flex; justify-content: flex-end; margin-top: auto; padding-top: 12px; border-top: 1px dashed var(--sakura-border);">
-            <button onclick="deleteReservation('${res.id}')" class="btn-order-delete">
-              Supprimer
-            </button>
+          <div class="admin-day-meta">
+            <span class="admin-day-stat-pill">${group.reservations.length} réservation${group.reservations.length > 1 ? 's' : ''}</span>
+            <span class="admin-day-stat-pill rev">${group.totalGuests} couvert${group.totalGuests > 1 ? 's' : ''}</span>
           </div>
         </div>
-      `).join('')}
-    </div>
-  `;
+
+        <div class="admin-day-content">
+          <div class="admin-res-grid">
+            ${group.reservations.map(res => renderSingleReservationCard(res)).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
 }
 
 // Actions Commandes
@@ -1180,6 +2114,7 @@ function clearAllOrders() {
   localStorage.removeItem('sushilin_reservations');
   renderAdminOrders();
   renderAdminReservations();
+  renderStatsDashboard();
   showToast("Historique de test réinitialisé !");
 }
 
@@ -1226,24 +2161,31 @@ function generateTestOrder() {
     dateFormatted: now.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
     customerName: 'Jean Dupont',
     customerPhone: '06 12 34 56 78',
-    customerEmail: 'jean.dupont@gmail.com',
+    customerEmail: 'jean.dupont@test.fr',
+    pickupTime: '19h30',
+    sauceChoice: '2 sucrée, 1 salée',
+    baguettesChoice: '2 paires',
+    comment: 'Bien cuit les brochettes s\'il vous plaît',
     items: testItems,
-    itemCount: testItems.reduce((acc, it) => acc + it.qty, 0),
     subtotal: subtotal,
     discount: discount,
     total: total,
-    sauceChoice: '2 Sauces sucrées, 1 Salée',
-    baguettesChoice: '2 paires',
-    pickupTime: 'Dans 25 min (19h45)',
-    comment: 'Commande test automatique pour vérification admin',
-    status: 'new'
+    status: 'pending'
   };
+
+  // Envoi vers l'API backend si disponible
+  fetch('/api/orders', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(testOrder)
+  }).catch(() => {});
 
   const existingOrders = JSON.parse(localStorage.getItem('sushilin_orders') || '[]');
   existingOrders.unshift(testOrder);
   localStorage.setItem('sushilin_orders', JSON.stringify(existingOrders));
 
   renderAdminOrders();
+  renderStatsDashboard();
   showToast(`Commande test ${orderId} générée avec succès !`);
 }
 
@@ -1252,6 +2194,7 @@ window.addEventListener('storage', (e) => {
   if (e.key === 'sushilin_orders' || e.key === 'sushilin_reservations') {
     renderAdminOrders();
     renderAdminReservations();
+    renderStatsDashboard();
   }
 });
 

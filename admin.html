@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="admin.css?v=20260825_photo_match">
+  <link rel="stylesheet" href="admin.css?v=20260825_stats_v1">
 </head>
 <body>
 
@@ -101,6 +101,11 @@
           <span>Coordonnées & offres</span>
         </button>
 
+        <button class="admin-nav-item" onclick="switchAdminTab('stats')" id="nav-tab-stats">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+          <span>Statistiques & CA</span>
+        </button>
+
         <div class="admin-nav-footer">
           <button class="btn-export-json" onclick="exportMenuJsonFile()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -131,9 +136,19 @@
             </div>
           </div>
 
-          <!-- STATS & TOP VENTES SUMMARY -->
-          <div id="admin-orders-stats-summary" style="margin-bottom: 24px;">
-            <!-- Injected by JS -->
+          <!-- BARRE DE FILTRAGE DES DATES COMMANDES -->
+          <div class="orders-filter-toolbar">
+            <div class="orders-filter-pills-group">
+              <span class="orders-filter-label">Afficher :</span>
+              <button class="orders-filter-pill active" id="pill-orders-today" onclick="setOrdersDateFilter('today')">Aujourd'hui</button>
+              <button class="orders-filter-pill" id="pill-orders-yesterday" onclick="setOrdersDateFilter('yesterday')">Hier</button>
+              <button class="orders-filter-pill" id="pill-orders-week" onclick="setOrdersDateFilter('week')">7 derniers jours</button>
+              <button class="orders-filter-pill" id="pill-orders-all" onclick="setOrdersDateFilter('all')">Toutes les dates</button>
+            </div>
+            <div class="orders-filter-date-input-wrap">
+              <label for="orders-custom-date-picker" class="orders-filter-date-label">Date précise :</label>
+              <input type="date" id="orders-custom-date-picker" onchange="setOrdersCustomDate(this.value)" class="stats-select" style="padding: 6px 12px; font-size: 13px;">
+            </div>
           </div>
 
           <!-- LISTE DES COMMANDES -->
@@ -158,6 +173,21 @@
               <button onclick="clearAllReservations()" style="background: #FFF0F0; color: #D32F2F; border: 1.5px solid #FFCDD2; padding: 10px 16px; border-radius: var(--radius-md); font-weight: 700; cursor: pointer; font-size: 13px;">
                 <span>Vider les réservations</span>
               </button>
+            </div>
+          </div>
+
+          <!-- BARRE DE FILTRAGE DES DATES RÉSERVATIONS -->
+          <div class="orders-filter-toolbar">
+            <div class="orders-filter-pills-group">
+              <span class="orders-filter-label">Afficher :</span>
+              <button class="res-filter-pill active" id="pill-res-today" onclick="setResDateFilter('today')">Aujourd'hui</button>
+              <button class="res-filter-pill" id="pill-res-upcoming" onclick="setResDateFilter('upcoming')">À venir</button>
+              <button class="res-filter-pill" id="pill-res-week" onclick="setResDateFilter('week')">7 derniers jours</button>
+              <button class="res-filter-pill" id="pill-res-all" onclick="setResDateFilter('all')">Toutes les dates</button>
+            </div>
+            <div class="orders-filter-date-input-wrap">
+              <label for="res-custom-date-picker" class="orders-filter-date-label">Date précise :</label>
+              <input type="date" id="res-custom-date-picker" onchange="setResCustomDate(this.value)" class="stats-select" style="padding: 6px 12px; font-size: 13px;">
             </div>
           </div>
 
@@ -424,6 +454,43 @@
           </div>
         </section>
 
+        <!-- TAB: STATISTIQUES & CHIFFRE D'AFFAIRES (DERNIER ONGLET) -->
+        <section class="admin-tab-pane" id="pane-stats" style="display: none;">
+          <div class="pane-header">
+            <div>
+              <h2>Statistiques & Chiffre d'Affaires</h2>
+              <p>Analysez vos ventes, comparez les périodes et découvrez vos plats les plus vendus.</p>
+            </div>
+            
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+              <button class="btn-add-product" onclick="exportStatsCsv()" style="background: var(--indigo); color: #fff;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                <span>Exporter rapport CSV</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- FILTRES DE PÉRIODE (AUJOURD'HUI, PAR SEMAINE, PAR MOIS, PAR ANNÉE, DEPUIS LE DÉBUT) -->
+          <div class="stats-period-bar">
+            <div class="stats-period-pills">
+              <button class="period-pill active" data-period="today" onclick="setStatsPeriod('today')">Aujourd'hui</button>
+              <button class="period-pill" data-period="week" onclick="setStatsPeriod('week')">Par semaine</button>
+              <button class="period-pill" data-period="month" onclick="setStatsPeriod('month')">Par mois</button>
+              <button class="period-pill" data-period="year" onclick="setStatsPeriod('year')">Par année</button>
+              <button class="period-pill" data-period="all" onclick="setStatsPeriod('all')">Depuis le début</button>
+            </div>
+            
+            <div class="stats-subfilter-area" id="stats-subfilter-area">
+              <!-- Dynamically populated by JS based on selected period -->
+            </div>
+          </div>
+
+          <!-- CONTENEUR DU TABLEAU DE BORD STATS -->
+          <div id="stats-dashboard-content" style="margin-top: 20px;">
+            <!-- Rendu dynamiquement par admin.js -->
+          </div>
+        </section>
+
       </main>
 
     </div>
@@ -619,6 +686,6 @@
   <!-- TOAST NOTIFICATION -->
   <div class="admin-toast" id="admin-toast"></div>
 
-  <script src="admin.js?v=20260825_photo_upload"></script>
+  <script src="admin.js?v=20260825_stats_v1"></script>
 </body>
 </html>
