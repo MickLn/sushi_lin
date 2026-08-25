@@ -510,6 +510,54 @@ async function loadMenuData() {
 // ---- State for Filtering (Entrées par défaut) ----
 let selectedCategory = 'entrees';
 
+// Helper: Calcul des Best-Sellers (Historique réel ou Sélection incontournable)
+function getBestSellerItems() {
+  if (!MENU_DATA || !MENU_DATA.items) return [];
+
+  let orders = [];
+  try {
+    orders = JSON.parse(localStorage.getItem('sushilin_orders') || '[]');
+  } catch (e) {
+    orders = [];
+  }
+
+  const counts = {};
+  orders.forEach(ord => {
+    (ord.items || []).forEach(it => {
+      const key = String(it.id || it.code || it.name);
+      counts[key] = (counts[key] || 0) + (it.qty || it.quantity || 1);
+    });
+  });
+
+  const defaultTopIds = [
+    'menus-poisson-m1', '29', '85', 'desserts-ds22',
+    'menus-brochette-b3', '71', '1', '2',
+    'menus-poisson-v', '33', '63', '50'
+  ];
+
+  const resolved = [];
+  const addedIds = new Set();
+
+  const sortedKeys = Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
+  sortedKeys.forEach(k => {
+    const item = MENU_DATA.items.find(m => m.id === k || m.code === k || m.name.toLowerCase() === k.toLowerCase());
+    if (item && !addedIds.has(item.id)) {
+      resolved.push(item);
+      addedIds.add(item.id);
+    }
+  });
+
+  defaultTopIds.forEach(idOrCode => {
+    const item = MENU_DATA.items.find(m => m.id === idOrCode || m.code === idOrCode);
+    if (item && !addedIds.has(item.id)) {
+      resolved.push(item);
+      addedIds.add(item.id);
+    }
+  });
+
+  return resolved.slice(0, 12);
+}
+
 // ---- Render Category Navigation (Sidebar on Desktop & Pills on Mobile) ----
 function renderCategoryNavigation() {
   if (!MENU_DATA) return;
@@ -518,6 +566,7 @@ function renderCategoryNavigation() {
   if (mobileCatNavInner) mobileCatNavInner.innerHTML = '';
 
   const allCount = MENU_DATA.items.length;
+  const bestSellers = getBestSellerItems();
 
   // 1. Sidebar Option "Toute la carte"
   if (sidebarCatList) {
@@ -530,9 +579,24 @@ function renderCategoryNavigation() {
     `;
     allLink.addEventListener('click', () => selectCategoryFilter('all'));
     sidebarCatList.appendChild(allLink);
+
+    // Sidebar Option "Best-sellers"
+    const bsLink = document.createElement('button');
+    bsLink.className = `sidebar-link ${selectedCategory === 'bestsellers' ? 'active' : ''}`;
+    bsLink.id = 'sidebar-link-bestsellers';
+    bsLink.dataset.cat = 'bestsellers';
+    bsLink.innerHTML = `
+      <span style="display: flex; align-items: center; gap: 7px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="color: var(--primary);"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        Best-sellers
+      </span>
+      <span class="sidebar-count">${bestSellers.length}</span>
+    `;
+    bsLink.addEventListener('click', () => selectCategoryFilter('bestsellers'));
+    sidebarCatList.appendChild(bsLink);
   }
 
-  // 2. Mobile Pill "Tous les plats"
+  // 2. Mobile Pill "Tous les plats" & "Best-sellers"
   if (mobileCatNavInner) {
     const allPill = document.createElement('button');
     allPill.className = `cat-pill ${selectedCategory === 'all' ? 'active' : ''}`;
@@ -540,6 +604,17 @@ function renderCategoryNavigation() {
     allPill.textContent = 'Tous les plats';
     allPill.addEventListener('click', () => selectCategoryFilter('all'));
     mobileCatNavInner.appendChild(allPill);
+
+    const bsPill = document.createElement('button');
+    bsPill.className = `cat-pill ${selectedCategory === 'bestsellers' ? 'active' : ''}`;
+    bsPill.id = 'mobile-cat-pill-bestsellers';
+    bsPill.dataset.cat = 'bestsellers';
+    bsPill.innerHTML = `
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="margin-right: 4px; vertical-align: -1px; color: var(--primary);"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      Best-sellers
+    `;
+    bsPill.addEventListener('click', () => selectCategoryFilter('bestsellers'));
+    mobileCatNavInner.appendChild(bsPill);
   }
 
   MENU_DATA.categories.forEach((cat) => {
@@ -650,6 +725,32 @@ function scrollToCategoryTitle(catId) {
 function renderProductsMenu() {
   if (!MENU_DATA || !menuContainer) return;
   menuContainer.innerHTML = '';
+
+  if (selectedCategory === 'bestsellers') {
+    const bestSellers = getBestSellerItems();
+    const section = document.createElement('section');
+    section.className = 'cat-section';
+    section.id = 'cat-section-bestsellers';
+    section.dataset.cat = 'bestsellers';
+
+    const catHeader = document.createElement('div');
+    catHeader.className = 'cat-section-header';
+    catHeader.innerHTML = `
+      <h2 class="cat-section-title">Les Incontournables</h2>
+      <span class="cat-section-count">${bestSellers.length} plats</span>
+    `;
+    section.appendChild(catHeader);
+
+    const grid = document.createElement('div');
+    grid.className = 'products-grid';
+    grid.id = 'grid-bestsellers';
+    bestSellers.forEach(item => {
+      grid.appendChild(createProductCard(item));
+    });
+    section.appendChild(grid);
+    menuContainer.appendChild(section);
+    return;
+  }
 
   const categoriesToRender = selectedCategory === 'all'
     ? MENU_DATA.categories
@@ -1083,6 +1184,113 @@ function renderCartPanelItems() {
 
     cartDrawerBody.appendChild(row);
   });
+
+  // Inject Smart Cross-Selling Suggestions (Compact, No Emojis, Responsive)
+  const crossSellEl = renderCartCrossSelling();
+  if (crossSellEl) {
+    cartDrawerBody.appendChild(crossSellEl);
+  }
+}
+
+// ---- Smart Cross-Selling Logic ----
+function renderCartCrossSelling() {
+  if (!MENU_DATA || !MENU_DATA.items || cart.length === 0) return null;
+
+  const cartItemIds = new Set(cart.map(c => String(c.id || c.code)));
+  const cartItemNames = new Set(cart.map(c => (c.name || '').toLowerCase()));
+  const hasDrinks = cart.some(c => c.cat === 'boissons' || (c.id && (c.id.startsWith('bo') || c.id.startsWith('bi') || c.id.startsWith('vr') || c.id.startsWith('vb'))));
+  const hasDesserts = cart.some(c => c.cat === 'desserts' || isMochiItem(c) || (c.id && c.id.startsWith('ds')));
+  const hasStarters = cart.some(c => c.cat === 'entrees' || ['1', '2', '3', '4', '5', '85'].includes(String(c.code || c.id)));
+
+  const candidatePool = [
+    // Boissons
+    { id: 'boissons-bi1', code: 'BI1', name: 'Bière Asahi (33cl)', price: 3.80, img: 'img/products/bi1.png', type: 'drink' },
+    { id: 'boissons-bo2', code: 'BO2', name: 'Ramune japonaise', price: 3.50, img: 'img/products/bo2.png', type: 'drink' },
+    { id: 'boissons-bo10', code: 'BO10', name: 'Thé vert japonais', price: 3.50, img: 'img/products/bo10.png', type: 'drink' },
+    { id: 'boissons-bo1', code: 'BO1', name: 'Coca-Cola (33cl)', price: 2.50, img: 'img/products/bo1.png', type: 'drink' },
+    // Entrées / Accompagnements
+    { id: 'entrees-85', code: '85', name: 'Raviolis grillés (Gyoza)', price: 6.00, img: 'img/products/85.png', type: 'starter' },
+    { id: 'entrees-1', code: '1', name: 'Salade de choux', price: 3.00, img: 'img/products/1.png', type: 'starter' },
+    { id: 'entrees-2', code: '2', name: 'Soupe Miso', price: 2.50, img: 'img/products/2.png', type: 'starter' },
+    { id: 'entrees-5', code: '5', name: 'Edamame', price: 4.00, img: 'img/products/5.png', type: 'starter' },
+    // Desserts
+    { id: 'desserts-ds22', code: 'D28', name: 'Mochis glacés', price: 2.80, img: 'img/products/ds22.png', type: 'dessert' },
+    { id: 'desserts-ds6', code: 'DS6', name: 'Gâteau Dorayaki', price: 4.50, img: 'img/products/ds6.png', type: 'dessert' }
+  ];
+
+  // Exclusion stricte des articles déjà présents dans le panier
+  const eligible = candidatePool.filter(c => {
+    const canonical = MENU_DATA.items.find(m => m.id === c.id || m.code === c.code || m.name.toLowerCase() === c.name.toLowerCase());
+    const idToCheck = canonical ? canonical.id : c.id;
+    const codeToCheck = canonical ? canonical.code : c.code;
+    return !cartItemIds.has(String(idToCheck)) && !cartItemIds.has(String(codeToCheck)) && !cartItemNames.has(c.name.toLowerCase());
+  });
+
+  if (eligible.length === 0) return null;
+
+  const prioritized = [];
+  if (!hasDrinks) {
+    const drink = eligible.find(e => e.type === 'drink');
+    if (drink) prioritized.push(drink);
+  }
+  if (!hasStarters) {
+    const starter = eligible.find(e => e.type === 'starter');
+    if (starter) prioritized.push(starter);
+  }
+  if (!hasDesserts) {
+    const dessert = eligible.find(e => e.type === 'dessert');
+    if (dessert) prioritized.push(dessert);
+  }
+
+  eligible.forEach(e => {
+    if (prioritized.length < 4 && !prioritized.includes(e)) {
+      prioritized.push(e);
+    }
+  });
+
+  if (prioritized.length === 0) return null;
+
+  const box = document.createElement('div');
+  box.className = 'cart-cross-selling-box';
+  box.innerHTML = `
+    <div class="cross-selling-header">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      <span>Compléter votre commande</span>
+    </div>
+    <div class="cross-selling-chips-track"></div>
+  `;
+
+  const track = box.querySelector('.cross-selling-chips-track');
+  prioritized.forEach(cand => {
+    const canonical = MENU_DATA.items.find(m => m.id === cand.id || m.code === cand.code || m.name.toLowerCase() === cand.name.toLowerCase()) || cand;
+    const chip = document.createElement('div');
+    chip.className = 'cross-chip';
+    chip.setAttribute('role', 'button');
+    chip.setAttribute('tabindex', '0');
+    chip.setAttribute('aria-label', `Ajouter ${canonical.name}`);
+    chip.innerHTML = `
+      <img src="${canonical.img || 'img/products/nophoto.png'}" class="cross-chip-img" alt="${canonical.name}" loading="lazy" onerror="this.src='img/products/nophoto.png'">
+      <div class="cross-chip-info">
+        <span class="cross-chip-name">${canonical.name}</span>
+        <span class="cross-chip-price">${formatEuro(canonical.price)}</span>
+      </div>
+      <span class="cross-chip-add-btn" title="Ajouter">+</span>
+    `;
+
+    chip.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (isMochiItem(canonical)) {
+        openMochiModal(canonical);
+      } else {
+        addToCart(canonical);
+        showToastNotification(`${canonical.name} ajouté au panier !`);
+      }
+    });
+
+    track.appendChild(chip);
+  });
+
+  return box;
 }
 
 function openCartPanel() {

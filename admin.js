@@ -619,6 +619,7 @@ async function syncAndGetOrders() {
 
 async function renderAdminOrders() {
   const container = document.getElementById('admin-orders-list');
+  const summaryContainer = document.getElementById('admin-orders-stats-summary');
   const badgeNav = document.getElementById('total-orders-count');
   const badgeSubtab = document.getElementById('badge-subtab-orders');
   if (!container) return;
@@ -627,6 +628,96 @@ async function renderAdminOrders() {
 
   if (badgeNav) badgeNav.textContent = orders.length;
   if (badgeSubtab) badgeSubtab.textContent = orders.length;
+
+  // Calcul des statistiques globales et du Top des ventes
+  let totalRevenue = 0;
+  const itemStats = {};
+
+  orders.forEach(order => {
+    const totalVal = parseFloat(order.total) || 0;
+    totalRevenue += totalVal;
+
+    (order.items || []).forEach(it => {
+      const key = String(it.id || it.code || it.name);
+      const qty = parseInt(it.qty || it.quantity) || 1;
+      if (!itemStats[key]) {
+        itemStats[key] = {
+          id: it.id,
+          code: it.code || '',
+          name: it.name || 'Plat',
+          price: parseFloat(it.price) || 0,
+          img: it.img || 'img/products/nophoto.png',
+          qty: 0,
+          revenue: 0
+        };
+      }
+      itemStats[key].qty += qty;
+      itemStats[key].revenue += (parseFloat(it.price) || 0) * qty;
+    });
+  });
+
+  const topItems = Object.values(itemStats)
+    .sort((a, b) => b.qty - a.qty)
+    .slice(0, 5);
+
+  if (summaryContainer) {
+    if (orders.length > 0) {
+      summaryContainer.innerHTML = `
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+          
+          <!-- KPI Chiffre d'affaires & Commandes -->
+          <div style="background: #FFFFFF; border: 1.5px solid var(--sakura-border); border-radius: var(--radius-lg); padding: 18px 22px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: var(--shadow-sm);">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+              <span style="font-family: var(--font-heading); font-size: 13px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Activité Commandes</span>
+              <div style="width: 32px; height: 32px; border-radius: 8px; background: var(--sakura-bg-soft); display: flex; align-items: center; justify-content: center; color: var(--primary);">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+              </div>
+            </div>
+            <div style="display: flex; align-items: baseline; gap: 12px;">
+              <span style="font-family: var(--font-heading); font-size: 26px; font-weight: 900; color: var(--indigo-dark);">${orders.length}</span>
+              <span style="font-size: 13.5px; font-weight: 600; color: var(--text-secondary);">commande${orders.length > 1 ? 's' : ''} enregistrée${orders.length > 1 ? 's' : ''}</span>
+            </div>
+            <div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--sakura-border); display: flex; justify-content: space-between; font-size: 13.5px;">
+              <span style="color: var(--text-secondary); font-weight: 600;">Chiffre d'affaires total :</span>
+              <span style="font-family: var(--font-heading); font-weight: 900; color: var(--sakura-vibrant); font-size: 15px;">${totalRevenue.toFixed(2).replace('.', ',')} €</span>
+            </div>
+          </div>
+
+          <!-- Top des ventes -->
+          <div style="background: #FFFFFF; border: 1.5px solid var(--sakura-border); border-radius: var(--radius-lg); padding: 18px 22px; box-shadow: var(--shadow-sm); grid-column: span 2;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+              <span style="font-family: var(--font-heading); font-size: 13px; font-weight: 800; color: var(--indigo-dark); display: flex; align-items: center; gap: 6px;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="color: var(--primary);"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                Top 5 des plats les plus vendus
+              </span>
+              <span style="font-size: 11.5px; font-weight: 700; color: var(--text-secondary); background: var(--sakura-bg-soft); padding: 3px 8px; border-radius: 20px;">Temps réel</span>
+            </div>
+
+            ${topItems.length > 0 ? `
+              <div style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px;">
+                ${topItems.map((item, idx) => `
+                  <div style="flex: 1; min-width: 140px; background: var(--sakura-bg-soft); border: 1px solid var(--sakura-border); border-radius: var(--radius-md); padding: 10px; display: flex; flex-direction: column; justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+                      <span style="width: 18px; height: 18px; border-radius: 50%; background: ${idx === 0 ? 'var(--primary)' : 'var(--indigo)'}; color: #fff; font-size: 10px; font-weight: 900; display: flex; align-items: center; justify-content: center;">${idx + 1}</span>
+                      <span style="font-size: 11px; font-weight: 800; color: var(--indigo-dark);">${item.code ? `[${item.code}]` : ''}</span>
+                    </div>
+                    <div style="font-family: var(--font-heading); font-size: 12px; font-weight: 800; color: var(--indigo-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px;" title="${item.name}">${item.name}</div>
+                    <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 700;">
+                      <span style="color: var(--sakura-vibrant);">${item.qty} vendus</span>
+                      <span style="color: var(--text-secondary);">${item.revenue.toFixed(2).replace('.', ',')} €</span>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            ` : '<p style="font-size: 12.5px; color: var(--text-secondary);">Les statistiques apparaîtront dès la première commande.</p>'}
+          </div>
+
+        </div>
+      `;
+    } else {
+      summaryContainer.innerHTML = '';
+    }
+  }
 
   if (orders.length === 0) {
     container.innerHTML = `

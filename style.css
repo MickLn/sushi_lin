@@ -2485,6 +2485,122 @@ img {
   color: var(--indigo-dark);
 }
 
+/* Cart Cross-Selling Suggestions (Compact, No Emojis, Horizontal Scroll) */
+.cart-cross-selling-box {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--sakura-border-strong);
+}
+
+.cross-selling-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-heading);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.cross-selling-header svg {
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.cross-selling-chips-track {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 2px 2px 6px 2px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.cross-selling-chips-track::-webkit-scrollbar {
+  display: none;
+}
+
+.cross-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  background: #FFFFFF;
+  border: 1px solid var(--sakura-border-strong);
+  border-radius: 24px;
+  padding: 3px 6px 3px 4px;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.cross-chip:hover {
+  border-color: var(--primary);
+  background: var(--sakura-bg-soft);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
+}
+
+.cross-chip-img {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: #F8F9FA;
+}
+
+.cross-chip-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  line-height: 1.2;
+}
+
+.cross-chip-name {
+  font-family: var(--font-heading);
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--indigo-dark);
+  white-space: nowrap;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cross-chip-price {
+  font-size: 10.5px;
+  font-weight: 800;
+  color: var(--sakura-vibrant);
+}
+
+.cross-chip-add-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--sakura-bg-soft);
+  border: 1px solid var(--sakura-border-strong);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-left: 2px;
+  transition: all 0.15s ease;
+}
+
+.cross-chip:hover .cross-chip-add-btn {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #FFFFFF;
+}
+
 /* Panel Footer */
 .panel-footer {
   position: relative;
