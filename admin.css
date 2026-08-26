@@ -926,10 +926,10 @@ button {
 /* --- ADMIN ORDER CARDS (ALIGNED & CLEAN) --- */
 .admin-order-card {
   background: #FFFFFF;
-  border: 1.5px solid var(--sakura-border);
+  border: 1.5px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 22px;
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
 }
@@ -940,7 +940,7 @@ button {
   align-items: flex-start;
   margin-bottom: 14px;
   padding-bottom: 12px;
-  border-bottom: 1.5px solid var(--sakura-border-soft);
+  border-bottom: 1.5px solid var(--border);
 }
 
 .admin-order-id {
@@ -964,9 +964,9 @@ button {
 }
 
 .admin-order-type-badge {
-  background: var(--sakura-bg-soft);
+  background: var(--admin-bg);
   color: var(--indigo-dark);
-  border: 1px solid var(--sakura-border);
+  border: 1.5px solid var(--border-strong);
   padding: 4px 10px;
   border-radius: 20px;
   font-size: 11.5px;
@@ -975,8 +975,8 @@ button {
 }
 
 .admin-order-info-box {
-  background: var(--sakura-bg-soft);
-  border: 1px solid var(--sakura-border);
+  background: var(--admin-bg);
+  border: 1.5px solid var(--border);
   border-radius: var(--radius-md);
   padding: 14px 16px;
   font-size: 13.5px;
@@ -1017,7 +1017,7 @@ button {
 .admin-prefs-divider {
   margin-top: 6px;
   padding-top: 8px;
-  border-top: 1px solid var(--sakura-border-soft);
+  border-top: 1px solid var(--border);
 }
 
 .admin-note-row {
@@ -1060,7 +1060,12 @@ button {
 }
 
 .admin-items-list::-webkit-scrollbar-thumb {
-  background: var(--sakura-border-strong);
+  background: #CBD5E1;
+  border-radius: 4px;
+}
+
+.admin-items-list::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
   border-radius: 4px;
 }
 
@@ -1120,7 +1125,7 @@ button {
 .admin-order-card-footer {
   margin-top: auto;
   padding-top: 14px;
-  border-top: 1.5px solid var(--sakura-border);
+  border-top: 1.5px solid var(--border);
 }
 
 .admin-order-total-row {
@@ -1142,8 +1147,8 @@ button {
   padding: 9px;
   font-size: 12px;
   font-weight: 800;
-  background: var(--sakura-bg-soft);
-  border: 1px solid var(--sakura-border);
+  background: #EEF2FF;
+  border: 1.5px solid var(--border-strong);
   border-radius: var(--radius-md);
   color: var(--indigo-dark);
   cursor: pointer;
@@ -1151,7 +1156,9 @@ button {
 }
 
 .btn-order-print:hover {
-  background: var(--sakura);
+  background: var(--indigo);
+  color: #FFFFFF;
+  border-color: var(--indigo);
 }
 
 .btn-order-delete {
@@ -1159,7 +1166,7 @@ button {
   font-size: 12px;
   font-weight: 700;
   background: #FFF0F0;
-  border: 1px solid #FFCDD2;
+  border: 1.5px solid #FFCDD2;
   border-radius: var(--radius-md);
   color: #D32F2F;
   cursor: pointer;
@@ -2252,17 +2259,17 @@ textarea, textarea.admin-input, #form-product-desc {
 .admin-day-group {
   margin-bottom: 20px;
   border-radius: var(--radius-lg);
-  border: 1.5px solid var(--sakura-border);
+  border: 1.5px solid var(--border);
   background: #FFFFFF;
   overflow: hidden;
-  box-shadow: 0 1px 4px rgba(235, 94, 130, 0.05);
+  box-shadow: var(--shadow);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
   width: 100%;
   box-sizing: border-box;
 }
 
 .admin-day-group.is-today {
-  border: 1.5px solid var(--sakura-border);
+  border: 1.5px solid var(--border);
 }
 
 .admin-day-header {
@@ -2279,11 +2286,11 @@ textarea, textarea.admin-input, #form-product-desc {
 }
 
 .admin-day-group.is-today .admin-day-header {
-  background: linear-gradient(135deg, #FFF8FA 0%, #FFFFFF 100%);
+  background: #FFFFFF;
 }
 
 .admin-day-header:hover {
-  background: var(--sakura-bg-soft);
+  background: var(--admin-bg);
 }
 
 .admin-day-title-wrap {
@@ -2296,9 +2303,9 @@ textarea, textarea.admin-input, #form-product-desc {
   width: 26px;
   height: 26px;
   border-radius: 6px;
-  background: var(--sakura-bg-soft);
-  color: var(--sakura-vibrant);
-  border: 1px solid var(--sakura-border);
+  background: var(--admin-bg);
+  color: var(--indigo);
+  border: 1.5px solid var(--border-strong);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2308,8 +2315,8 @@ textarea, textarea.admin-input, #form-product-desc {
 
 .admin-day-group.is-open .admin-day-chevron {
   transform: rotate(180deg);
-  background: var(--sakura-vibrant);
-  border-color: var(--sakura-vibrant);
+  background: var(--indigo);
+  border-color: var(--indigo);
   color: #FFFFFF;
 }
 
@@ -2330,21 +2337,21 @@ textarea, textarea.admin-input, #form-product-desc {
   font-size: 12px;
   font-weight: 700;
   color: var(--indigo-dark);
-  background: var(--sakura-bg-soft);
+  background: var(--admin-bg);
   padding: 4px 10px;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--sakura-border);
+  border: 1.5px solid var(--border);
 }
 
 .admin-day-stat-pill.rev {
   font-weight: 800;
-  color: var(--sakura-vibrant);
+  color: var(--indigo);
 }
 
 .admin-day-content {
   padding: 18px 16px;
   background: #FFFDFE;
-  border-top: 1px solid var(--sakura-border-soft);
+  border-top: 1px solid var(--border);
   width: 100%;
   box-sizing: border-box;
 }
@@ -2365,10 +2372,10 @@ textarea, textarea.admin-input, #form-product-desc {
   flex-wrap: wrap;
   gap: 12px;
   background: #FFFFFF;
-  border: 1.5px solid var(--sakura-border);
+  border: 1.5px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 12px 18px;
-  box-shadow: 0 1px 4px rgba(235, 94, 130, 0.04);
+  box-shadow: var(--shadow);
 }
 
 .orders-filter-pills-group {
@@ -2388,8 +2395,8 @@ textarea, textarea.admin-input, #form-product-desc {
 
 .orders-filter-pill,
 .res-filter-pill {
-  background: var(--sakura-bg-soft);
-  border: 1.5px solid var(--sakura-border);
+  background: #FFFFFF;
+  border: 1.5px solid var(--border-strong);
   color: var(--indigo-dark);
   font-family: var(--font-heading);
   font-size: 12.5px;
@@ -2402,8 +2409,8 @@ textarea, textarea.admin-input, #form-product-desc {
 
 .orders-filter-pill:hover,
 .res-filter-pill:hover {
-  border-color: var(--sakura-vibrant);
-  color: var(--sakura-vibrant);
+  border-color: var(--indigo);
+  color: var(--indigo);
 }
 
 .orders-filter-pill.active,
