@@ -610,6 +610,22 @@ button {
   text-overflow: ellipsis;
 }
 
+.table-allergens-line {
+  font-size: 11px;
+  font-weight: 600;
+  color: #E11D48;
+  background: #FFF1F4;
+  border: 1px solid #FFE4E8;
+  padding: 2px 7px;
+  border-radius: 4px;
+  display: inline-block;
+  margin-top: 3px;
+  max-width: 320px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .table-cat-badge {
   font-size: 11.5px;
   font-weight: 700;

@@ -199,7 +199,7 @@ async function loadAdminData() {
           const overrideMap = new Map(parsed.items.map(i => [i.id, i]));
           const canonicalIds = new Set(canonicalMenu.items.map(i => i.id));
 
-          // 1. Fusionner les modifications sur les plats existants
+          // 1. Fusionner les modifications sur les plats existants tout en préservant les descriptions et allergènes canoniques à jour
           canonicalMenu.items = canonicalMenu.items.map(item => {
             const override = overrideMap.get(item.id);
             if (override) {
@@ -210,9 +210,10 @@ async function loadAdminData() {
                 price: typeof override.price === 'number' ? override.price : item.price,
                 available: typeof override.available === 'boolean' ? override.available : item.available,
                 pieces: override.pieces !== undefined ? override.pieces : item.pieces,
-                desc: override.desc !== undefined ? override.desc : item.desc,
-                img: override.img || item.img,
-                cat: override.cat || item.cat
+                desc: item.desc || override.desc || '',
+                allergens: (Array.isArray(item.allergens) && item.allergens.length > 0) ? item.allergens : (override.allergens || []),
+                img: item.img || override.img,
+                cat: item.cat || override.cat
               };
             }
             return item;

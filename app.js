@@ -548,7 +548,7 @@ async function loadMenuData() {
           const overrideMap = new Map(parsed.items.map(i => [i.id, i]));
           const canonicalIds = new Set(freshMenu.items.map(i => i.id));
 
-          // 1. Fusionner les modifications sur les plats existants
+          // 1. Fusionner les modifications sur les plats existants tout en préservant les descriptions et allergènes canoniques à jour
           freshMenu.items = freshMenu.items.map(item => {
             const override = overrideMap.get(item.id);
             if (override) {
@@ -559,11 +559,11 @@ async function loadMenuData() {
                 price: typeof override.price === 'number' ? override.price : item.price,
                 available: typeof override.available === 'boolean' ? override.available : item.available,
                 pieces: override.pieces !== undefined ? override.pieces : item.pieces,
-                desc: override.desc !== undefined ? override.desc : item.desc,
-                allergens: Array.isArray(override.allergens) ? override.allergens : item.allergens,
+                desc: item.desc || override.desc || '',
+                allergens: (Array.isArray(item.allergens) && item.allergens.length > 0) ? item.allergens : (override.allergens || []),
                 unavailableFlavors: Array.isArray(override.unavailableFlavors) ? override.unavailableFlavors : (item.unavailableFlavors || []),
                 img: item.img || override.img,
-                cat: override.cat || item.cat
+                cat: item.cat || override.cat
               };
             }
             return item;
@@ -861,7 +861,10 @@ function renderProductsMenu() {
     const catHeader = document.createElement('div');
     catHeader.className = 'cat-section-header';
     catHeader.innerHTML = `
-      <h2 class="cat-section-title">${catLabel}</h2>
+      <div>
+        <h2 class="cat-section-title">${catLabel}</h2>
+        ${cat.desc ? `<p class="cat-section-desc" style="font-size: 13.5px; color: var(--text-secondary); margin-top: 4px; font-weight: 500;">${cat.desc}</p>` : ''}
+      </div>
       <span class="cat-section-count">${items.length} plat${items.length > 1 ? 's' : ''}</span>
     `;
     section.appendChild(catHeader);
