@@ -796,6 +796,17 @@ button {
   transition: all 0.2s;
 }
 
+select.admin-input {
+  cursor: pointer;
+  font-weight: 700;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23272F61' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 28px;
+}
+
 .admin-input:focus {
   border-color: var(--indigo);
   background: #FFFFFF;
@@ -1066,15 +1077,13 @@ button {
 
 .admin-items-list::-webkit-scrollbar-thumb:hover {
   background: #94A3B8;
-  border-radius: 4px;
 }
 
 .admin-item-row {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  padding: 4px 0;
-  
+  padding: 3px 0;
   font-size: 13.5px;
   gap: 10px;
 }
@@ -1120,7 +1129,6 @@ button {
   color: var(--indigo-dark);
   white-space: nowrap;
 }
-
 
 .admin-order-card-footer {
   margin-top: auto;
@@ -2252,8 +2260,6 @@ textarea, textarea.admin-input, #form-product-desc {
 
 /* ==========================================================================
    DAILY GROUP ACCORDIONS (COMMANDES & RÉSERVATIONS PAR JOUR)
-/* ==========================================================================
-   DAILY GROUP ACCORDIONS (COMMANDES & RÉSERVATIONS PAR JOUR)
    ========================================================================== */
 
 .admin-day-group {
@@ -2350,7 +2356,7 @@ textarea, textarea.admin-input, #form-product-desc {
 
 .admin-day-content {
   padding: 18px 16px;
-  background: #FFFDFE;
+  background: #FAFAFC;
   border-top: 1px solid var(--border);
   width: 100%;
   box-sizing: border-box;
