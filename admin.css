@@ -1017,7 +1017,7 @@ button {
 .admin-prefs-divider {
   margin-top: 6px;
   padding-top: 8px;
-  border-top: 1px dashed var(--sakura-border);
+  border-top: 1px solid var(--sakura-border-soft);
 }
 
 .admin-note-row {
@@ -1045,7 +1045,23 @@ button {
 .admin-items-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
+  max-height: 240px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.admin-items-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.admin-items-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.admin-items-list::-webkit-scrollbar-thumb {
+  background: var(--sakura-border-strong);
+  border-radius: 4px;
 }
 
 .admin-item-row {
@@ -1053,7 +1069,7 @@ button {
   justify-content: space-between;
   align-items: flex-start;
   padding: 4px 0;
-  border-bottom: 1px dotted var(--sakura-border-soft);
+  
   font-size: 13.5px;
   gap: 10px;
 }
@@ -1100,61 +1116,6 @@ button {
   white-space: nowrap;
 }
 
-
-.admin-items-more {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  max-height: 260px;
-  overflow-y: auto;
-  padding-right: 4px;
-  margin-top: 4px;
-  border-top: 1px dashed var(--sakura-border);
-  padding-top: 4px;
-}
-
-.admin-items-more::-webkit-scrollbar {
-  width: 5px;
-}
-
-.admin-items-more::-webkit-scrollbar-thumb {
-  background: var(--sakura-border);
-  border-radius: 4px;
-}
-
-.admin-order-expand-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: 100%;
-  padding: 7px 12px;
-  margin-top: 8px;
-  background: var(--sakura-bg-soft);
-  border: 1px solid var(--sakura-border);
-  border-radius: var(--radius-sm);
-  color: var(--indigo-dark);
-  font-family: var(--font-main);
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.admin-order-expand-btn:hover {
-  background: #FFE8F0;
-  border-color: var(--sakura-border-strong);
-  color: var(--sakura-vibrant);
-}
-
-.admin-order-expand-btn .expand-chevron {
-  transition: transform 0.25s ease;
-  color: var(--sakura-vibrant);
-}
-
-.admin-order-expand-btn.is-expanded .expand-chevron {
-  transform: rotate(180deg);
-}
 
 .admin-order-card-footer {
   margin-top: auto;
@@ -2383,7 +2344,7 @@ textarea, textarea.admin-input, #form-product-desc {
 .admin-day-content {
   padding: 18px 16px;
   background: #FFFDFE;
-  border-top: 1px dashed var(--sakura-border);
+  border-top: 1px solid var(--sakura-border-soft);
   width: 100%;
   box-sizing: border-box;
 }
