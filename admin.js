@@ -109,7 +109,16 @@ let ADMIN_SETTINGS = {
   mapsLink: 'https://goo.gl/maps/gdgPWQZ2CxFZTC1a7'
 };
 
-const DEFAULT_PIN = '1234';
+// Helper headers d'authentification administrateur
+function getAdminHeaders(extraHeaders = {}) {
+  const token = sessionStorage.getItem('sushilin_admin_token') || '';
+  const headers = { ...extraHeaders };
+  if (token) {
+    headers['Authorization'] = 'Bearer ' + token;
+    headers['X-Admin-Token'] = token;
+  }
+  return headers;
+}
 
 // ---- DOM SELECTORS ----
 const pinScreen = document.getElementById('pin-screen');
@@ -126,33 +135,138 @@ const productModalBackdrop = document.getElementById('product-modal-backdrop');
 const adminProductModal = document.getElementById('admin-product-modal');
 const modalProductTitle = document.getElementById('modal-product-title');
 
-// ---- AUTHENTICATION (PIN) ----
-function handlePinLogin(e) {
+// ---- AUTHENTICATION (SERVER-SIDE PIN & RATE LIMITING) ----
+async function handlePinLogin(e) {
   e.preventDefault();
-  const enteredPin = adminPinInput.value.trim();
-  const savedPin = localStorage.getItem('sushilin_admin_pin') || DEFAULT_PIN;
+  const pinInput = document.getElementById('admin-pin-input');
+  const errorMsg = document.getElementById('pin-error-msg');
+  const submitBtn = document.getElementById('btn-pin-submit');
+  if (!pinInput) return;
 
-  if (enteredPin === savedPin) {
-    sessionStorage.setItem('sushilin_admin_logged', 'true');
-    showAdminDashboard();
-    showToast('Connexion réussie au tableau de bord !');
-  } else {
-    alert('Code PIN incorrect. Veuillez réessayer.');
-    adminPinInput.value = '';
-    adminPinInput.focus();
+  const enteredPin = pinInput.value.trim();
+  if (!enteredPin) return;
+
+  if (errorMsg) errorMsg.style.display = 'none';
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Connexion en cours...';
+  }
+
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pin: enteredPin })
+    });
+    const data = await res.json();
+
+    if (res.ok && data.success && data.token) {
+      sessionStorage.setItem('sushilin_admin_token', data.token);
+      showAdminDashboard();
+      showToast('Connexion réussie au tableau de bord !');
+    } else {
+      const errText = data.error || 'Code PIN incorrect. Veuillez réessayer.';
+      if (errorMsg) {
+        errorMsg.textContent = errText;
+        errorMsg.style.display = 'block';
+      } else {
+        alert(errText);
+      }
+      pinInput.value = '';
+      pinInput.focus();
+    }
+  } catch (err) {
+    console.error('Erreur login:', err);
+    if (errorMsg) {
+      errorMsg.textContent = 'Erreur de communication avec le serveur.';
+      errorMsg.style.display = 'block';
+    }
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Accéder au tableau de bord';
+    }
   }
 }
 
-function handleLogout() {
-  sessionStorage.removeItem('sushilin_admin_logged');
+async function handleLogout() {
+  const token = sessionStorage.getItem('sushilin_admin_token');
+  if (token) {
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: getAdminHeaders({ 'Content-Type': 'application/json' })
+      });
+    } catch (e) {}
+  }
+  sessionStorage.removeItem('sushilin_admin_token');
   adminApp.style.display = 'none';
   pinScreen.style.display = 'flex';
-  adminPinInput.value = '';
+  if (adminPinInput) adminPinInput.value = '';
 }
 
-function checkAdminSession() {
-  if (sessionStorage.getItem('sushilin_admin_logged') === 'true') {
+async function checkAdminSession() {
+  const token = sessionStorage.getItem('sushilin_admin_token');
+  if (!token) {
+    pinScreen.style.display = 'flex';
+    adminApp.style.display = 'none';
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/auth/verify', {
+      headers: getAdminHeaders()
+    });
+    if (res.ok) {
+      showAdminDashboard();
+    } else {
+      sessionStorage.removeItem('sushilin_admin_token');
+      pinScreen.style.display = 'flex';
+      adminApp.style.display = 'none';
+    }
+  } catch (e) {
+    // Mode déconnecté ou local
     showAdminDashboard();
+  }
+}
+
+async function handleChangeAdminPin() {
+  const currentPinInput = document.getElementById('current-pin-input');
+  const newPinInput = document.getElementById('new-pin-input');
+  if (!currentPinInput || !newPinInput) return;
+
+  const currentPin = currentPinInput.value.trim();
+  const newPin = newPinInput.value.trim();
+
+  if (!currentPin) {
+    alert('Veuillez renseigner votre code PIN actuel.');
+    currentPinInput.focus();
+    return;
+  }
+
+  if (!newPin || newPin.length < 4 || newPin.length > 8 || !/^\d+$/.test(newPin)) {
+    alert('Le nouveau code PIN doit comporter entre 4 et 8 chiffres.');
+    newPinInput.focus();
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/auth/change-pin', {
+      method: 'POST',
+      headers: getAdminHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ currentPin, newPin })
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      alert('✅ Code PIN administrateur modifié avec succès !');
+      currentPinInput.value = '';
+      newPinInput.value = '';
+      showToast('Code PIN mis à jour avec succès.');
+    } else {
+      alert('❌ Erreur : ' + (data.error || 'Impossible de modifier le code PIN.'));
+    }
+  } catch (e) {
+    alert('Erreur de connexion avec le serveur lors du changement de PIN.');
   }
 }
 
@@ -832,7 +946,7 @@ async function saveSettingsToServer() {
   try {
     const res = await fetch('/api/settings', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAdminHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(ADMIN_SETTINGS)
     });
     if (!res.ok) throw new Error('Erreur HTTP ' + res.status);
@@ -1579,7 +1693,9 @@ function switchOrdersSubtab(type) {
 // ---- RENDU DES COMMANDES EN DIRECT (POSTGRESQL & LOCALSTORAGE) ----
 async function syncAndGetOrders() {
   try {
-    const res = await fetch('/api/orders');
+    const res = await fetch('/api/orders', {
+      headers: getAdminHeaders()
+    });
     if (res.ok) {
       const data = await res.json();
       if (Array.isArray(data.orders) && data.orders.length > 0) {
@@ -1986,7 +2102,9 @@ async function renderAdminOrders() {
 // ---- RENDU DES RÉSERVATIONS DE TABLES (POSTGRESQL & LOCALSTORAGE) ----
 async function syncAndGetReservations() {
   try {
-    const res = await fetch('/api/reservations');
+    const res = await fetch('/api/reservations', {
+      headers: getAdminHeaders()
+    });
     if (res.ok) {
       const data = await res.json();
       if (Array.isArray(data.reservations) && data.reservations.length > 0) {
@@ -2159,7 +2277,7 @@ function updateOrderStatus(orderId, newStatus) {
   // 1. Mise à jour dans PostgreSQL via API
   fetch('/api/orders', {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAdminHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ id: orderId, status: newStatus })
   }).catch(e => console.warn('Erreur update PostgreSQL:', e));
 
@@ -2178,7 +2296,7 @@ function deleteOrder(orderId) {
   if (!confirm(`Supprimer la commande ${orderId} ?`)) return;
   fetch('/api/orders', {
     method: 'DELETE',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAdminHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ id: orderId })
   }).catch(e => console.warn('Erreur suppression API:', e));
 
@@ -2193,7 +2311,7 @@ function deleteReservation(resId) {
   if (!confirm(`Supprimer la réservation ${resId} ?`)) return;
   fetch('/api/reservations', {
     method: 'DELETE',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAdminHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ id: resId })
   }).catch(e => console.warn('Erreur suppression API:', e));
 
@@ -2208,13 +2326,13 @@ function clearAllOrders() {
   if (!confirm("Voulez-vous vraiment effacer tout l'historique des commandes et réservations de test ?")) return;
   fetch('/api/orders', {
     method: 'DELETE',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAdminHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ id: '__ALL__' })
   }).catch(() => {});
 
   fetch('/api/reservations', {
     method: 'DELETE',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAdminHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ id: '__ALL__' })
   }).catch(() => {});
 

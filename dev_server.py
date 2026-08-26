@@ -9,6 +9,7 @@ import urllib.error
 from http.server import SimpleHTTPRequestHandler, HTTPServer
 
 import db
+import auth
 
 PORT = 3000
 ENV_FILE = os.path.join(os.path.dirname(__file__), '.env')
@@ -118,11 +119,50 @@ def dispatch_resend_email(api_key, registered_account_email, requested_email, su
             return resend_res
 
 class SushiLinHandler(SimpleHTTPRequestHandler):
+    def get_client_ip(self):
+        forwarded = self.headers.get('X-Forwarded-For')
+        if forwarded:
+            return forwarded.split(',')[0].strip()
+        return self.client_address[0] if self.client_address else '127.0.0.1'
+
+    def get_admin_token(self):
+        auth_header = self.headers.get('Authorization', '')
+        if auth_header.startswith('Bearer '):
+            return auth_header[7:].strip()
+        x_token = self.headers.get('X-Admin-Token', '')
+        if x_token:
+            return x_token.strip()
+        cookie_header = self.headers.get('Cookie', '')
+        for c in cookie_header.split(';'):
+            c = c.strip()
+            if c.startswith('sushilin_admin_session='):
+                return c.split('=', 1)[1].strip()
+        return None
+
+    def require_admin_auth(self):
+        token = self.get_admin_token()
+        if not token or not auth.verify_session(token):
+            self.send_response(401)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({
+                'error': 'Authentification requise. Session invalide ou expirée.',
+                'authenticated': False
+            }).encode('utf-8'))
+            return False
+        return True
+
     def end_headers(self):
-        # Enable CORS and disable caching in development
+        # Security headers conformes ANSSI / OWASP
+        self.send_header('X-Content-Type-Options', 'nosniff')
+        self.send_header('X-Frame-Options', 'DENY')
+        self.send_header('Referrer-Policy', 'strict-origin-when-cross-origin')
+        self.send_header('Permissions-Policy', 'geolocation=(), camera=(), microphone=()')
+        
+        # CORS & Cache control
         self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'GET, POST, PATCH, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Admin-Token')
         self.send_header('Cache-Control', 'no-cache, no-store, must-revalidate')
         self.send_header('Pragma', 'no-cache')
         self.send_header('Expires', '0')
@@ -133,7 +173,17 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
-        # --- API : LECTURE DES PARAMÈTRES / HORAIRES DU RESTAURANT ---
+        # --- API : VÉRIFICATION DE SESSION ADMIN ---
+        if self.path.startswith('/api/auth/verify'):
+            token = self.get_admin_token()
+            is_valid = bool(token and auth.verify_session(token))
+            self.send_response(200 if is_valid else 401)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({'authenticated': is_valid}).encode('utf-8'))
+            return
+
+        # --- API : LECTURE DES PARAMÈTRES / HORAIRES DU RESTAURANT (PUBLIC) ---
         if self.path.startswith('/api/settings'):
             settings_path = os.path.join(os.path.dirname(__file__), 'data', 'settings.json')
             settings = {
@@ -168,8 +218,10 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
             self.wfile.write(json.dumps(settings, ensure_ascii=False).encode('utf-8'))
             return
 
-        # --- API : LECTURE DES UTILISATEURS (POSTGRESQL) ---
+        # --- API : LECTURE DES UTILISATEURS (PROTÉGÉ RGPD) ---
         if self.path.startswith('/api/users'):
+            if not self.require_admin_auth():
+                return
             users = db.get_users()
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
@@ -177,8 +229,10 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
             self.wfile.write(json.dumps({'users': users}, default=str).encode('utf-8'))
             return
 
-        # --- API : LECTURE DES COMMANDES (POSTGRESQL) ---
+        # --- API : LECTURE DES COMMANDES (PROTÉGÉ RGPD) ---
         if self.path.startswith('/api/orders'):
+            if not self.require_admin_auth():
+                return
             orders = db.get_orders()
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
@@ -186,7 +240,7 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
             self.wfile.write(json.dumps({'orders': orders}, default=str).encode('utf-8'))
             return
 
-        # --- API : PROCHAIN ID DE COMMANDE DU JOUR (1, 2, 3...) ---
+        # --- API : PROCHAIN ID DE COMMANDE DU JOUR (1, 2, 3...) (PUBLIC) ---
         if self.path.startswith('/api/next-order-id'):
             next_id = db.get_next_daily_order_id()
             self.send_response(200)
@@ -195,8 +249,10 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
             self.wfile.write(json.dumps({'orderId': next_id or '1'}).encode('utf-8'))
             return
 
-        # --- API : LECTURE DES RÉSERVATIONS (POSTGRESQL) ---
+        # --- API : LECTURE DES RÉSERVATIONS (PROTÉGÉ RGPD) ---
         if self.path.startswith('/api/reservations'):
+            if not self.require_admin_auth():
+                return
             reservations = db.get_reservations()
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
@@ -246,6 +302,8 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
         super().do_GET()
 
     def do_PATCH(self):
+        if not self.require_admin_auth():
+            return
         content_length = int(self.headers.get('Content-Length', 0))
         body = self.rfile.read(content_length).decode('utf-8') if content_length > 0 else '{}'
         try:
@@ -279,6 +337,8 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
         self.end_headers()
 
     def do_DELETE(self):
+        if not self.require_admin_auth():
+            return
         content_length = int(self.headers.get('Content-Length', 0))
         body = self.rfile.read(content_length).decode('utf-8') if content_length > 0 else '{}'
         try:
@@ -316,10 +376,98 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
         registered_account_email = env.get('TEST_EMAIL') or 'mickael.lin@icloud.com'
 
         content_length = int(self.headers.get('Content-Length', 0))
+        # Limitation de taille de requête (1 Mo max) pour prévenir les attaques DoS
+        if content_length > 1024 * 1024:
+            self.send_response(413)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({'error': 'Payload Too Large'}).encode('utf-8'))
+            return
+
         body = self.rfile.read(content_length).decode('utf-8') if content_length > 0 else '{}'
 
-        # --- ENDPOINT : PARAMÈTRES / HORAIRES DU RESTAURANT ---
+        # --- ENDPOINT AUTH : CONNEXION PAR CODE PIN (AVEC RATE LIMITING) ---
+        if self.path == '/api/auth/login':
+            try:
+                data = json.loads(body)
+                pin = str(data.get('pin', '')).strip()
+                client_ip = self.get_client_ip()
+
+                if auth.is_ip_rate_limited(client_ip):
+                    self.send_response(429)
+                    self.send_header('Content-Type', 'application/json')
+                    self.end_headers()
+                    self.wfile.write(json.dumps({
+                        'success': False,
+                        'error': 'Trop de tentatives erronées. Accès bloqué pendant 10 minutes.'
+                    }).encode('utf-8'))
+                    return
+
+                ok, msg = auth.verify_pin(pin, client_ip)
+                if ok:
+                    token = auth.create_session(client_ip)
+                    self.send_response(200)
+                    self.send_header('Content-Type', 'application/json')
+                    self.send_header('Set-Cookie', f'sushilin_admin_session={token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=43200')
+                    self.end_headers()
+                    self.wfile.write(json.dumps({
+                        'success': True,
+                        'token': token,
+                        'message': 'Authentification réussie'
+                    }).encode('utf-8'))
+                else:
+                    self.send_response(401)
+                    self.send_header('Content-Type', 'application/json')
+                    self.end_headers()
+                    self.wfile.write(json.dumps({
+                        'success': False,
+                        'error': msg
+                    }).encode('utf-8'))
+            except Exception as e:
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({'error': str(e)}).encode('utf-8'))
+            return
+
+        # --- ENDPOINT AUTH : DÉCONNEXION ---
+        if self.path == '/api/auth/logout':
+            token = self.get_admin_token()
+            if token:
+                auth.revoke_session(token)
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Set-Cookie', 'sushilin_admin_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0')
+            self.end_headers()
+            self.wfile.write(json.dumps({'success': True}).encode('utf-8'))
+            return
+
+        # --- ENDPOINT AUTH : CHANGEMENT DE CODE PIN ---
+        if self.path == '/api/auth/change-pin':
+            if not self.require_admin_auth():
+                return
+            try:
+                data = json.loads(body)
+                current_pin = str(data.get('currentPin', '')).strip()
+                new_pin = str(data.get('newPin', '')).strip()
+                client_ip = self.get_client_ip()
+
+                ok, msg = auth.change_pin(current_pin, new_pin, client_ip)
+                self.send_response(200 if ok else 400)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({'success': ok, 'message': msg if ok else None, 'error': None if ok else msg}).encode('utf-8'))
+            except Exception as e:
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({'error': str(e)}).encode('utf-8'))
+            return
+
+        # --- ENDPOINT : PARAMÈTRES / HORAIRES DU RESTAURANT (PROTÉGÉ) ---
         if self.path == '/api/settings':
+            if not self.require_admin_auth():
+                return
             try:
                 settings_data = json.loads(body)
                 settings_path = os.path.join(os.path.dirname(__file__), 'data', 'settings.json')
@@ -368,8 +516,10 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
                 self.wfile.write(json.dumps({'error': str(e)}).encode('utf-8'))
             return
 
-        # --- ENDPOINT : CRÉATION / MISE À JOUR UTILISATEUR ---
+        # --- ENDPOINT : CRÉATION / MISE À JOUR UTILISATEUR (PROTÉGÉ) ---
         if self.path == '/api/users':
+            if not self.require_admin_auth():
+                return
             try:
                 user_data = json.loads(body)
                 success = db.save_user(user_data)

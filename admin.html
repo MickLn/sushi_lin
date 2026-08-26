@@ -26,10 +26,10 @@
       <form class="pin-form" onsubmit="handlePinLogin(event)">
         <label for="admin-pin-input">Entrez votre code PIN :</label>
         <div class="pin-input-wrap">
-          <input type="password" id="admin-pin-input" maxlength="6" placeholder="••••" autocomplete="current-password" autofocus required>
+          <input type="password" id="admin-pin-input" maxlength="8" placeholder="••••" autocomplete="current-password" autofocus required>
         </div>
-        <button type="submit" class="btn-pin-submit">Accéder au tableau de bord</button>
-        <p class="pin-hint">Code PIN par défaut : <strong>1234</strong></p>
+        <div id="pin-error-msg" class="pin-error-msg" style="display: none; color: #dc2626; font-size: 0.85rem; margin-top: 8px; font-weight: 500;"></div>
+        <button type="submit" class="btn-pin-submit" id="btn-pin-submit">Accéder au tableau de bord</button>
       </form>
     </div>
   </div>
@@ -506,6 +506,35 @@
                 <div class="form-field mt-16">
                   <label for="maps-link-input">Lien Google Maps :</label>
                   <input type="url" id="maps-link-input" class="admin-input" value="https://goo.gl/maps/gdgPWQZ2CxFZTC1a7">
+                </div>
+              </div>
+            </div>
+
+            <div class="admin-card full-width">
+              <div class="card-head">
+                <span class="card-icon-tag" style="background: rgba(225, 29, 72, 0.1); color: #E11D48;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                </span>
+                <h3>Sécurité & Code PIN Administrateur</h3>
+              </div>
+              <div class="card-body">
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">
+                  Modifiez votre code PIN secret d'accès au tableau de bord. Le nouveau code doit comporter entre 4 et 8 chiffres.
+                </p>
+                <div class="form-row" style="display: flex; gap: 16px; flex-wrap: wrap;">
+                  <div class="form-field" style="flex: 1; min-width: 200px;">
+                    <label for="current-pin-input">Code PIN actuel :</label>
+                    <input type="password" id="current-pin-input" class="admin-input" maxlength="8" placeholder="••••">
+                  </div>
+                  <div class="form-field" style="flex: 1; min-width: 200px;">
+                    <label for="new-pin-input">Nouveau code PIN (4 à 8 chiffres) :</label>
+                    <input type="password" id="new-pin-input" class="admin-input" maxlength="8" placeholder="••••">
+                  </div>
+                </div>
+                <div style="margin-top: 14px; display: flex; justify-content: flex-end;">
+                  <button type="button" class="btn-save-global" onclick="handleChangeAdminPin()" style="background: #E11D48; color: #fff; padding: 10px 18px; font-size: 13.5px; border-radius: 8px;">
+                    <span>Mettre à jour le code PIN</span>
+                  </button>
                 </div>
               </div>
             </div>
