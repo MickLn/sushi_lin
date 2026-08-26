@@ -325,7 +325,8 @@ async function loadAdminData() {
                 available: typeof override.available === 'boolean' ? override.available : item.available,
                 pieces: override.pieces !== undefined ? override.pieces : item.pieces,
                 desc: item.desc || override.desc || '',
-                allergens: (Array.isArray(item.allergens) && item.allergens.length > 0) ? item.allergens : (override.allergens || []),
+                allergens: item.allergens !== undefined ? item.allergens : (override.allergens || []),
+                unavailableFlavors: Array.isArray(override.unavailableFlavors) ? override.unavailableFlavors : (item.unavailableFlavors || []),
                 img: item.img || override.img,
                 cat: item.cat || override.cat
               };

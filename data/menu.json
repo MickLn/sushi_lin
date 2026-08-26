@@ -1257,7 +1257,10 @@
       "price": 5.1,
       "img": "img/products/33.png",
       "desc": "",
-      "available": true
+      "available": true,
+      "allergens": [
+        "Poissons"
+      ]
     },
     {
       "id": "sushis-34",
@@ -1268,7 +1271,10 @@
       "price": 5.4,
       "img": "img/products/34.png",
       "desc": "",
-      "available": true
+      "available": true,
+      "allergens": [
+        "Poissons"
+      ]
     },
     {
       "id": "sushis-39",
@@ -1379,7 +1385,10 @@
       "price": 5.4,
       "img": "img/products/35.png",
       "desc": "",
-      "available": true
+      "available": true,
+      "allergens": [
+        "Poissons"
+      ]
     },
     {
       "id": "sushis-37",
@@ -1542,7 +1551,10 @@
       "desc": "",
       "available": true,
       "subcat": "makis-classiques",
-      "subcatName": "Makis traditionnels"
+      "subcatName": "Makis traditionnels",
+      "allergens": [
+        "Poissons"
+      ]
     },
     {
       "id": "makis-9b",
@@ -1555,7 +1567,10 @@
       "desc": "",
       "available": true,
       "subcat": "makis-classiques",
-      "subcatName": "Makis traditionnels"
+      "subcatName": "Makis traditionnels",
+      "allergens": [
+        "Œufs"
+      ]
     },
     {
       "id": "makis-10",
@@ -1568,7 +1583,10 @@
       "desc": "",
       "available": true,
       "subcat": "makis-classiques",
-      "subcatName": "Makis traditionnels"
+      "subcatName": "Makis traditionnels",
+      "allergens": [
+        "Poissons"
+      ]
     },
     {
       "id": "makis-11",
@@ -1581,7 +1599,10 @@
       "desc": "",
       "available": true,
       "subcat": "makis-classiques",
-      "subcatName": "Makis traditionnels"
+      "subcatName": "Makis traditionnels",
+      "allergens": [
+        "Poissons"
+      ]
     },
     {
       "id": "makis-12",
@@ -1594,7 +1615,10 @@
       "desc": "",
       "available": true,
       "subcat": "makis-classiques",
-      "subcatName": "Makis traditionnels"
+      "subcatName": "Makis traditionnels",
+      "allergens": [
+        "Poissons"
+      ]
     },
     {
       "id": "makis-13",
@@ -1607,7 +1631,10 @@
       "desc": "",
       "available": true,
       "subcat": "makis-classiques",
-      "subcatName": "Makis traditionnels"
+      "subcatName": "Makis traditionnels",
+      "allergens": [
+        "Lait"
+      ]
     },
     {
       "id": "makis-14",
@@ -1620,7 +1647,11 @@
       "desc": "",
       "available": true,
       "subcat": "makis-classiques",
-      "subcatName": "Makis traditionnels"
+      "subcatName": "Makis traditionnels",
+      "allergens": [
+        "Sésame",
+        "Crustacés"
+      ]
     },
     {
       "id": "makis-15",
@@ -1633,7 +1664,10 @@
       "desc": "",
       "available": true,
       "subcat": "makis-classiques",
-      "subcatName": "Makis traditionnels"
+      "subcatName": "Makis traditionnels",
+      "allergens": [
+        "Sésame"
+      ]
     },
     {
       "id": "makis-16",
@@ -1646,7 +1680,10 @@
       "desc": "",
       "available": true,
       "subcat": "makis-classiques",
-      "subcatName": "Makis traditionnels"
+      "subcatName": "Makis traditionnels",
+      "allergens": [
+        "Lait"
+      ]
     },
     {
       "id": "makis-17",
@@ -1659,7 +1696,8 @@
       "desc": "",
       "available": true,
       "subcat": "makis-classiques",
-      "subcatName": "Makis traditionnels"
+      "subcatName": "Makis traditionnels",
+      "allergens": []
     },
     {
       "id": "makis-18",
@@ -1672,7 +1710,8 @@
       "desc": "",
       "available": true,
       "subcat": "makis-classiques",
-      "subcatName": "Makis traditionnels"
+      "subcatName": "Makis traditionnels",
+      "allergens": []
     },
     {
       "id": "makis-19",
@@ -1685,7 +1724,10 @@
       "desc": "",
       "available": true,
       "subcat": "makis-classiques",
-      "subcatName": "Makis traditionnels"
+      "subcatName": "Makis traditionnels",
+      "allergens": [
+        "Lait"
+      ]
     },
     {
       "id": "makis-21",
@@ -1698,7 +1740,11 @@
       "desc": "",
       "available": true,
       "subcat": "makis-classiques",
-      "subcatName": "Makis traditionnels"
+      "subcatName": "Makis traditionnels",
+      "allergens": [
+        "Soja",
+        "Poissons"
+      ]
     },
     {
       "id": "makis-22",
@@ -1711,7 +1757,12 @@
       "desc": "",
       "available": true,
       "subcat": "makis-classiques",
-      "subcatName": "Makis traditionnels"
+      "subcatName": "Makis traditionnels",
+      "allergens": [
+        "Gluten",
+        "Lait",
+        "Poissons"
+      ]
     },
     {
       "id": "makis-23",
@@ -1724,7 +1775,8 @@
       "desc": "",
       "available": true,
       "subcat": "makis-classiques",
-      "subcatName": "Makis traditionnels"
+      "subcatName": "Makis traditionnels",
+      "allergens": []
     },
     {
       "id": "makis-24",
@@ -1737,7 +1789,10 @@
       "desc": "",
       "available": true,
       "subcat": "makis-classiques",
-      "subcatName": "Makis traditionnels"
+      "subcatName": "Makis traditionnels",
+      "allergens": [
+        "Lait"
+      ]
     },
     {
       "id": "makis-25",
@@ -1750,7 +1805,10 @@
       "desc": "",
       "available": true,
       "subcat": "makis-classiques",
-      "subcatName": "Makis traditionnels"
+      "subcatName": "Makis traditionnels",
+      "allergens": [
+        "Poissons"
+      ]
     },
     {
       "id": "makis-27",
@@ -1763,7 +1821,10 @@
       "desc": "",
       "available": true,
       "subcat": "makis-classiques",
-      "subcatName": "Makis traditionnels"
+      "subcatName": "Makis traditionnels",
+      "allergens": [
+        "Poissons"
+      ]
     },
     {
       "id": "makis-28",
@@ -1776,7 +1837,12 @@
       "desc": "",
       "available": true,
       "subcat": "makis-classiques",
-      "subcatName": "Makis traditionnels"
+      "subcatName": "Makis traditionnels",
+      "allergens": [
+        "Œufs",
+        "Moutarde",
+        "Poissons"
+      ]
     },
     {
       "id": "makis-32a",
@@ -1789,7 +1855,11 @@
       "desc": "",
       "available": true,
       "subcat": "makis-classiques",
-      "subcatName": "Makis traditionnels"
+      "subcatName": "Makis traditionnels",
+      "allergens": [
+        "Sésame",
+        "Poissons"
+      ]
     },
     {
       "id": "makis-26",
@@ -1802,7 +1872,12 @@
       "desc": "",
       "available": true,
       "subcat": "makis-classiques",
-      "subcatName": "Makis traditionnels"
+      "subcatName": "Makis traditionnels",
+      "allergens": [
+        "Œufs",
+        "Crustacés",
+        "Poissons"
+      ]
     },
     {
       "id": "makis-29",
@@ -1815,7 +1890,13 @@
       "desc": "",
       "available": true,
       "subcat": "california",
-      "subcatName": "California makis"
+      "subcatName": "California makis",
+      "allergens": [
+        "Œufs",
+        "Sésame",
+        "Moutarde",
+        "Poissons"
+      ]
     },
     {
       "id": "makis-29a",
@@ -1841,7 +1922,13 @@
       "desc": "",
       "available": true,
       "subcat": "california",
-      "subcatName": "California makis"
+      "subcatName": "California makis",
+      "allergens": [
+        "Œufs",
+        "Sésame",
+        "Moutarde",
+        "Crustacés"
+      ]
     },
     {
       "id": "makis-30a",
@@ -1854,7 +1941,12 @@
       "desc": "",
       "available": true,
       "subcat": "california",
-      "subcatName": "California makis"
+      "subcatName": "California makis",
+      "allergens": [
+        "Gluten",
+        "Sésame",
+        "Crustacés"
+      ]
     },
     {
       "id": "makis-31",
@@ -1867,7 +1959,13 @@
       "desc": "",
       "available": true,
       "subcat": "california",
-      "subcatName": "California makis"
+      "subcatName": "California makis",
+      "allergens": [
+        "Œufs",
+        "Sésame",
+        "Moutarde",
+        "Poissons"
+      ]
     },
     {
       "id": "makis-32",
@@ -1880,7 +1978,13 @@
       "desc": "",
       "available": true,
       "subcat": "california",
-      "subcatName": "California makis"
+      "subcatName": "California makis",
+      "allergens": [
+        "Œufs",
+        "Sésame",
+        "Moutarde",
+        "Crustacés"
+      ]
     },
     {
       "id": "makis-31a",
@@ -1893,7 +1997,13 @@
       "desc": "",
       "available": true,
       "subcat": "california",
-      "subcatName": "California makis"
+      "subcatName": "California makis",
+      "allergens": [
+        "Œufs",
+        "Sésame",
+        "Moutarde",
+        "Poissons"
+      ]
     },
     {
       "id": "saumon-rolls-87",
