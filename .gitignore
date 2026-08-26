@@ -8,3 +8,4 @@ __pycache__/
 node_modules/
 print-agent/node_modules/
 data/.admin_auth.json
+*.zip

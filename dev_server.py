@@ -140,6 +140,11 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
         return None
 
     def require_admin_auth(self):
+        # Authentification par clé d'agent d'impression sécurisée
+        printer_key = self.headers.get('X-Printer-Key', '')
+        if printer_key and printer_key == 'sushilin_secret_printer_2026':
+            return True
+
         token = self.get_admin_token()
         if not token or not auth.verify_session(token):
             self.send_response(401)

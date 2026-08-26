@@ -1,11 +1,50 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+====================================================================
+SUSHI LIN — AGENT D'IMPRESSION AUTOMATIQUE (RESTAURANT)
+====================================================================
+Ce programme s'exécute sur le PC du restaurant connecté à la box Internet.
+Il interroge en temps réel le site internet Sushi Lin et envoie instantanément
+les nouvelles commandes et réservations à l'imprimante thermique locale.
+
+Adresse IP imprimante par défaut : 192.168.1.210 (Port 9100)
+====================================================================
+"""
+
+import time
 import socket
+import json
+import urllib.request
+import urllib.error
 import unicodedata
 import re
+import sys
+import os
 
+# ====================================================================
+# CONFIGURATION
+# ====================================================================
+# Adresse du site internet (ex: "https://sushilin2.fr" ou "http://localhost:3000" pour les tests)
+SERVER_URL = os.environ.get("SUSHILIN_SERVER_URL", "https://sushilin2.fr")
+
+# Clé secrète d'impression (doit correspondre à celle configurée sur le serveur)
+PRINTER_SECRET_KEY = os.environ.get("SUSHILIN_PRINTER_KEY", "sushilin_secret_printer_2026")
+
+# Adresse IP locale et port de votre imprimante thermique dans le restaurant
+PRINTER_IP = os.environ.get("SUSHILIN_PRINTER_IP", "192.168.1.210")
+PRINTER_PORT = int(os.environ.get("SUSHILIN_PRINTER_PORT", "9100"))
+
+# Intervalle de vérification des nouvelles commandes (en secondes)
+CHECK_INTERVAL_SECONDS = 3
+
+# ====================================================================
+# OUTILS DE FORMATAGE ET ESC/POS (80mm)
+# ====================================================================
 def clean_ticket_item_name(name):
     if not name:
         return ""
-    # Nettoyage intelligent : supprime le contenu entre parenthèses pour gagner de la place (ex: "Takoyaki (beignets de poulpe)" -> "Takoyaki")
+    # Nettoyage intelligent : supprime le contenu entre parenthèses pour gagner de la place
     name = re.sub(r'\(.*?\)', '', str(name))
     name = re.sub(r'\s+', ' ', name).strip()
     return name
@@ -48,15 +87,15 @@ def is_discount_eligible(code, name):
         return False
     return True
 
+# ====================================================================
+# GÉNÉRATEURS DE TICKETS ESC/POS (CUISINE + CAISSE + RÉSERVATION)
+# ====================================================================
 def generate_ticket_bytes(order):
     buf = bytearray()
+    buf.extend(b'\x1b\x40\x1c\x2e') # Init + Cancel Chinese mode
+    buf.extend(b'\x1b\x74\x13')     # Charset PC858 Euro
 
-    # 1. ESC @ (Init) + FS . (Cancel Chinese mode)
-    buf.extend(b'\x1b\x40\x1c\x2e')
-    # Charset PC858 Euro
-    buf.extend(b'\x1b\x74\x13')
-
-    # Centered Header
+    # Header
     buf.extend(b'\x1b\x61\x01') # Align Center
     buf.extend(b'\x1b\x45\x01') # Bold ON
     buf.extend(strip_accents("SUSHI LIN").encode('cp858', errors='replace') + b'\n')
@@ -67,7 +106,7 @@ def generate_ticket_bytes(order):
     buf.extend(b'\x1b\x61\x00') # Align Left
     buf.extend(b"------------------------------------------------\n")
 
-    # Order Number & Pickup Time (Centered, Double Width + Double Height, Bold)
+    # Order Number & Pickup Time
     order_num = str(order.get('id') or order.get('number') or '1').lstrip('#')
     pickup_time = str(order.get('pickupTime') or '19h30')
     buf.extend(b'\x1b\x61\x01') # Center
@@ -93,11 +132,7 @@ def generate_ticket_bytes(order):
     buf.extend(f"Telephone :     {strip_accents(cust_phone)}\n".encode('cp858', errors='replace'))
     buf.extend(b'\x1b\x45\x00')
 
-    cust_email = str(order.get('customerEmail') or order.get('email') or '').strip()
-    if cust_email:
-        buf.extend(f"Email :         {cust_email}\n".encode('cp858', errors='replace'))
-
-    # Preferences (Sauce, Baguettes, Remarques)
+    # Preferences
     prefs = []
     sauce = str(order.get('sauceChoice') or order.get('sauce') or '').strip()
     if sauce:
@@ -123,7 +158,7 @@ def generate_ticket_bytes(order):
     buf.extend(b'\x1b\x61\x00') # Left
     buf.extend(b"------------------------------------------------\n")
 
-    # Column Titles (CODE avant QTE)
+    # Column Titles
     buf.extend(b'\x1b\x45\x01')
     header_title = "CODE   QTE  DESIGNATION".ljust(37) + "TOTAL".rjust(11) + "\n"
     buf.extend(header_title.encode('cp858', errors='replace'))
@@ -145,16 +180,14 @@ def generate_ticket_bytes(order):
         avail_name_len = max(10, 48 - len(lead_prefix) - len(total_str))
         name_lines = wrap_words(name, avail_name_len)
 
-        buf.extend(b'\x1b\x45\x01') # Bold ON
+        buf.extend(b'\x1b\x45\x01')
         first_line = lead_prefix + name_lines[0].ljust(48 - len(lead_prefix) - len(total_str)) + total_str + "\n"
         buf.extend(first_line.encode('cp858', errors='replace'))
 
-        # Remaining lines of name
         for extra in name_lines[1:]:
             buf.extend(f"{' ' * len(lead_prefix)}{extra}\n".encode('cp858', errors='replace'))
-        buf.extend(b'\x1b\x45\x00') # Bold OFF
+        buf.extend(b'\x1b\x45\x00')
 
-        # Discount line
         is_elig = is_discount_eligible(code, name)
         if is_elig:
             discounted_cents = int(round(total_cents * 0.90))
@@ -164,7 +197,6 @@ def generate_ticket_bytes(order):
                 disc_line = indent_spaces + "(-10% remise)".ljust(48 - len(indent_spaces) - len(disc_str)) + disc_str + "\n"
                 buf.extend(disc_line.encode('cp858', errors='replace'))
 
-        # Details / Options
         details = it.get('details') or it.get('selectedOptions') or []
         for d in details:
             d_str = d if isinstance(d, str) else f"{d.get('quantity', 1)}x {d.get('flavor', d.get('name', ''))}"
@@ -188,7 +220,7 @@ def generate_ticket_bytes(order):
     buf.extend(tot_line.encode('cp858', errors='replace'))
     buf.extend(b"\n")
 
-    # Net a payer (Centered & Bold)
+    # Net a payer
     buf.extend(b'\x1b\x61\x01') # Center
     buf.extend(b'\x1b\x45\x01') # Bold ON
     net_str = f"Net a payer : {format_euro(int(round(total_val * 100)))}\n"
@@ -197,45 +229,35 @@ def generate_ticket_bytes(order):
     buf.extend(b'\x1b\x61\x00') # Left
     buf.extend(b"------------------------------------------------\n")
 
-    # Footer
     buf.extend(b'\x1b\x61\x01') # Center
     buf.extend(b"Merci de votre visite, a bientot !\n")
     buf.extend(b'\x1b\x61\x00') # Left
-
-    # Feed 6 lines so the entire ticket text passes the cutter blade before cutting
-    buf.extend(b"\n\n\n\n\n\n\x1b\x64\x04\x1d\x56\x01")
-
+    buf.extend(b"\n\n\n\n\n\n\x1b\x64\x04\x1d\x56\x01") # Feed 6 lines & Cut
     return bytes(buf)
 
 def generate_kitchen_ticket_bytes(order):
     buf = bytearray()
-
-    # 1. ESC @ (Init) + FS . (Cancel Chinese mode)
     buf.extend(b'\x1b\x40\x1c\x2e')
-    # Charset PC858 Euro
     buf.extend(b'\x1b\x74\x13')
 
-    # Centered Header
-    buf.extend(b'\x1b\x61\x01') # Align Center
-    buf.extend(b'\x1b\x45\x01') # Bold ON
+    buf.extend(b'\x1b\x61\x01') # Center
+    buf.extend(b'\x1b\x45\x01')
     buf.extend(strip_accents("SUSHI LIN - CUISINE").encode('cp858', errors='replace') + b'\n')
-    buf.extend(b'\x1b\x45\x00') # Bold OFF
+    buf.extend(b'\x1b\x45\x00')
     buf.extend(b"------------------------------------------------\n")
 
-    # Order Number & Pickup Time (Centered & Bold)
     order_num = str(order.get('id') or order.get('number') or '1').lstrip('#')
-    buf.extend(b'\x1d\x21\x11') # Double Width & Height
-    buf.extend(b'\x1b\x45\x01') # Bold ON
+    buf.extend(b'\x1d\x21\x11')
+    buf.extend(b'\x1b\x45\x01')
     buf.extend(f"COMMANDE #{order_num}\n".encode('cp858', errors='replace'))
     
     pickup_time = str(order.get('pickupTime') or '19h30')
     buf.extend(f"RETRAIT : {strip_accents(pickup_time)}\n".encode('cp858', errors='replace'))
-    buf.extend(b'\x1d\x21\x00') # Normal Size
-    buf.extend(b'\x1b\x45\x00') # Bold OFF
-    buf.extend(b'\x1b\x61\x00') # Left
+    buf.extend(b'\x1d\x21\x00')
+    buf.extend(b'\x1b\x45\x00')
+    buf.extend(b'\x1b\x61\x00')
     buf.extend(b"------------------------------------------------\n")
 
-    # Customer & Meta
     date_str = str(order.get('dateFormatted') or order.get('serviceDate') or '')
     if date_str:
         buf.extend(f"Date : {strip_accents(date_str)}\n".encode('cp858', errors='replace'))
@@ -245,7 +267,6 @@ def generate_kitchen_ticket_bytes(order):
     phone_part = f" ({strip_accents(cust_phone)})" if cust_phone else ""
     buf.extend(f"Client : {strip_accents(cust_name)}{phone_part}\n".encode('cp858', errors='replace'))
 
-    # Preferences / Options (Sauce, Baguettes, Remarques)
     sauce = str(order.get('sauceChoice') or order.get('sauce') or '').strip()
     if sauce:
         buf.extend(f"Sauce :     {strip_accents(sauce)}\n".encode('cp858', errors='replace'))
@@ -260,7 +281,6 @@ def generate_kitchen_ticket_bytes(order):
 
     buf.extend(b"------------------------------------------------\n\n")
 
-    # Items in Double Height (moitié moins large que Double Largeur, très net et compact)
     items = order.get('items', [])
     total_qty = 0
     for it in items:
@@ -269,7 +289,7 @@ def generate_kitchen_ticket_bytes(order):
         code = str(it.get('code') or '').strip() or '—'
         name = strip_accents(clean_ticket_item_name(str(it.get('name') or 'Article'))).upper().strip()
 
-        buf.extend(b'\x1d\x21\x01') # Double Height ONLY (Normal Width)
+        buf.extend(b'\x1d\x21\x01') # Double Height ONLY
         buf.extend(b'\x1b\x45\x01') # Bold ON
 
         line_lead = f"[ {code} ]  {qty}x  "
@@ -281,10 +301,9 @@ def generate_kitchen_ticket_bytes(order):
             for nl in name_lines:
                 buf.extend(f"   {nl}\n".encode('cp858', errors='replace'))
 
-        buf.extend(b'\x1d\x21\x00') # Normal Size
-        buf.extend(b'\x1b\x45\x00') # Bold OFF
+        buf.extend(b'\x1d\x21\x00')
+        buf.extend(b'\x1b\x45\x00')
 
-        # Sub-options / flavors (Normal size indented)
         details = it.get('details') or it.get('selectedOptions') or []
         for d in details:
             d_str = d if isinstance(d, str) else f"{d.get('quantity', 1)}x {d.get('flavor', d.get('name', ''))}"
@@ -293,61 +312,34 @@ def generate_kitchen_ticket_bytes(order):
         buf.extend(b"\n")
 
     buf.extend(b"------------------------------------------------\n")
-    buf.extend(b'\x1b\x61\x01') # Align Center
+    buf.extend(b'\x1b\x61\x01')
     buf.extend(b'\x1b\x45\x01')
     buf.extend(f"Total articles : {total_qty}\n".encode('cp858', errors='replace'))
     buf.extend(b'\x1b\x45\x00')
-    buf.extend(b'\x1b\x61\x00') # Left
-
-    # Feed 6 lines so the entire ticket text passes the cutter blade before cutting
+    buf.extend(b'\x1b\x61\x00')
     buf.extend(b"\n\n\n\n\n\n\x1b\x64\x04\x1d\x56\x01")
-
     return bytes(buf)
-
-def send_to_thermal_printer(order, printer_ip="192.168.1.210", printer_port=9100, timeout=4):
-    kitchen_bytes = generate_kitchen_ticket_bytes(order)
-    client_bytes = generate_ticket_bytes(order)
-    full_payload = kitchen_bytes + client_bytes
-
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.settimeout(timeout)
-    try:
-        sock.connect((printer_ip, printer_port))
-        sock.sendall(full_payload)
-        print(f"[THERMAL PRINTER] ✅ 2 Tickets commande (Cuisine + Caisse) #{order.get('id', '1')} imprimés avec succès sur {printer_ip}:{printer_port} !", flush=True)
-        return True
-    except Exception as e:
-        print(f"[THERMAL PRINTER] ❌ Erreur connexion imprimante ({printer_ip}:{printer_port}): {e}", flush=True)
-        return False
-    finally:
-        sock.close()
 
 def generate_reservation_ticket_bytes(reservation):
     buf = bytearray()
-
-    # 1. ESC @ (Init) + FS . (Cancel Chinese mode)
     buf.extend(b'\x1b\x40\x1c\x2e')
-    # Charset PC858 Euro
     buf.extend(b'\x1b\x74\x13')
 
-    # Centered Header
-    buf.extend(b'\x1b\x61\x01') # Align Center
-    buf.extend(b'\x1b\x45\x01') # Bold ON
+    buf.extend(b'\x1b\x61\x01') # Center
+    buf.extend(b'\x1b\x45\x01')
     buf.extend(strip_accents("SUSHI LIN").encode('cp858', errors='replace') + b'\n')
-    buf.extend(b'\x1b\x45\x00') # Bold OFF
+    buf.extend(b'\x1b\x45\x00')
     buf.extend(strip_accents("32 Rue des Dames - 78340 Les Clayes").encode('cp858', errors='replace') + b'\n')
     buf.extend(b"Tel : 01 30 79 00 88\n")
     buf.extend(b"Site : sushilin2.fr\n")
     buf.extend(b"------------------------------------------------\n")
 
-    # Title Box
-    buf.extend(b'\x1b\x45\x01') # Bold ON
+    buf.extend(b'\x1b\x45\x01')
     buf.extend(b"*** NOUVELLE RESERVATION ***\n")
-    buf.extend(b'\x1b\x45\x00') # Bold OFF
+    buf.extend(b'\x1b\x45\x00')
     buf.extend(b"------------------------------------------------\n")
-    buf.extend(b'\x1b\x61\x00') # Align Left
+    buf.extend(b'\x1b\x61\x00')
 
-    # Reservation Meta
     res_num = str(reservation.get('id') or reservation.get('number') or '1')
     buf.extend(b'\x1b\x45\x01')
     buf.extend(f"N. reservation : #{res_num}\n".encode('cp858', errors='replace'))
@@ -372,10 +364,8 @@ def generate_reservation_ticket_bytes(reservation):
     buf.extend(b'\x1b\x45\x01')
     buf.extend(f"Nb. couverts :   {guests_label}\n".encode('cp858', errors='replace'))
     buf.extend(b'\x1b\x45\x00')
-
     buf.extend(b"------------------------------------------------\n")
 
-    # Customer Details
     cust_name = str(reservation.get('name') or reservation.get('customer_name') or 'Client')
     buf.extend(f"Nom client :     {strip_accents(cust_name)}\n".encode('cp858', errors='replace'))
 
@@ -385,40 +375,106 @@ def generate_reservation_ticket_bytes(reservation):
         buf.extend(f"Telephone :      {strip_accents(cust_phone)}\n".encode('cp858', errors='replace'))
         buf.extend(b'\x1b\x45\x00')
 
-    cust_email = str(reservation.get('email') or reservation.get('customer_email') or '').strip()
-    if cust_email:
-        buf.extend(f"Email :          {cust_email}\n".encode('cp858', errors='replace'))
-
     notes = str(reservation.get('notes') or '').strip()
     if notes:
         buf.extend(b"------------------------------------------------\n")
         buf.extend(f"Remarques :      {strip_accents(notes)}\n".encode('cp858', errors='replace'))
 
     buf.extend(b"------------------------------------------------\n")
-    # Status
-    buf.extend(b'\x1b\x61\x01') # Center
+    buf.extend(b'\x1b\x61\x01')
     buf.extend(b'\x1b\x45\x01')
     buf.extend(b"Statut : TABLE CONFIRMEE\n")
     buf.extend(b'\x1b\x45\x00')
     buf.extend(b"Enregistre sur sushilin2.fr\n")
-    buf.extend(b'\x1b\x61\x00') # Left
-
-    # Feed 6 lines so the entire ticket text passes the cutter blade before cutting
+    buf.extend(b'\x1b\x61\x00')
     buf.extend(b"\n\n\n\n\n\n\x1b\x64\x04\x1d\x56\x01")
-
     return bytes(buf)
 
-def send_reservation_to_thermal_printer(reservation, printer_ip="192.168.1.210", printer_port=9100, timeout=4):
-    ticket_bytes = generate_reservation_ticket_bytes(reservation)
+# ====================================================================
+# ENVOI SOCKET VERS L'IMPRIMANTE LOCALE (192.168.1.210)
+# ====================================================================
+def print_payload(payload_bytes):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.settimeout(timeout)
+    sock.settimeout(5)
     try:
-        sock.connect((printer_ip, printer_port))
-        sock.sendall(ticket_bytes)
-        print(f"[THERMAL PRINTER] ✅ Ticket réservation #{reservation.get('id', '1')} imprimé avec succès sur {printer_ip}:{printer_port} !", flush=True)
+        sock.connect((PRINTER_IP, PRINTER_PORT))
+        sock.sendall(payload_bytes)
         return True
     except Exception as e:
-        print(f"[THERMAL PRINTER] ❌ Erreur connexion imprimante ({printer_ip}:{printer_port}): {e}", flush=True)
+        print(f"❌ [ERREUR IMPRESSION] Impossible de joindre {PRINTER_IP}:{PRINTER_PORT} -> {e}")
         return False
     finally:
         sock.close()
+
+# ====================================================================
+# BOUCLE PRINCIPALE (ÉCOUTE DES NOUVELLES COMMANDES SUR LE SERVEUR)
+# ====================================================================
+def main():
+    print("=" * 60)
+    print("🍣 SUSHI LIN — AGENT D'IMPRESSION AUTOMATIQUE EN COURS D'EXECUTION")
+    print(f"📡 Serveur surveillé  : {SERVER_URL}")
+    print(f"🖨️  Imprimante locale : {PRINTER_IP}:{PRINTER_PORT}")
+    print("=" * 60)
+    print("En attente de nouvelles commandes... (Laissez cette fenêtre ouverte)")
+    
+    # Mémoire locale des IDs déjà imprimés pour éviter tout doublon
+    printed_orders = set()
+    printed_reservations = set()
+
+    while True:
+        try:
+            # 1. Vérification des commandes
+            req = urllib.request.Request(
+                f"{SERVER_URL}/api/orders",
+                headers={"X-Printer-Key": PRINTER_SECRET_KEY, "User-Agent": "SushiLinPrinter/1.0"}
+            )
+            try:
+                with urllib.request.urlopen(req, timeout=5) as res:
+                    if res.status == 200:
+                        data = json.loads(res.read().decode('utf-8'))
+                        orders = data.get('orders', [])
+                        for ord_item in orders:
+                            ord_id = str(ord_item.get('id', ''))
+                            # Si nouvelle commande non imprimée
+                            if ord_id and ord_id not in printed_orders:
+                                print(f"\n🔔 [NOUVELLE COMMANDE] #{ord_id} reçue ! Envoi à l'imprimante...")
+                                kitchen_b = generate_kitchen_ticket_bytes(ord_item)
+                                client_b = generate_ticket_bytes(ord_item)
+                                if print_payload(kitchen_b + client_b):
+                                    printed_orders.add(ord_id)
+                                    print(f"✅ [IMPRESSION OK] Commande #{ord_id} imprimée et découpée !")
+            except Exception:
+                pass # Mode silencieux en cas d'attente normale
+
+            # 2. Vérification des réservations
+            req_res = urllib.request.Request(
+                f"{SERVER_URL}/api/reservations",
+                headers={"X-Printer-Key": PRINTER_SECRET_KEY, "User-Agent": "SushiLinPrinter/1.0"}
+            )
+            try:
+                with urllib.request.urlopen(req_res, timeout=5) as res:
+                    if res.status == 200:
+                        data = json.loads(res.read().decode('utf-8'))
+                        reservations = data.get('reservations', [])
+                        for res_item in reservations:
+                            r_id = str(res_item.get('id', ''))
+                            if r_id and r_id not in printed_reservations:
+                                print(f"\n🔔 [NOUVELLE RÉSERVATION] #{r_id} reçue ! Envoi à l'imprimante...")
+                                res_b = generate_reservation_ticket_bytes(res_item)
+                                if print_payload(res_b):
+                                    printed_reservations.add(r_id)
+                                    print(f"✅ [IMPRESSION OK] Réservation #{r_id} imprimée !")
+            except Exception:
+                pass
+
+        except KeyboardInterrupt:
+            print("\nArrêt de l'agent d'impression.")
+            break
+        except Exception as e:
+            # En cas de coupure de connexion internet temporaire, on réessaie sagement
+            time.sleep(2)
+
+        time.sleep(CHECK_INTERVAL_SECONDS)
+
+if __name__ == "__main__":
+    main()
