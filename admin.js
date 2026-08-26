@@ -67,8 +67,8 @@ function getItemDefaultAllergens(item) {
   if (text.includes('oeuf') || text.includes('œuf') || text.includes('mayo') || text.includes('tartare') || text.includes('tamago') || text.includes('dorayaki')) {
     list.push('Œufs');
   }
-  if (text.includes('nem') || text.includes('gyoza') || text.includes('tempura') || text.includes('oignon frit') || text.includes('crispy') || text.includes('beignet') || text.includes('bière')) {
-    list.push('Céréales');
+  if (text.includes('nem') || text.includes('gyoza') || text.includes('tempura') || text.includes('oignon frit') || text.includes('crispy') || text.includes('beignet') || text.includes('bière') || text.includes('ravioli') || text.includes('futo')) {
+    list.push('Gluten');
   }
   if (text.includes('cacahuète') || text.includes('arachide')) {
     list.push('Arachides');
@@ -455,7 +455,7 @@ function openEditProductModal(itemId) {
   // Set allergens
   const itemAllergens = getItemDefaultAllergens(item);
   document.querySelectorAll('input[name="admin-allergen"]').forEach(cb => {
-    cb.checked = itemAllergens.some(a => a.toLowerCase() === cb.value.toLowerCase() || (cb.value === 'Céréales' && a.toLowerCase().includes('gluten')) || (cb.value === 'Poissons' && a.toLowerCase().includes('poisson')));
+    cb.checked = itemAllergens.some(a => a.toLowerCase() === cb.value.toLowerCase() || (cb.value === 'Gluten' && (a.toLowerCase().includes('gluten') || a.toLowerCase().includes('céréale'))) || (cb.value === 'Poissons' && a.toLowerCase().includes('poisson')));
   });
   updateAdminAllergensCount();
 
