@@ -164,13 +164,26 @@ function showAdminDashboard() {
 
 // ---- LOAD MENU & SETTINGS ----
 async function loadAdminData() {
-  // 1. Settings from localStorage
-  const savedSettings = localStorage.getItem('sushilin_admin_settings');
-  if (savedSettings) {
-    try {
-      ADMIN_SETTINGS = { ...ADMIN_SETTINGS, ...JSON.parse(savedSettings) };
-    } catch (err) {
-      console.error('Erreur lecture settings:', err);
+  // 1. Settings from backend API / localStorage
+  try {
+    const setRes = await fetch('/api/settings?v=' + Date.now());
+    if (setRes.ok) {
+      const serverSettings = await setRes.json();
+      if (serverSettings && typeof serverSettings === 'object') {
+        ADMIN_SETTINGS = { ...ADMIN_SETTINGS, ...serverSettings };
+        localStorage.setItem('sushilin_admin_settings', JSON.stringify(ADMIN_SETTINGS));
+      }
+    } else {
+      throw new Error('API non disponible');
+    }
+  } catch (err) {
+    const savedSettings = localStorage.getItem('sushilin_admin_settings');
+    if (savedSettings) {
+      try {
+        ADMIN_SETTINGS = { ...ADMIN_SETTINGS, ...JSON.parse(savedSettings) };
+      } catch (e) {
+        console.error('Erreur lecture settings:', e);
+      }
     }
   }
 
@@ -685,6 +698,19 @@ function handleSaveProductForm(e) {
 }
 
 // ---- POPULATE & SAVE SETTINGS (HOURS, DISCOUNTS, INFO) ----
+function updateScheduleTextFromTimes() {
+  const midiS = (document.getElementById('midi-start')?.value || '12:00').replace(':', 'h');
+  const midiE = (document.getElementById('midi-end')?.value || '14:30').replace(':', 'h');
+  const soirS = (document.getElementById('soir-start')?.value || '18:30').replace(':', 'h');
+  const soirE = (document.getElementById('soir-end')?.value || '22:00').replace(':', 'h');
+  
+  const scheduleInput = document.getElementById('schedule-text-input');
+  if (scheduleInput) {
+    scheduleInput.value = `7j/7 : ${midiS} – ${midiE} & ${soirS} – ${soirE}`;
+  }
+  collectSettingsFromForm();
+}
+
 function populateSettingsFields() {
   if (ADMIN_SETTINGS.status === 'closed-exceptional') {
     document.getElementById('status-closed-radio').checked = true;
@@ -693,11 +719,33 @@ function populateSettingsFields() {
   }
 
   document.getElementById('exceptional-msg-input').value = ADMIN_SETTINGS.exceptionalMessage || '';
-  document.getElementById('schedule-text-input').value = ADMIN_SETTINGS.scheduleText || '';
-  document.getElementById('midi-start').value = ADMIN_SETTINGS.midiStart || '12:00';
-  document.getElementById('midi-end').value = ADMIN_SETTINGS.midiEnd || '14:30';
-  document.getElementById('soir-start').value = ADMIN_SETTINGS.soirStart || '18:30';
-  document.getElementById('soir-end').value = ADMIN_SETTINGS.soirEnd || '22:00';
+  document.getElementById('schedule-text-input').value = ADMIN_SETTINGS.scheduleText || '7j/7 : 12h00 – 14h30 & 18h30 – 22h00';
+  
+  const setSelectTime = (id, val) => {
+    const el = document.getElementById(id);
+    if (!el || !val) return;
+    let found = false;
+    for (let i = 0; i < el.options.length; i++) {
+      if (el.options[i].value === val) {
+        el.selectedIndex = i;
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      const opt = document.createElement('option');
+      opt.value = val;
+      opt.textContent = val.replace(':', 'h');
+      el.appendChild(opt);
+      el.value = val;
+    }
+  };
+
+  setSelectTime('midi-start', ADMIN_SETTINGS.midiStart || '12:00');
+  setSelectTime('midi-end', ADMIN_SETTINGS.midiEnd || '14:30');
+  setSelectTime('soir-start', ADMIN_SETTINGS.soirStart || '18:30');
+  setSelectTime('soir-end', ADMIN_SETTINGS.soirEnd || '22:00');
+
   document.getElementById('discount-input').value = ADMIN_SETTINGS.discount || 10;
   const maxOrdersWeekEl = document.getElementById('max-orders-week-input');
   if (maxOrdersWeekEl) maxOrdersWeekEl.value = ADMIN_SETTINGS.maxOrdersPerSlotWeek || ADMIN_SETTINGS.maxOrdersPerSlot || 5;
@@ -709,17 +757,39 @@ function populateSettingsFields() {
   document.getElementById('whatsapp-number-input').value = ADMIN_SETTINGS.whatsapp || '33130790088';
   document.getElementById('address-input').value = ADMIN_SETTINGS.address || '32 Rue des Dames, 78340 Les Clayes-sous-Bois';
   document.getElementById('maps-link-input').value = ADMIN_SETTINGS.mapsLink || 'https://goo.gl/maps/gdgPWQZ2CxFZTC1a7';
+
+  // Attach dynamic time auto-updater
+  ['midi-start', 'midi-end', 'soir-start', 'soir-end'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && !el.dataset.listenerAttached) {
+      el.dataset.listenerAttached = 'true';
+      el.addEventListener('change', updateScheduleTextFromTimes);
+      el.addEventListener('input', updateScheduleTextFromTimes);
+    }
+  });
+
+  // Attach auto-save on change for all setting inputs and selects
+  const allSettingInputs = document.querySelectorAll('#pane-hours input, #pane-hours select, #pane-restaurant input, #pane-restaurant select');
+  allSettingInputs.forEach(inp => {
+    if (!inp.dataset.autoSaveAttached) {
+      inp.dataset.autoSaveAttached = 'true';
+      inp.addEventListener('change', () => {
+        collectSettingsFromForm();
+        saveSettingsToServer();
+      });
+    }
+  });
 }
 
 function collectSettingsFromForm() {
   ADMIN_SETTINGS.status = document.querySelector('input[name="restaurant-status"]:checked')?.value || 'open';
-  ADMIN_SETTINGS.exceptionalMessage = document.getElementById('exceptional-msg-input').value.trim();
-  ADMIN_SETTINGS.scheduleText = document.getElementById('schedule-text-input').value.trim();
-  ADMIN_SETTINGS.midiStart = document.getElementById('midi-start').value;
-  ADMIN_SETTINGS.midiEnd = document.getElementById('midi-end').value;
-  ADMIN_SETTINGS.soirStart = document.getElementById('soir-start').value;
-  ADMIN_SETTINGS.soirEnd = document.getElementById('soir-end').value;
-  ADMIN_SETTINGS.discount = parseInt(document.getElementById('discount-input').value, 10) || 10;
+  ADMIN_SETTINGS.exceptionalMessage = document.getElementById('exceptional-msg-input')?.value.trim() || '';
+  ADMIN_SETTINGS.scheduleText = document.getElementById('schedule-text-input')?.value.trim() || '7j/7 : 12h00 – 14h30 & 18h30 – 22h00';
+  ADMIN_SETTINGS.midiStart = document.getElementById('midi-start')?.value || '12:00';
+  ADMIN_SETTINGS.midiEnd = document.getElementById('midi-end')?.value || '14:30';
+  ADMIN_SETTINGS.soirStart = document.getElementById('soir-start')?.value || '18:30';
+  ADMIN_SETTINGS.soirEnd = document.getElementById('soir-end')?.value || '22:00';
+  ADMIN_SETTINGS.discount = parseInt(document.getElementById('discount-input')?.value, 10) || 10;
   const maxOrdersWeekInput = document.getElementById('max-orders-week-input');
   ADMIN_SETTINGS.maxOrdersPerSlotWeek = maxOrdersWeekInput ? (parseInt(maxOrdersWeekInput.value, 10) || 5) : 5;
   const maxOrdersWeekendInput = document.getElementById('max-orders-weekend-input');
@@ -727,24 +797,38 @@ function collectSettingsFromForm() {
   ADMIN_SETTINGS.maxOrdersPerSlot = ADMIN_SETTINGS.maxOrdersPerSlotWeek;
   const maxResInput = document.getElementById('max-reservations-slot-input');
   ADMIN_SETTINGS.maxReservationsPerSlot = maxResInput ? (parseInt(maxResInput.value, 10) || 5) : 5;
-  ADMIN_SETTINGS.phone = document.getElementById('phone-display-input').value.trim();
-  ADMIN_SETTINGS.whatsapp = document.getElementById('whatsapp-number-input').value.trim();
-  ADMIN_SETTINGS.address = document.getElementById('address-input').value.trim();
-  ADMIN_SETTINGS.mapsLink = document.getElementById('maps-link-input').value.trim();
+  ADMIN_SETTINGS.phone = document.getElementById('phone-display-input')?.value.trim() || '01 30 79 00 88';
+  ADMIN_SETTINGS.whatsapp = document.getElementById('whatsapp-number-input')?.value.trim() || '33130790088';
+  ADMIN_SETTINGS.address = document.getElementById('address-input')?.value.trim() || '32 Rue des Dames, 78340 Les Clayes-sous-Bois';
+  ADMIN_SETTINGS.mapsLink = document.getElementById('maps-link-input')?.value.trim() || 'https://goo.gl/maps/gdgPWQZ2CxFZTC1a7';
 
   localStorage.setItem('sushilin_admin_settings', JSON.stringify(ADMIN_SETTINGS));
 }
 
 // ---- STORAGE & SAVE ALL ----
+async function saveSettingsToServer() {
+  try {
+    const res = await fetch('/api/settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(ADMIN_SETTINGS)
+    });
+    if (!res.ok) throw new Error('Erreur HTTP ' + res.status);
+  } catch (err) {
+    console.warn('Sauvegarde serveur locale uniquement:', err);
+  }
+}
+
 function saveMenuToLocalStorage() {
   if (ADMIN_MENU) {
     localStorage.setItem('sushilin_admin_menu', JSON.stringify(ADMIN_MENU));
   }
 }
 
-function saveAllChanges() {
+async function saveAllChanges() {
   collectSettingsFromForm();
   saveMenuToLocalStorage();
+  await saveSettingsToServer();
   showToast('Toutes les modifications ont été enregistrées avec succès !');
 }
 
@@ -1572,6 +1656,8 @@ function toggleDayGroup(groupId) {
 }
 
 function renderSingleOrderCard(order) {
+  const allItems = order.items || [];
+
   return `
     <div class="admin-order-card">
       <div class="admin-order-card-header">
@@ -1592,7 +1678,7 @@ function renderSingleOrderCard(order) {
         ${order.customerPhone ? `
         <div class="admin-info-row">
           <span class="admin-info-label">Téléphone :</span>
-          <span class="admin-info-val"><a href="tel:${order.customerPhone}" style="color: var(--sakura-vibrant); font-weight: 800; text-decoration: none;">${order.customerPhone}</a></span>
+          <span class="admin-info-val"><a href="tel:${order.customerPhone}" style="color: var(--indigo); font-weight: 800; text-decoration: none;">${order.customerPhone}</a></span>
         </div>
         ` : ''}
         ${order.customerEmail ? `
@@ -1622,9 +1708,9 @@ function renderSingleOrderCard(order) {
       </div>
 
       <div class="admin-order-items-wrap">
-        <div class="admin-items-title">Detail des plats (${order.itemCount || (order.items && order.items.length) || 1}) :</div>
+        <div class="admin-items-title">Detail des plats (${order.itemCount || allItems.length || 1}) :</div>
         <div class="admin-items-list">
-          ${(order.items || []).map(item => `
+          ${allItems.map(item => `
             <div class="admin-item-row">
               <div class="admin-item-left">
                 <span class="admin-item-qty">${item.qty || 1}x</span>
@@ -1686,7 +1772,7 @@ function renderSingleReservationCard(res) {
         </div>
         <div class="admin-info-row">
           <span class="admin-info-label">Telephone :</span>
-          <span class="admin-info-val"><a href="tel:${res.phone}" style="color: var(--sakura-vibrant); font-weight: 800; text-decoration: none;">${res.phone}</a></span>
+          <span class="admin-info-val"><a href="tel:${res.phone}" style="color: var(--indigo); font-weight: 800; text-decoration: none;">${res.phone}</a></span>
         </div>
         ${res.notes ? `
         <div class="admin-info-row admin-note-row" style="margin-top: 6px;">
@@ -1696,7 +1782,7 @@ function renderSingleReservationCard(res) {
         ` : ''}
       </div>
 
-      <div style="display: flex; justify-content: flex-end; margin-top: auto; padding-top: 12px; border-top: 1px dashed var(--sakura-border);">
+      <div style="display: flex; justify-content: flex-end; margin-top: auto; padding-top: 12px; border-top: 1.5px solid var(--border);">
         <button onclick="deleteReservation('${res.id}')" class="btn-order-delete">
           Supprimer
         </button>
@@ -1718,10 +1804,10 @@ async function renderAdminOrders() {
 
   if (allOrders.length === 0) {
     container.innerHTML = `
-      <div style="background: #FFFFFF; border: 1.5px dashed var(--sakura-border); border-radius: var(--radius-lg); padding: 48px 24px; text-align: center; color: var(--text-secondary);">
+      <div style="background: #FFFFFF; border: 1.5px dashed var(--border-strong); border-radius: var(--radius-lg); padding: 48px 24px; text-align: center; color: var(--text-secondary); box-shadow: var(--shadow);">
         <p style="font-size: 16px; font-weight: 700; color: var(--indigo-dark); margin-bottom: 6px;">Aucune commande pour le moment</p>
         <p style="font-size: 13.5px; margin-bottom: 18px;">Passez une commande sur la carte client ou cliquez sur le bouton ci-dessus pour simuler une commande test.</p>
-        <button onclick="generateTestOrder()" style="background: var(--sakura-bg-soft); color: var(--indigo-primary); border: 1px solid var(--sakura-border-strong); padding: 8px 18px; border-radius: var(--radius-md); font-weight: 800; cursor: pointer;">
+        <button onclick="generateTestOrder()" style="background: #EEF2FF; color: var(--indigo); border: 1.5px solid var(--border-strong); padding: 8px 18px; border-radius: var(--radius-md); font-weight: 800; cursor: pointer;">
           + Créer une commande de test
         </button>
       </div>
@@ -1902,7 +1988,7 @@ async function renderAdminReservations() {
 
   if (allRes.length === 0) {
     container.innerHTML = `
-      <div style="background: #FFFFFF; border: 1.5px dashed var(--sakura-border); border-radius: var(--radius-lg); padding: 48px 24px; text-align: center; color: var(--text-secondary);">
+      <div style="background: #FFFFFF; border: 1.5px dashed var(--border-strong); border-radius: var(--radius-lg); padding: 48px 24px; text-align: center; color: var(--text-secondary); box-shadow: var(--shadow);">
         <p style="font-size: 16px; font-weight: 700; color: var(--indigo-dark); margin-bottom: 6px;">Aucune réservation enregistrée</p>
         <p style="font-size: 13.5px;">Les demandes faites depuis la page de réservation s'afficheront ici en direct.</p>
       </div>

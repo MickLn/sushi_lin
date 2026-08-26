@@ -133,6 +133,41 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
+        # --- API : LECTURE DES PARAMÈTRES / HORAIRES DU RESTAURANT ---
+        if self.path.startswith('/api/settings'):
+            settings_path = os.path.join(os.path.dirname(__file__), 'data', 'settings.json')
+            settings = {
+                "status": "open",
+                "exceptionalMessage": "",
+                "scheduleText": "7j/7 : 12h00 – 14h30 & 18h30 – 22h00",
+                "midiStart": "12:00",
+                "midiEnd": "14:30",
+                "soirStart": "18:30",
+                "soirEnd": "22:00",
+                "discount": 10,
+                "maxOrdersPerSlotWeek": 5,
+                "maxOrdersPerSlotWeekend": 3,
+                "maxOrdersPerSlot": 5,
+                "maxReservationsPerSlot": 5,
+                "phone": "01 30 79 00 88",
+                "whatsapp": "33130790088",
+                "address": "32 Rue des Dames, 78340 Les Clayes-sous-Bois",
+                "mapsLink": "https://goo.gl/maps/gdgPWQZ2CxFZTC1a7"
+            }
+            if os.path.exists(settings_path):
+                try:
+                    with open(settings_path, 'r', encoding='utf-8') as sf:
+                        saved = json.load(sf)
+                        if isinstance(saved, dict):
+                            settings.update(saved)
+                except Exception as ex:
+                    print(f"Warning lecture settings.json: {ex}", flush=True)
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps(settings, ensure_ascii=False).encode('utf-8'))
+            return
+
         # --- API : LECTURE DES UTILISATEURS (POSTGRESQL) ---
         if self.path.startswith('/api/users'):
             users = db.get_users()
@@ -282,6 +317,56 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
 
         content_length = int(self.headers.get('Content-Length', 0))
         body = self.rfile.read(content_length).decode('utf-8') if content_length > 0 else '{}'
+
+        # --- ENDPOINT : PARAMÈTRES / HORAIRES DU RESTAURANT ---
+        if self.path == '/api/settings':
+            try:
+                settings_data = json.loads(body)
+                settings_path = os.path.join(os.path.dirname(__file__), 'data', 'settings.json')
+                with open(settings_path, 'w', encoding='utf-8') as sf:
+                    json.dump(settings_data, sf, ensure_ascii=False, indent=2)
+
+                # Mettre à jour également data/menu.json pour cohérence
+                menu_path = os.path.join(os.path.dirname(__file__), 'data', 'menu.json')
+                if os.path.exists(menu_path):
+                    try:
+                        with open(menu_path, 'r', encoding='utf-8') as mf:
+                            mdata = json.load(mf)
+                        if 'restaurant' not in mdata:
+                            mdata['restaurant'] = {}
+                        if 'hours' not in mdata['restaurant']:
+                            mdata['restaurant']['hours'] = {}
+                        
+                        midi_s = settings_data.get('midiStart', '12:00').replace(':', 'h')
+                        midi_e = settings_data.get('midiEnd', '14:30').replace(':', 'h')
+                        soir_s = settings_data.get('soirStart', '18:30').replace(':', 'h')
+                        soir_e = settings_data.get('soirEnd', '22:00').replace(':', 'h')
+                        
+                        mdata['restaurant']['hours']['lunch'] = f"{midi_s} – {midi_e}"
+                        mdata['restaurant']['hours']['dinner'] = f"{soir_s} – {soir_e}"
+                        if settings_data.get('phone'):
+                            mdata['restaurant']['phone'] = settings_data['phone']
+                            mdata['restaurant']['phone_formatted'] = settings_data['phone']
+                        if settings_data.get('address'):
+                            mdata['restaurant']['address'] = settings_data['address']
+                        if 'discount' in settings_data:
+                            mdata['restaurant']['takeaway_discount'] = settings_data['discount']
+                        
+                        with open(menu_path, 'w', encoding='utf-8') as mf:
+                            json.dump(mdata, mf, ensure_ascii=False, indent=2)
+                    except Exception as mex:
+                        print(f"Warning mise a jour menu.json avec settings: {mex}", flush=True)
+
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({'success': True, 'settings': settings_data}).encode('utf-8'))
+            except Exception as e:
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({'error': str(e)}).encode('utf-8'))
+            return
 
         # --- ENDPOINT : CRÉATION / MISE À JOUR UTILISATEUR ---
         if self.path == '/api/users':

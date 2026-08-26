@@ -330,6 +330,13 @@ function timeStrToMinutes(timeStr) {
   return (h || 0) * 60 + (m || 0);
 }
 
+// Helper: Convert minutes from midnight to "12h15"
+function minutesToTimeStr(totalMin) {
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  return `${String(h).padStart(2, '0')}h${String(m).padStart(2, '0')}`;
+}
+
 // ---- Generate Available Pickup Slots (Clôture 30 min avant fermeture, dernier retrait 15 min avant) ----
 function generatePickupTimeSlots() {
   if (!pickupTimeSelect) return;
@@ -361,29 +368,33 @@ function generatePickupTimeSlots() {
   pickupTimeSelect.innerHTML = '';
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
-  // Heures de fermeture & Clôtures
+  // Heures de service dynamiques depuis les paramètres
+  const midiStartMin = timeStrToMinutes(APP_SETTINGS.midiStart || '12:00');
   const midiEndMin = timeStrToMinutes(APP_SETTINGS.midiEnd || '14:30');
-  const midiCutoffMin = midiEndMin - 30; // 14h00 par défaut
+  const midiCutoffMin = midiEndMin - 30; // Clôture commandes 30 min avant
+  const soirStartMin = timeStrToMinutes(APP_SETTINGS.soirStart || '18:30');
   const soirEndMin = timeStrToMinutes(APP_SETTINGS.soirEnd || '22:00');
-  const soirCutoffMin = soirEndMin - 30; // 21h30 par défaut
+  const soirCutoffMin = soirEndMin - 30; // Clôture commandes 30 min avant
 
-  const midiSlots = [
-    '12h00', '12h15', '12h30', '12h45',
-    '13h00', '13h15', '13h30', '13h45',
-    '14h00', '14h15'
-  ];
+  const midiSlots = [];
+  for (let m = midiStartMin; m <= midiEndMin - 15; m += 15) {
+    midiSlots.push(minutesToTimeStr(m));
+  }
 
-  const soirSlots = [
-    '18h30', '18h45',
-    '19h00', '19h15', '19h30', '19h45',
-    '20h00', '20h15', '20h30', '20h45',
-    '21h00', '21h15', '21h30', '21h45'
-  ];
+  const soirSlots = [];
+  for (let m = soirStartMin; m <= soirEndMin - 15; m += 15) {
+    soirSlots.push(minutesToTimeStr(m));
+  }
+
+  const midiLabelEnd = midiSlots.length > 0 ? midiSlots[midiSlots.length - 1] : minutesToTimeStr(midiEndMin);
+  const soirLabelEnd = soirSlots.length > 0 ? soirSlots[soirSlots.length - 1] : minutesToTimeStr(soirEndMin);
 
   // 1. Service du Midi
   const isMidiClosedForOrders = currentMinutes >= midiCutoffMin;
   const midiGroup = document.createElement('optgroup');
-  midiGroup.label = isMidiClosedForOrders ? 'Midi (Service clôturé à 14h00)' : 'Midi (12h00 – 14h15)';
+  midiGroup.label = isMidiClosedForOrders 
+    ? `Midi (Service clôturé à ${minutesToTimeStr(midiCutoffMin)})` 
+    : `Midi (${minutesToTimeStr(midiStartMin)} – ${midiLabelEnd})`;
 
   midiSlots.forEach(slot => {
     const slotMin = timeStrToMinutes(slot);
@@ -411,7 +422,9 @@ function generatePickupTimeSlots() {
   // 2. Service du Soir
   const isSoirClosedForOrders = currentMinutes >= soirCutoffMin;
   const soirGroup = document.createElement('optgroup');
-  soirGroup.label = isSoirClosedForOrders ? 'Soir (Service clôturé à 21h30)' : 'Soir (18h30 – 21h45)';
+  soirGroup.label = isSoirClosedForOrders 
+    ? `Soir (Service clôturé à ${minutesToTimeStr(soirCutoffMin)})` 
+    : `Soir (${minutesToTimeStr(soirStartMin)} – ${soirLabelEnd})`;
 
   soirSlots.forEach(slot => {
     const slotMin = timeStrToMinutes(slot);
@@ -443,11 +456,11 @@ function generatePickupTimeSlots() {
       availableOptions[0].selected = true;
     }
   } else {
-    // Si aucun créneau n'est disponible (ex: après 21h30)
+    // Si aucun créneau n'est disponible (ex: après fermeture)
     const closedOpt = document.createElement('option');
     closedOpt.disabled = true;
     closedOpt.selected = true;
-    closedOpt.textContent = 'Commandes fermées pour aujourd\'hui (Réouverture demain à 12h00)';
+    closedOpt.textContent = `Commandes fermées pour aujourd'hui (Réouverture demain à ${minutesToTimeStr(midiStartMin)})`;
     pickupTimeSelect.appendChild(closedOpt);
   }
 }
@@ -456,7 +469,11 @@ function generatePickupTimeSlots() {
 let APP_SETTINGS = {
   status: 'open',
   exceptionalMessage: '',
-  scheduleText: 'Ouvert 7j/7 · 12h00–14h30 & 18h30–22h00',
+  scheduleText: '7j/7 : 12h00 – 14h30 & 18h30 – 22h00',
+  midiStart: '12:00',
+  midiEnd: '14:30',
+  soirStart: '18:30',
+  soirEnd: '22:00',
   discount: 10,
   maxOrdersPerSlotWeek: 5,
   maxOrdersPerSlotWeekend: 3,
@@ -465,15 +482,27 @@ let APP_SETTINGS = {
   whatsapp: '33130790088'
 };
 
-function applyAdminSettings() {
-  const savedSettings = localStorage.getItem('sushilin_admin_settings');
-  if (savedSettings) {
-    try {
-      APP_SETTINGS = { ...APP_SETTINGS, ...JSON.parse(savedSettings) };
-    } catch (e) {}
+async function applyAdminSettings() {
+  // Sync from backend API if reachable, else fallback to localStorage
+  try {
+    const res = await fetch('/api/settings?v=' + Date.now());
+    if (res.ok) {
+      const serverSettings = await res.json();
+      if (serverSettings && typeof serverSettings === 'object') {
+        APP_SETTINGS = { ...APP_SETTINGS, ...serverSettings };
+        localStorage.setItem('sushilin_admin_settings', JSON.stringify(APP_SETTINGS));
+      }
+    }
+  } catch (e) {
+    const savedSettings = localStorage.getItem('sushilin_admin_settings');
+    if (savedSettings) {
+      try {
+        APP_SETTINGS = { ...APP_SETTINGS, ...JSON.parse(savedSettings) };
+      } catch (err) {}
+    }
   }
 
-  // Update Status in banner
+  // Update Status in header banner
   const bannerStatusText = document.getElementById('banner-status-text');
   if (bannerStatusText) {
     if (APP_SETTINGS.status === 'closed-exceptional') {
@@ -484,15 +513,27 @@ function applyAdminSettings() {
     }
   }
 
+  // Update hours in info section
+  const hoursInfoEl = document.getElementById('restaurant-info-hours-text');
+  if (hoursInfoEl) {
+    const midiS = (APP_SETTINGS.midiStart || '12:00').replace(':', 'h');
+    const midiE = (APP_SETTINGS.midiEnd || '14:30').replace(':', 'h');
+    const soirS = (APP_SETTINGS.soirStart || '18:30').replace(':', 'h');
+    const soirE = (APP_SETTINGS.soirEnd || '22:00').replace(':', 'h');
+    hoursInfoEl.innerHTML = `Midi : ${midiS} – ${midiE}<br>Soir : ${soirS} – ${soirE}`;
+  }
+
   // Update Phone
-  const phoneLabel = document.querySelector('.phone-label');
-  if (phoneLabel && APP_SETTINGS.phone) phoneLabel.textContent = APP_SETTINGS.phone;
+  const phoneLabels = document.querySelectorAll('.phone-label');
+  phoneLabels.forEach(el => {
+    if (APP_SETTINGS.phone) el.textContent = APP_SETTINGS.phone;
+  });
 }
 
 // ---- Fetch & Load Menu Data ----
 async function loadMenuData() {
   try {
-    applyAdminSettings();
+    await applyAdminSettings();
 
     // Fetch canonical menu.json first with cache-busting
     const response = await fetch('data/menu.json?v=' + Date.now());
@@ -2117,10 +2158,10 @@ function getRestaurantCurrentStatus() {
   const now = new Date();
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
-  const lunchStart = 12 * 60;        // 12h00
-  const lunchEnd = 14 * 60 + 30;     // 14h30
-  const dinnerStart = 18 * 60 + 30;  // 18h30
-  const dinnerEnd = 22 * 60;         // 22h00
+  const lunchStart = timeStrToMinutes(APP_SETTINGS.midiStart || '12:00');
+  const lunchEnd = timeStrToMinutes(APP_SETTINGS.midiEnd || '14:30');
+  const dinnerStart = timeStrToMinutes(APP_SETTINGS.soirStart || '18:30');
+  const dinnerEnd = timeStrToMinutes(APP_SETTINGS.soirEnd || '22:00');
 
   const isLunch = currentMinutes >= lunchStart && currentMinutes <= lunchEnd;
   const isDinner = currentMinutes >= dinnerStart && currentMinutes <= dinnerEnd;
@@ -2130,11 +2171,11 @@ function getRestaurantCurrentStatus() {
   } else {
     let nextService = '';
     if (currentMinutes < lunchStart) {
-      nextService = 'Ouverture à 12h00 pour le service du midi.';
+      nextService = `Ouverture à ${minutesToTimeStr(lunchStart)} pour le service du midi.`;
     } else if (currentMinutes < dinnerStart) {
-      nextService = 'Ouverture à 18h30 pour le service du soir.';
+      nextService = `Ouverture à ${minutesToTimeStr(dinnerStart)} pour le service du soir.`;
     } else {
-      nextService = 'Réouverture demain à 12h00.';
+      nextService = `Réouverture demain à ${minutesToTimeStr(lunchStart)}.`;
     }
     return {
       isOpen: false,

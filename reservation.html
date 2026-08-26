@@ -589,7 +589,7 @@
         </div>
         <div class="res-info-col">
           <strong style="color: var(--indigo-dark); display: block; margin-bottom: 6px; font-weight: 700;">Horaires d'ouverture</strong>
-          <span>Midi : 12h00 – 14h30<br>Soir : 18h30 – 22h00<br><span>(Ouvert 7j/7)</span></span>
+          <span id="res-hours-display">Midi : 12h00 – 14h30<br>Soir : 18h30 – 22h00<br><span>(Ouvert 7j/7)</span></span>
         </div>
         <div class="res-info-col">
           <strong style="color: var(--indigo-dark); display: block; margin-bottom: 6px; font-weight: 700;">Téléphone</strong>
@@ -1140,7 +1140,32 @@
       }
     }
 
-    // Synchronisation initiale des créneaux disponibles
+    async function syncReservationSettings() {
+      let settings = {};
+      try {
+        const res = await fetch('/api/settings?v=' + Date.now());
+        if (res.ok) {
+          settings = await res.json();
+          localStorage.setItem('sushilin_admin_settings', JSON.stringify(settings));
+        }
+      } catch (e) {
+        try {
+          settings = JSON.parse(localStorage.getItem('sushilin_admin_settings') || '{}');
+        } catch {}
+      }
+
+      const hoursEl = document.getElementById('res-hours-display');
+      if (hoursEl && settings.midiStart) {
+        const midiS = settings.midiStart.replace(':', 'h');
+        const midiE = (settings.midiEnd || '14:30').replace(':', 'h');
+        const soirS = (settings.soirStart || '18:30').replace(':', 'h');
+        const soirE = (settings.soirEnd || '22:00').replace(':', 'h');
+        hoursEl.innerHTML = `Midi : ${midiS} – ${midiE}<br>Soir : ${soirS} – ${soirE}<br><span>(Ouvert 7j/7)</span>`;
+      }
+    }
+
+    // Synchronisation initiale des créneaux disponibles et horaires
+    syncReservationSettings();
     updateReservationSlotsAvailability();
 
     // Formatage automatique du numéro de téléphone par paires (chiffres uniquement)
