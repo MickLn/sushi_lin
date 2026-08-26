@@ -369,22 +369,43 @@ function renderProductsTable(items) {
 // ---- FILTER & SEARCH PRODUCTS ----
 function filterAdminProducts() {
   if (!ADMIN_MENU) return;
-  const searchVal = adminSearchInput.value.toLowerCase().trim();
+  const rawSearch = adminSearchInput.value.trim();
+  const searchVal = rawSearch.toLowerCase();
   const catVal = adminCategorySelect.value;
+
+  const isNumericOnly = /^\d+$/.test(rawSearch);
 
   const filtered = ADMIN_MENU.items.filter(item => {
     const codeVal = (item.code || item.id || '').toString().toLowerCase().trim();
     const nameVal = (item.name || '').toLowerCase();
-    const descVal = (item.desc || '').toLowerCase();
 
-    const matchesSearch = !searchVal || 
-      codeVal === searchVal ||
-      codeVal.includes(searchVal) ||
-      nameVal.includes(searchVal) || 
-      descVal.includes(searchVal);
+    let matchesSearch = false;
+    if (!searchVal) {
+      matchesSearch = true;
+    } else if (isNumericOnly) {
+      // Recherche numérique (ex: "1", "15") : cherche dans le code du plat ou début de nom
+      matchesSearch = codeVal.includes(searchVal) || nameVal.startsWith(searchVal + ' ') || nameVal === searchVal;
+    } else {
+      // Recherche alphanumérique ou texte (ex: "maki", "b7", "ds15")
+      matchesSearch = codeVal.includes(searchVal) || nameVal.includes(searchVal);
+    }
+
     const matchesCat = catVal === 'all' || item.cat === catVal;
     return matchesSearch && matchesCat;
   });
+
+  // Tri intelligent : correspondance exacte de code affichée en premier
+  if (searchVal) {
+    filtered.sort((a, b) => {
+      const codeA = (a.code || a.id || '').toString().toLowerCase().trim();
+      const codeB = (b.code || b.id || '').toString().toLowerCase().trim();
+      if (codeA === searchVal && codeB !== searchVal) return -1;
+      if (codeB === searchVal && codeA !== searchVal) return 1;
+      if (codeA.startsWith(searchVal) && !codeB.startsWith(searchVal)) return -1;
+      if (codeB.startsWith(searchVal) && !codeA.startsWith(searchVal)) return 1;
+      return 0;
+    });
+  }
 
   renderProductsTable(filtered);
 }
