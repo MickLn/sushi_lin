@@ -1520,10 +1520,17 @@ function openProductModal(item) {
     ? `<img src="${item.img}" alt="${item.name}" loading="lazy">`
     : getCategorySvgIcon(item.cat);
 
+  const topCodeEl = document.getElementById('modal-top-code');
+  if (topCodeEl) {
+    topCodeEl.innerHTML = item.code
+      ? `<span class="product-code-badge" style="position:static; font-size:12px; font-weight:800; padding:3px 9px;">${item.code}</span>`
+      : '';
+  }
+
   const allergens = getItemAllergens(item);
   const allergensModalHtml = allergens.length > 0
     ? `<div class="modal-allergens-box">
-         <strong>Allergènes :</strong> <span>${allergens.join(', ')}</span>
+         <strong>Allergènes&nbsp;:</strong> <span>${allergens.join(', ')}</span>
        </div>`
     : '';
 

@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Source+Sans+3:wght@400;500;600;700&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=20260826_allergens_and_sauce">
+  <link rel="stylesheet" href="style.css?v=20260826_modal_v2">
 </head>
 <body>
 
@@ -425,9 +425,12 @@
   </div>
 
   <div class="product-modal" id="item-modal" role="dialog" aria-modal="true" aria-label="Détails du produit">
-    <button class="modal-close-icon" id="modal-close" aria-label="Fermer">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    </button>
+    <div class="product-modal-top-bar">
+      <div id="modal-top-code"></div>
+      <button class="modal-close-icon" id="modal-close" aria-label="Fermer la fenêtre">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
     <div class="product-modal-content" id="modal-body">
       <!-- Injected by JS -->
     </div>
@@ -553,6 +556,6 @@
   </button>
 
   <!-- SCRIPTS -->
-  <script src="app.js?v=20260826_allergens_and_sauce"></script>
+  <script src="app.js?v=20260826_modal_v2"></script>
 </body>
 </html>

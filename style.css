@@ -423,12 +423,15 @@ img {
   font-size: 12.5px;
   color: var(--indigo-dark);
   display: flex;
-  align-items: center;
-  gap: 8px;
+  align-items: flex-start;
+  gap: 6px;
+  line-height: 1.45;
 }
 
 .modal-allergens-box strong {
   color: var(--sakura-vibrant);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* --- BOUTON SCROLL TO TOP --- */
@@ -2884,30 +2887,55 @@ img {
   justify-content: center;
   z-index: 10;
   transition: all 0.2s;
+  cursor: pointer;
 }
 
 .modal-close-icon:hover {
   background: var(--sakura-primary);
 }
 
+/* Product Modal Dedicated Top Bar */
+.product-modal-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 10px 20px;
+  background: #FFFFFF;
+}
+
+.product-modal-top-bar .modal-close-icon {
+  position: static;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
 /* Product Modal Layout */
 .product-modal-content {
-  padding: 24px;
+  padding: 0 20px 24px 20px;
 }
 
 .modal-media-box {
   width: 100%;
-  aspect-ratio: 16/10;
+  height: 220px;
+  max-height: 220px;
   border-radius: var(--radius-md);
   overflow: hidden;
-  background: var(--sakura-bg-soft);
-  margin-bottom: 20px;
+  background: #FFF8FA;
+  border: 1px solid var(--sakura-border-soft);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
 }
 
 .modal-media-box img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  max-height: 196px;
+  object-fit: contain;
 }
 
 .modal-product-title {
@@ -2921,8 +2949,9 @@ img {
 .modal-product-desc {
   font-size: 14px;
   color: var(--text-secondary);
-  line-height: 1.5;
-  margin-bottom: 20px;
+  line-height: 1.6;
+  margin-bottom: 18px;
+  white-space: pre-line;
 }
 
 .modal-action-row {
