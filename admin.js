@@ -1655,8 +1655,43 @@ function toggleDayGroup(groupId) {
   }
 }
 
+function toggleOrderItems(orderId) {
+  const moreContainer = document.getElementById(`order-items-more-${orderId}`);
+  const btn = document.getElementById(`btn-toggle-items-${orderId}`);
+  if (!moreContainer || !btn) return;
+
+  const isHidden = (moreContainer.style.display === 'none' || !moreContainer.style.display);
+  if (isHidden) {
+    moreContainer.style.display = 'flex';
+    btn.classList.add('is-expanded');
+    const totalCount = btn.dataset.totalCount;
+    btn.querySelector('.expand-text').textContent = `Masquer le détail (${totalCount} articles)`;
+  } else {
+    moreContainer.style.display = 'none';
+    btn.classList.remove('is-expanded');
+    const hiddenCount = btn.dataset.hiddenCount;
+    btn.querySelector('.expand-text').textContent = `Afficher les ${hiddenCount} autres articles`;
+  }
+}
+
 function renderSingleOrderCard(order) {
   const allItems = order.items || [];
+  const maxInitialVisible = 5;
+  const isLongList = allItems.length > maxInitialVisible;
+  const initialItems = isLongList ? allItems.slice(0, 4) : allItems;
+  const extraItems = isLongList ? allItems.slice(4) : [];
+
+  const renderItemRow = (item) => `
+    <div class="admin-item-row">
+      <div class="admin-item-left">
+        <span class="admin-item-qty">${item.qty || 1}x</span>
+        ${item.code ? `<span class="admin-item-code-tag">${item.code}</span>` : ''}
+        <span class="admin-item-name">${item.name}</span>
+        ${item.details ? `<div class="admin-item-details-list">${item.details.map(d => `${d.quantity}x ${d.flavor}`).join(', ')}</div>` : ''}
+      </div>
+      <div class="admin-item-price">${((item.price || item.unitPrice || 0) * (item.qty || item.totalQuantity || 1)).toFixed(2).replace('.', ',')} €</div>
+    </div>
+  `;
 
   return `
     <div class="admin-order-card">
@@ -1710,18 +1745,18 @@ function renderSingleOrderCard(order) {
       <div class="admin-order-items-wrap">
         <div class="admin-items-title">Detail des plats (${order.itemCount || allItems.length || 1}) :</div>
         <div class="admin-items-list">
-          ${allItems.map(item => `
-            <div class="admin-item-row">
-              <div class="admin-item-left">
-                <span class="admin-item-qty">${item.qty || 1}x</span>
-                ${item.code ? `<span class="admin-item-code-tag">${item.code}</span>` : ''}
-                <span class="admin-item-name">${item.name}</span>
-                ${item.details ? `<div class="admin-item-details-list">${item.details.map(d => `${d.quantity}x ${d.flavor}`).join(', ')}</div>` : ''}
-              </div>
-              <div class="admin-item-price">${((item.price || item.unitPrice || 0) * (item.qty || item.totalQuantity || 1)).toFixed(2).replace('.', ',')} €</div>
-            </div>
-          `).join('')}
+          ${initialItems.map(renderItemRow).join('')}
         </div>
+
+        ${isLongList ? `
+          <div class="admin-items-more" id="order-items-more-${order.id}" style="display: none;">
+            ${extraItems.map(renderItemRow).join('')}
+          </div>
+          <button type="button" class="admin-order-expand-btn" id="btn-toggle-items-${order.id}" onclick="toggleOrderItems('${order.id}')" data-hidden-count="${extraItems.length}" data-total-count="${allItems.length}">
+            <span class="expand-text">Afficher les ${extraItems.length} autres articles</span>
+            <svg class="expand-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+        ` : ''}
       </div>
 
       <div class="admin-order-card-footer">
