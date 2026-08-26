@@ -52,7 +52,7 @@
     {
       "id": "yakitori",
       "name": "Brochettes",
-      "desc": "Brochettes japonaises grillées à la flamme et laquées",
+      "desc": "Brochettes japonaises grillées à la flamme et trempées dans la sauce soja sucrée (hors gambas)",
       "banner": "img/categories/yakitori.jpg"
     },
     {
@@ -78,7 +78,10 @@
       "price": 2.5,
       "img": "img/products/1.png",
       "desc": "",
-      "available": true
+      "available": true,
+      "allergens": [
+        "Soja"
+      ]
     },
     {
       "id": "entrees-2",
@@ -89,7 +92,11 @@
       "price": 2.5,
       "img": "img/products/2.png",
       "desc": "",
-      "available": true
+      "available": true,
+      "allergens": [
+        "Œufs",
+        "Moutarde"
+      ]
     },
     {
       "id": "entrees-b2",
@@ -100,7 +107,10 @@
       "price": 4.5,
       "img": "img/products/b2.png",
       "desc": "",
-      "available": true
+      "available": true,
+      "allergens": [
+        "Sésame"
+      ]
     },
     {
       "id": "entrees-b7",
@@ -111,7 +121,12 @@
       "price": 8.9,
       "img": "img/products/B7.png",
       "desc": "",
-      "available": true
+      "available": true,
+      "allergens": [
+        "Gluten",
+        "Œufs",
+        "Crustacés"
+      ]
     },
     {
       "id": "entrees-b9",
@@ -122,7 +137,10 @@
       "price": 4.2,
       "img": "img/products/B9.png",
       "desc": "",
-      "available": true
+      "available": true,
+      "allergens": [
+        "Soja"
+      ]
     },
     {
       "id": "entrees-b11",
@@ -144,7 +162,14 @@
       "price": 6.0,
       "img": "img/products/85.png",
       "desc": "",
-      "available": true
+      "available": true,
+      "allergens": [
+        "Gluten",
+        "Œufs",
+        "Soja",
+        "Sésame",
+        "Crustacés"
+      ]
     },
     {
       "id": "entrees-b3",
@@ -155,7 +180,11 @@
       "price": 10.9,
       "img": "img/products/B3.png",
       "desc": "",
-      "available": true
+      "available": true,
+      "allergens": [
+        "Gluten",
+        "Crustacés"
+      ]
     },
     {
       "id": "entrees-b4",
@@ -166,7 +195,10 @@
       "price": 8.0,
       "img": "img/products/B4.png",
       "desc": "",
-      "available": true
+      "available": true,
+      "allergens": [
+        "Gluten"
+      ]
     },
     {
       "id": "entrees-b5",
@@ -177,7 +209,12 @@
       "price": 5.5,
       "img": "img/products/B5.png",
       "desc": "",
-      "available": true
+      "available": true,
+      "allergens": [
+        "Soja",
+        "Crustacés",
+        "Poissons"
+      ]
     },
     {
       "id": "entrees-b6",
@@ -188,7 +225,12 @@
       "price": 7.0,
       "img": "img/products/B6.png",
       "desc": "",
-      "available": true
+      "available": true,
+      "allergens": [
+        "Soja",
+        "Crustacés",
+        "Poissons"
+      ]
     },
     {
       "id": "entrees-b8",
@@ -199,7 +241,11 @@
       "price": 9.5,
       "img": "img/products/B8.png",
       "desc": "",
-      "available": true
+      "available": true,
+      "allergens": [
+        "Gluten",
+        "Œufs"
+      ]
     },
     {
       "id": "entrees-b10",
@@ -210,7 +256,13 @@
       "price": 8.9,
       "img": "img/products/B10.png",
       "desc": "",
-      "available": true
+      "available": true,
+      "allergens": [
+        "Gluten",
+        "Soja",
+        "Mollusques",
+        "Poissons"
+      ]
     },
     {
       "id": "entrees-3",
@@ -221,7 +273,8 @@
       "price": 2.0,
       "img": "img/products/3.png",
       "desc": "",
-      "available": true
+      "available": true,
+      "allergens": []
     },
     {
       "id": "entrees-4",
@@ -232,7 +285,8 @@
       "price": 2.5,
       "img": "img/products/4.png",
       "desc": "",
-      "available": true
+      "available": true,
+      "allergens": []
     },
     {
       "id": "entrees-5",
@@ -243,7 +297,10 @@
       "price": 5.0,
       "img": "img/products/5.png",
       "desc": "",
-      "available": true
+      "available": true,
+      "allergens": [
+        "Sésame"
+      ]
     },
     {
       "id": "menus-brochettes-a",
@@ -253,10 +310,17 @@
       "pieces": "Assortiment",
       "price": 10.5,
       "img": "img/products/a.png",
-      "desc": "4 Brochettes (2 poulet, 2 boulettes de poulet). Servi avec 1 soupe miso, 1 salade de choux et 1 bol de riz.",
+      "desc": "4 Brochettes (2 poulet, 2 boulettes de poulet) trempées dans la sauce soja sucrée. Servi avec 1 soupe miso, 1 salade de choux et 1 bol de riz.",
       "available": true,
       "subcat": "menus-brochettes",
-      "subcatName": "Menus brochettes yakitori"
+      "subcatName": "Menus brochettes yakitori",
+      "allergens": [
+        "Gluten",
+        "Œufs",
+        "Soja",
+        "Crustacés",
+        "Moutarde"
+      ]
     },
     {
       "id": "menus-brochettes-b",
@@ -266,10 +330,16 @@
       "pieces": "Assortiment",
       "price": 11.5,
       "img": "img/products/b.png",
-      "desc": "4 Brochettes (2 bœuf, 2 bœuf au fromage). Servi avec 1 soupe miso, 1 salade de choux et 1 bol de riz.",
+      "desc": "4 Brochettes (2 poulet, 2 bœuf au fromage) trempées dans la sauce soja sucrée. Servi avec 1 soupe miso, 1 salade de choux et 1 bol de riz.",
       "available": true,
       "subcat": "menus-brochettes",
-      "subcatName": "Menus brochettes yakitori"
+      "subcatName": "Menus brochettes yakitori",
+      "allergens": [
+        "Lait",
+        "Soja",
+        "Œufs",
+        "Moutarde"
+      ]
     },
     {
       "id": "menus-brochettes-c",
@@ -279,10 +349,16 @@
       "pieces": "Assortiment",
       "price": 13.9,
       "img": "img/products/c.png",
-      "desc": "5 Brochettes (1 poulet, 1 boulette de poulet, 1 bœuf, 1 bœuf au fromage, 1 aile de poulet). Servi avec 1 soupe, 1 salade et 1 riz.",
+      "desc": "4 Brochettes de poissons (2 thon, 2 saumon) trempées dans la sauce soja sucrée. Servi avec 1 soupe miso, 1 salade de choux et 1 bol de riz.",
       "available": true,
       "subcat": "menus-brochettes",
-      "subcatName": "Menus brochettes yakitori"
+      "subcatName": "Menus brochettes yakitori",
+      "allergens": [
+        "Poissons",
+        "Soja",
+        "Œufs",
+        "Moutarde"
+      ]
     },
     {
       "id": "menus-brochettes-d",
@@ -292,10 +368,18 @@
       "pieces": "Assortiment",
       "price": 12.9,
       "img": "img/products/d.png",
-      "desc": "5 Brochettes de bœuf au fromage fondu. Servi avec 1 soupe miso, 1 salade de choux et 1 bol de riz.",
+      "desc": "5 Brochettes variées (1 poulet, 1 boulette de poulet, 1 bœuf, 1 bœuf au fromage, 1 aile de poulet) trempées dans la sauce soja sucrée. Servi avec 1 soupe miso, 1 salade de choux et 1 bol de riz.",
       "available": true,
       "subcat": "menus-brochettes",
-      "subcatName": "Menus brochettes yakitori"
+      "subcatName": "Menus brochettes yakitori",
+      "allergens": [
+        "Gluten",
+        "Œufs",
+        "Lait",
+        "Soja",
+        "Crustacés",
+        "Moutarde"
+      ]
     },
     {
       "id": "menus-brochettes-d1",
@@ -305,10 +389,18 @@
       "pieces": "Assortiment",
       "price": 13.2,
       "img": "img/products/d1.png",
-      "desc": "5 Brochettes (2 bœuf au fromage, 2 poulet, 1 boulette de poulet). Servi avec 1 soupe, 1 salade et 1 riz.",
+      "desc": "5 Brochettes de bœuf au fromage fondu trempées dans la sauce soja sucrée. Servi avec 1 soupe miso, 1 salade de choux et 1 bol de riz.",
       "available": true,
       "subcat": "menus-brochettes",
-      "subcatName": "Menus brochettes yakitori"
+      "subcatName": "Menus brochettes yakitori",
+      "allergens": [
+        "Gluten",
+        "Œufs",
+        "Lait",
+        "Soja",
+        "Crustacés",
+        "Moutarde"
+      ]
     },
     {
       "id": "menus-brochettes-e",
@@ -318,10 +410,18 @@
       "pieces": "Assortiment",
       "price": 16.9,
       "img": "img/products/e.png",
-      "desc": "6 Brochettes de la mer (2 saumon, 2 thon, 2 gambas). Servi avec 1 soupe miso, 1 salade de choux et 1 bol de riz.",
+      "desc": "7 Brochettes variées (2 caille, 1 poulet, 1 boulette de poulet, 1 bœuf, 1 bœuf au fromage, 1 aile de poulet) trempées dans la sauce soja sucrée. Servi avec 1 soupe miso, 1 salade de choux et 1 bol de riz.",
       "available": true,
       "subcat": "menus-brochettes",
-      "subcatName": "Menus brochettes yakitori"
+      "subcatName": "Menus brochettes yakitori",
+      "allergens": [
+        "Gluten",
+        "Œufs",
+        "Lait",
+        "Soja",
+        "Crustacés",
+        "Moutarde"
+      ]
     },
     {
       "id": "menus-brochettes-f",
@@ -331,10 +431,19 @@
       "pieces": "Assortiment",
       "price": 15.9,
       "img": "img/products/f.png",
-      "desc": "7 Brochettes mixtes (1 poulet, 1 boulette, 1 bœuf, 1 bœuf fromage, 1 canard, 1 saumon, 1 champignon). Servi avec 1 soupe, 1 salade et 1 riz.",
+      "desc": "7 Brochettes variées (2 saumon, 1 boulette de poulet, 1 bœuf, 1 bœuf au fromage, 1 poulet, 1 aile de poulet) trempées dans la sauce soja sucrée. Servi avec 1 soupe miso, 1 salade de choux et 1 bol de riz.",
       "available": true,
       "subcat": "menus-brochettes",
-      "subcatName": "Menus brochettes yakitori"
+      "subcatName": "Menus brochettes yakitori",
+      "allergens": [
+        "Gluten",
+        "Œufs",
+        "Lait",
+        "Soja",
+        "Crustacés",
+        "Poissons",
+        "Moutarde"
+      ]
     },
     {
       "id": "menus-brochettes-g",
@@ -344,10 +453,17 @@
       "pieces": "Assortiment",
       "price": 18.5,
       "img": "img/products/g.png",
-      "desc": "8 Brochettes gourmandes (2 saumon, 2 bœuf au fromage, 2 poulet, 2 boulettes de poulet). Servi avec 1 soupe, 1 salade et 1 riz.",
+      "desc": "6 Brochettes de la mer (2 saumon, 2 gambas, 2 noix de Saint-Jacques) trempées dans la sauce soja sucrée (hors gambas). Servi avec 1 soupe miso, 1 salade de choux et 1 bol de riz.",
       "available": true,
       "subcat": "menus-brochettes",
-      "subcatName": "Menus brochettes yakitori"
+      "subcatName": "Menus brochettes yakitori",
+      "allergens": [
+        "Poissons",
+        "Crustacés",
+        "Soja",
+        "Œufs",
+        "Moutarde"
+      ]
     },
     {
       "id": "menus-chirashi-m1",
@@ -357,10 +473,16 @@
       "pieces": "1 grand bol",
       "price": 14.5,
       "img": "img/products/m1.png",
-      "desc": "Fines tranches de saumon frais d Écosse sur grand bol de riz vinaigré. Servi avec 1 soupe miso et 1 salade de choux.",
+      "desc": "Tranches de saumon cru dans un bol de riz vinaigré. Servi avec 1 soupe miso et 1 salade de choux.",
       "available": true,
       "subcat": "menus-chirashi",
-      "subcatName": "Menus chirashi"
+      "subcatName": "Menus chirashi",
+      "allergens": [
+        "Poissons",
+        "Soja",
+        "Œufs",
+        "Moutarde"
+      ]
     },
     {
       "id": "menus-chirashi-m1a",
@@ -370,10 +492,16 @@
       "pieces": "1 grand bol",
       "price": 15.9,
       "img": "img/products/m1a.png",
-      "desc": "Tranches de saumon frais et avocat mûr sur bol de riz vinaigré. Servi avec 1 soupe miso et 1 salade de choux.",
+      "desc": "Saumon cru et avocat dans un bol de riz vinaigré. Servi avec 1 soupe miso et 1 salade de choux.",
       "available": true,
       "subcat": "menus-chirashi",
-      "subcatName": "Menus chirashi"
+      "subcatName": "Menus chirashi",
+      "allergens": [
+        "Poissons",
+        "Soja",
+        "Œufs",
+        "Moutarde"
+      ]
     },
     {
       "id": "menus-chirashi-m2",
@@ -383,10 +511,16 @@
       "pieces": "1 grand bol",
       "price": 17.9,
       "img": "img/products/m2.png",
-      "desc": "Tranches de thon rouge frais sur bol de riz vinaigré. Servi avec 1 soupe miso et 1 salade de choux.",
+      "desc": "Tranches de thon cru dans un bol de riz vinaigré. Servi avec 1 soupe miso et 1 salade de choux.",
       "available": true,
       "subcat": "menus-chirashi",
-      "subcatName": "Menus chirashi"
+      "subcatName": "Menus chirashi",
+      "allergens": [
+        "Poissons",
+        "Soja",
+        "Œufs",
+        "Moutarde"
+      ]
     },
     {
       "id": "menus-chirashi-m3",
@@ -396,10 +530,16 @@
       "pieces": "1 grand bol",
       "price": 16.5,
       "img": "img/products/m3.png",
-      "desc": "Assortiment complet de poissons nobles (saumon, thon, daurade, crevette) sur bol de riz vinaigré. Servi avec 1 soupe et 1 salade.",
+      "desc": "Assortiment de poissons crus dans un bol de riz vinaigré. Servi avec 1 soupe miso et 1 salade de choux.",
       "available": true,
       "subcat": "menus-chirashi",
-      "subcatName": "Menus chirashi"
+      "subcatName": "Menus chirashi",
+      "allergens": [
+        "Poissons",
+        "Soja",
+        "Œufs",
+        "Moutarde"
+      ]
     },
     {
       "id": "menus-chirashi-m4",
@@ -409,10 +549,17 @@
       "pieces": "1 grand bol",
       "price": 18.8,
       "img": "img/products/m4.png",
-      "desc": "Anguille grillée laquée sauce kabayaki sur bol de riz vinaigré. Servi avec 1 soupe miso et 1 salade de choux.",
+      "desc": "Anguilles grillées dans un bol de riz nature nappé de sauce. Servi avec 1 soupe miso et 1 salade de choux.",
       "available": true,
       "subcat": "menus-chirashi",
-      "subcatName": "Menus chirashi"
+      "subcatName": "Menus chirashi",
+      "allergens": [
+        "Poissons",
+        "Sésame",
+        "Soja",
+        "Œufs",
+        "Moutarde"
+      ]
     },
     {
       "id": "menus-mixtes-h",
@@ -422,10 +569,18 @@
       "pieces": "Assortiment",
       "price": 15.9,
       "img": "img/products/h.png",
-      "desc": "4 Sushis assortis, 6 California saumon avocat + 3 Brochettes (1 poulet, 1 boulette, 1 bœuf au fromage). Servi avec 1 soupe, 1 salade et 1 riz.",
+      "desc": "5 Brochettes variées (1 poulet, 1 boulette de poulet, 1 bœuf, 1 bœuf au fromage, 1 aile de poulet) trempées dans la sauce soja sucrée + 6 Raviolis grillés japonais (Gyoza). Servi avec 1 soupe miso, 1 salade de choux et 1 riz.",
       "available": true,
       "subcat": "menus-mixtes",
-      "subcatName": "Menus mixtes"
+      "subcatName": "Menus mixtes",
+      "allergens": [
+        "Gluten",
+        "Œufs",
+        "Lait",
+        "Soja",
+        "Crustacés",
+        "Moutarde"
+      ]
     },
     {
       "id": "menus-mixtes-h1",
@@ -435,10 +590,19 @@
       "pieces": "Assortiment",
       "price": 15.8,
       "img": "img/products/h1.png",
-      "desc": "6 Makis saumon, 3 Sushis saumon + 3 Brochettes (1 poulet, 1 boulette, 1 bœuf au fromage). Servi avec 1 soupe, 1 salade et 1 riz.",
+      "desc": "6 Sashimis, 2 Sushis + 6 Raviolis grillés japonais (Gyoza). Servi avec 1 soupe miso, 1 salade de choux et 1 riz.",
       "available": true,
       "subcat": "menus-mixtes",
-      "subcatName": "Menus mixtes"
+      "subcatName": "Menus mixtes",
+      "allergens": [
+        "Gluten",
+        "Soja",
+        "Sésame",
+        "Crustacés",
+        "Poissons",
+        "Œufs",
+        "Moutarde"
+      ]
     },
     {
       "id": "menus-mixtes-h2",
@@ -448,10 +612,19 @@
       "pieces": "Assortiment",
       "price": 15.5,
       "img": "img/products/h2.png",
-      "desc": "6 California saumon avocat + 3 Brochettes (1 poulet, 1 boulette, 1 bœuf au fromage). Servi avec 1 soupe, 1 salade et 1 riz.",
+      "desc": "3 Brochettes variées (1 saumon, 1 thon, 1 noix de Saint-Jacques) trempées dans la sauce soja sucrée + 6 Raviolis grillés japonais (Gyoza). Servi avec 1 soupe miso, 1 salade de choux et 1 riz.",
       "available": true,
       "subcat": "menus-mixtes",
-      "subcatName": "Menus mixtes"
+      "subcatName": "Menus mixtes",
+      "allergens": [
+        "Gluten",
+        "Soja",
+        "Sésame",
+        "Crustacés",
+        "Poissons",
+        "Œufs",
+        "Moutarde"
+      ]
     },
     {
       "id": "menus-mixtes-i",
@@ -461,10 +634,19 @@
       "pieces": "Assortiment",
       "price": 15.9,
       "img": "img/products/i.png",
-      "desc": "6 Makis saumon, 6 California saumon avocat + 4 Brochettes (2 poulet, 2 bœuf au fromage). Servi avec 1 soupe, 1 salade et 1 riz.",
+      "desc": "2 Sushis saumon, 6 Makis saumon + 5 Brochettes variées (1 poulet, 1 boulette de poulet, 1 bœuf, 1 bœuf au fromage, 1 aile de poulet) trempées dans la sauce soja sucrée. Servi avec 1 soupe miso, 1 salade de choux et 1 riz.",
       "available": true,
       "subcat": "menus-mixtes",
-      "subcatName": "Menus mixtes"
+      "subcatName": "Menus mixtes",
+      "allergens": [
+        "Gluten",
+        "Œufs",
+        "Lait",
+        "Soja",
+        "Crustacés",
+        "Poissons",
+        "Moutarde"
+      ]
     },
     {
       "id": "menus-mixtes-j",
@@ -474,10 +656,19 @@
       "pieces": "Assortiment",
       "price": 21.9,
       "img": "img/products/j.png",
-      "desc": "8 Sushis saumon/thon + 5 Brochettes (1 poulet, 1 boulette, 1 bœuf, 1 bœuf fromage, 1 aile). Servi avec 1 soupe, 1 salade et 1 riz.",
+      "desc": "16 Sashimis variés + 5 Brochettes variées (1 poulet, 1 boulette de poulet, 1 bœuf, 1 bœuf au fromage, 1 aile de poulet) trempées dans la sauce soja sucrée. Servi avec 1 soupe miso, 1 salade de choux et 1 riz.",
       "available": true,
       "subcat": "menus-mixtes",
-      "subcatName": "Menus mixtes"
+      "subcatName": "Menus mixtes",
+      "allergens": [
+        "Gluten",
+        "Œufs",
+        "Lait",
+        "Soja",
+        "Crustacés",
+        "Poissons",
+        "Moutarde"
+      ]
     },
     {
       "id": "menus-mixtes-l",
@@ -487,10 +678,19 @@
       "pieces": "Assortiment",
       "price": 22.5,
       "img": "img/products/l.png",
-      "desc": "9 Sashimis saumon, 6 Makis saumon + 5 Brochettes assorties. Servi avec 1 soupe, 1 salade et 1 riz.",
+      "desc": "6 Sashimis saumon, 6 Makis saumon, 4 Sushis (2 saumon, 1 thon, 1 daurade) + 5 Brochettes variées (1 poulet, 1 boulette de poulet, 1 bœuf, 1 bœuf au fromage, 1 aile de poulet) trempées dans la sauce soja sucrée. Servi avec 1 soupe miso, 1 salade de choux et 1 riz.",
       "available": true,
       "subcat": "menus-mixtes",
-      "subcatName": "Menus mixtes"
+      "subcatName": "Menus mixtes",
+      "allergens": [
+        "Gluten",
+        "Œufs",
+        "Lait",
+        "Soja",
+        "Crustacés",
+        "Poissons",
+        "Moutarde"
+      ]
     },
     {
       "id": "menus-mixtes-k1",
@@ -500,10 +700,19 @@
       "pieces": "Assortiment",
       "price": 18.5,
       "img": "img/products/k1.png",
-      "desc": "6 Spring saumon avocat, 4 Sushis saumon + 4 Brochettes (2 poulet, 2 bœuf fromage). Servi avec 1 soupe, 1 salade et 1 riz.",
+      "desc": "10 Sashimis (5 saumon, 5 thon) + 5 Brochettes variées (1 poulet, 1 boulette de poulet, 1 bœuf, 1 bœuf au fromage, 1 aile de poulet) trempées dans la sauce soja sucrée. Servi avec 1 soupe miso, 1 salade de choux et 1 riz.",
       "available": true,
       "subcat": "menus-mixtes",
-      "subcatName": "Menus mixtes"
+      "subcatName": "Menus mixtes",
+      "allergens": [
+        "Gluten",
+        "Œufs",
+        "Lait",
+        "Soja",
+        "Crustacés",
+        "Poissons",
+        "Moutarde"
+      ]
     },
     {
       "id": "menus-mixtes-k2",
@@ -513,10 +722,19 @@
       "pieces": "Assortiment",
       "price": 19.5,
       "img": "img/products/k2.png",
-      "desc": "6 Egg makis saumon, 4 Sushis saumon + 4 Brochettes (2 poulet, 2 bœuf fromage). Servi avec 1 soupe, 1 salade et 1 riz.",
+      "desc": "10 Sashimis thon + 5 Brochettes variées (1 poulet, 1 boulette de poulet, 1 bœuf, 1 bœuf au fromage, 1 aile de poulet) trempées dans la sauce soja sucrée. Servi avec 1 soupe miso, 1 salade de choux et 1 riz.",
       "available": true,
       "subcat": "menus-mixtes",
-      "subcatName": "Menus mixtes"
+      "subcatName": "Menus mixtes",
+      "allergens": [
+        "Gluten",
+        "Œufs",
+        "Lait",
+        "Soja",
+        "Crustacés",
+        "Poissons",
+        "Moutarde"
+      ]
     },
     {
       "id": "menus-mixtes-k",
@@ -526,10 +744,19 @@
       "pieces": "Assortiment",
       "price": 17.5,
       "img": "img/products/k.png",
-      "desc": "6 California saumon avocat, 4 Sushis (2 saumon, 2 thon) + 4 Brochettes (2 poulet, 2 bœuf fromage). Servi avec 1 soupe, 1 salade et 1 riz.",
+      "desc": "10 Sashimis saumon + 5 Brochettes variées (1 poulet, 1 boulette de poulet, 1 bœuf, 1 bœuf au fromage, 1 aile de poulet) trempées dans la sauce soja sucrée. Servi avec 1 soupe miso, 1 salade de choux et 1 riz.",
       "available": true,
       "subcat": "menus-mixtes",
-      "subcatName": "Menus mixtes"
+      "subcatName": "Menus mixtes",
+      "allergens": [
+        "Gluten",
+        "Œufs",
+        "Lait",
+        "Soja",
+        "Crustacés",
+        "Poissons",
+        "Moutarde"
+      ]
     },
     {
       "id": "menus-mixtes-h4",
@@ -539,10 +766,18 @@
       "pieces": "Assortiment",
       "price": 15.9,
       "img": "img/products/h4.png",
-      "desc": "9 Sashimis saumon + 3 Brochettes (1 poulet, 1 boulette, 1 bœuf au fromage). Servi avec 1 soupe, 1 salade et 1 riz.",
+      "desc": "4 Nems croustillants au poulet + 5 Brochettes variées (1 poulet, 1 boulette de poulet, 1 bœuf, 1 bœuf au fromage, 1 aile de poulet) trempées dans la sauce soja sucrée. Servi avec 1 soupe miso, 1 salade de choux et 1 riz.",
       "available": true,
       "subcat": "menus-mixtes",
-      "subcatName": "Menus mixtes"
+      "subcatName": "Menus mixtes",
+      "allergens": [
+        "Gluten",
+        "Œufs",
+        "Lait",
+        "Soja",
+        "Crustacés",
+        "Moutarde"
+      ]
     },
     {
       "id": "menus-mixtes-h5",
@@ -552,10 +787,18 @@
       "pieces": "Assortiment",
       "price": 18.5,
       "img": "img/products/h5.png",
-      "desc": "6 Sashimis saumon, 4 Sushis saumon, 6 California saumon avocat + 3 Brochettes. Servi avec 1 soupe, 1 salade et 1 riz.",
+      "desc": "6 Saumon rolls cheese + 5 Brochettes de bœuf au fromage fondu trempées dans la sauce soja sucrée. Servi avec 1 soupe miso, 1 salade de choux et 1 riz.",
       "available": true,
       "subcat": "menus-mixtes",
-      "subcatName": "Menus mixtes"
+      "subcatName": "Menus mixtes",
+      "allergens": [
+        "Gluten",
+        "Lait",
+        "Poissons",
+        "Soja",
+        "Œufs",
+        "Moutarde"
+      ]
     },
     {
       "id": "menus-mixtes-v3",
@@ -565,10 +808,18 @@
       "pieces": "Assortiment",
       "price": 16.8,
       "img": "img/products/v3.png",
-      "desc": "6 Saumon rolls cheese, 4 Sushis saumon + 3 Brochettes (1 poulet, 1 boulette, 1 bœuf au fromage). Servi avec 1 soupe, 1 salade et 1 riz.",
+      "desc": "3 Sushis saumon, 6 Sashimis saumon + 2 Brochettes de bœuf au fromage fondu trempées dans la sauce soja sucrée. Servi avec 1 soupe miso, 1 salade de choux et 1 riz.",
       "available": true,
       "subcat": "menus-mixtes",
-      "subcatName": "Menus mixtes"
+      "subcatName": "Menus mixtes",
+      "allergens": [
+        "Gluten",
+        "Lait",
+        "Poissons",
+        "Soja",
+        "Œufs",
+        "Moutarde"
+      ]
     },
     {
       "id": "menus-mixtes-h3",
@@ -578,10 +829,17 @@
       "pieces": "Assortiment",
       "price": 16.5,
       "img": "img/products/h3.png",
-      "desc": "6 Sashimis saumon, 3 Sushis saumon + 3 Brochettes (1 poulet, 1 boulette, 1 bœuf au fromage). Servi avec 1 soupe, 1 salade et 1 riz.",
+      "desc": "9 Sashimis variés + 4 Nems croustillants au poulet. Servi avec 1 soupe miso, 1 salade de choux et 1 riz.",
       "available": true,
       "subcat": "menus-mixtes",
-      "subcatName": "Menus mixtes"
+      "subcatName": "Menus mixtes",
+      "allergens": [
+        "Soja",
+        "Crustacés",
+        "Poissons",
+        "Œufs",
+        "Moutarde"
+      ]
     },
     {
       "id": "menus-poisson-n",
@@ -591,10 +849,16 @@
       "pieces": "Assortiment",
       "price": 15.2,
       "img": "img/products/n.png",
-      "desc": "18 Makis assortis (6 saumon, 6 thon, 6 avocat/concombre). Servi avec 1 soupe miso et 1 salade de choux.",
+      "desc": "6 Makis (3 saumon, 3 thon) + 5 Sushis variés. Servi avec 1 soupe miso et 1 salade de choux.",
       "available": true,
       "subcat": "menus-poisson",
-      "subcatName": "Menus sushis, makis & sashimis"
+      "subcatName": "Menus sushis, makis & sashimis",
+      "allergens": [
+        "Poissons",
+        "Soja",
+        "Œufs",
+        "Moutarde"
+      ]
     },
     {
       "id": "menus-poisson-o",
@@ -604,10 +868,16 @@
       "pieces": "Assortiment",
       "price": 14.9,
       "img": "img/products/o.png",
-      "desc": "18 Makis signature (6 California saumon avocat, 6 saumon rolls cheese, 6 printemps saumon). Servi avec 1 soupe et 1 salade.",
+      "desc": "18 Makis (6 thon, 6 saumon, 6 avocat ou concombre). Servi avec 1 soupe miso et 1 salade de choux.",
       "available": true,
       "subcat": "menus-poisson",
-      "subcatName": "Menus sushis, makis & sashimis"
+      "subcatName": "Menus sushis, makis & sashimis",
+      "allergens": [
+        "Poissons",
+        "Soja",
+        "Œufs",
+        "Moutarde"
+      ]
     },
     {
       "id": "menus-poisson-p",
@@ -617,10 +887,18 @@
       "pieces": "Assortiment",
       "price": 17.5,
       "img": "img/products/p.png",
-      "desc": "10 Sushis assortis (6 saumon, 2 thon, 2 daurade). Servi avec 1 soupe miso et 1 salade de choux.",
+      "desc": "18 California makis (saumon, avocat, concombre, mayonnaise). Servi avec 1 soupe miso et 1 salade de choux.",
       "available": true,
       "subcat": "menus-poisson",
-      "subcatName": "Menus sushis, makis & sashimis"
+      "subcatName": "Menus sushis, makis & sashimis",
+      "allergens": [
+        "Œufs",
+        "Sésame",
+        "Moutarde",
+        "Crustacés",
+        "Poissons",
+        "Soja"
+      ]
     },
     {
       "id": "menus-poisson-s",
@@ -630,10 +908,16 @@
       "pieces": "Assortiment",
       "price": 15.5,
       "img": "img/products/s.png",
-      "desc": "6 California saumon avocat + 6 Sushis (4 saumon, 2 thon). Servi avec 1 soupe miso et 1 salade de choux.",
+      "desc": "8 Sushis saumon. Servi avec 1 soupe miso et 1 salade de choux.",
       "available": true,
       "subcat": "menus-poisson",
-      "subcatName": "Menus sushis, makis & sashimis"
+      "subcatName": "Menus sushis, makis & sashimis",
+      "allergens": [
+        "Poissons",
+        "Soja",
+        "Œufs",
+        "Moutarde"
+      ]
     },
     {
       "id": "menus-poisson-r",
@@ -643,10 +927,18 @@
       "pieces": "Assortiment",
       "price": 14.5,
       "img": "img/products/r.png",
-      "desc": "8 Sushis au saumon frais d Écosse. Servi avec 1 soupe miso et 1 salade de choux.",
+      "desc": "1 Grand rouleau de Futomaki traditionnel. Servi avec 1 soupe miso et 1 salade de choux.",
       "available": true,
       "subcat": "menus-poisson",
-      "subcatName": "Menus sushis, makis & sashimis"
+      "subcatName": "Menus sushis, makis & sashimis",
+      "allergens": [
+        "Gluten",
+        "Œufs",
+        "Crustacés",
+        "Poissons",
+        "Soja",
+        "Moutarde"
+      ]
     },
     {
       "id": "menus-poisson-t",
@@ -656,10 +948,16 @@
       "pieces": "Assortiment",
       "price": 17.5,
       "img": "img/products/t.png",
-      "desc": "6 Makis saumon + 8 Sushis saumon. Servi avec 1 soupe miso et 1 salade de choux.",
+      "desc": "8 Sushis thon. Servi avec 1 soupe miso et 1 salade de choux.",
       "available": true,
       "subcat": "menus-poisson",
-      "subcatName": "Menus sushis, makis & sashimis"
+      "subcatName": "Menus sushis, makis & sashimis",
+      "allergens": [
+        "Poissons",
+        "Soja",
+        "Œufs",
+        "Moutarde"
+      ]
     },
     {
       "id": "menus-poisson-u",
@@ -669,10 +967,16 @@
       "pieces": "Assortiment",
       "price": 16.5,
       "img": "img/products/u.png",
-      "desc": "6 California saumon avocat + 8 Sushis saumon. Servi avec 1 soupe miso et 1 salade de choux.",
+      "desc": "8 Sushis (4 saumon, 4 thon). Servi avec 1 soupe miso et 1 salade de choux.",
       "available": true,
       "subcat": "menus-poisson",
-      "subcatName": "Menus sushis, makis & sashimis"
+      "subcatName": "Menus sushis, makis & sashimis",
+      "allergens": [
+        "Poissons",
+        "Soja",
+        "Œufs",
+        "Moutarde"
+      ]
     },
     {
       "id": "menus-poisson-v",
@@ -682,10 +986,17 @@
       "pieces": "Assortiment",
       "price": 14.9,
       "img": "img/products/v.png",
-      "desc": "12 Sashimis saumon extra-frais découpés au couteau. Servi avec 1 soupe miso, 1 salade de choux et 1 bol de riz.",
+      "desc": "2 Sushis saumon, 6 Makis saumon, 6 California saumon avocat. Servi avec 1 soupe miso et 1 salade de choux.",
       "available": true,
       "subcat": "menus-poisson",
-      "subcatName": "Menus sushis, makis & sashimis"
+      "subcatName": "Menus sushis, makis & sashimis",
+      "allergens": [
+        "Poissons",
+        "Sésame",
+        "Soja",
+        "Œufs",
+        "Moutarde"
+      ]
     },
     {
       "id": "menus-poisson-v1",
@@ -695,10 +1006,16 @@
       "pieces": "Assortiment",
       "price": 17.9,
       "img": "img/products/v1.png",
-      "desc": "16 Sashimis assortis (saumon, thon, daurade). Servi avec 1 soupe miso, 1 salade de choux et 1 bol de riz.",
+      "desc": "2 Sushis saumon, 6 Saumon rolls avocat, 6 Sashimis saumon. Servi avec 1 soupe miso, 1 salade de choux et 1 bol de riz.",
       "available": true,
       "subcat": "menus-poisson",
-      "subcatName": "Menus sushis, makis & sashimis"
+      "subcatName": "Menus sushis, makis & sashimis",
+      "allergens": [
+        "Poissons",
+        "Soja",
+        "Œufs",
+        "Moutarde"
+      ]
     },
     {
       "id": "menus-poisson-v2",
@@ -708,10 +1025,17 @@
       "pieces": "Assortiment",
       "price": 17.9,
       "img": "img/products/v2.png",
-      "desc": "20 Sashimis assortis de qualité supérieure. Servi avec 1 soupe miso, 1 salade de choux et 1 bol de riz.",
+      "desc": "2 Sushis saumon, 12 Las Vegas saumon avocat. Servi avec 1 soupe miso, 1 salade de choux et 1 bol de riz.",
       "available": true,
       "subcat": "menus-poisson",
-      "subcatName": "Menus sushis, makis & sashimis"
+      "subcatName": "Menus sushis, makis & sashimis",
+      "allergens": [
+        "Poissons",
+        "Sésame",
+        "Soja",
+        "Œufs",
+        "Moutarde"
+      ]
     },
     {
       "id": "menus-poisson-v4",
@@ -721,10 +1045,17 @@
       "pieces": "Assortiment",
       "price": 15.9,
       "img": "img/products/v4.png",
-      "desc": "9 Sashimis saumon + 4 Sushis saumon. Servi avec 1 soupe miso, 1 salade de choux et 1 bol de riz.",
+      "desc": "6 Las Vegas, 6 Makis Arc-en-Ciel. Servi avec 1 soupe miso, 1 salade de choux et 1 bol de riz.",
       "available": true,
       "subcat": "menus-poisson",
-      "subcatName": "Menus sushis, makis & sashimis"
+      "subcatName": "Menus sushis, makis & sashimis",
+      "allergens": [
+        "Poissons",
+        "Sésame",
+        "Soja",
+        "Œufs",
+        "Moutarde"
+      ]
     },
     {
       "id": "menus-poisson-x",
@@ -734,10 +1065,16 @@
       "pieces": "Assortiment",
       "price": 20.5,
       "img": "img/products/x.png",
-      "desc": "6 Makis saumon, 5 Sushis saumon + 12 Sashimis assortis (saumon, thon, daurade). Servi avec 1 soupe, 1 salade et 1 riz.",
+      "desc": "4 Sushis variés, 16 Sashimis variés. Servi avec 1 soupe miso, 1 salade de choux et 1 bol de riz.",
       "available": true,
       "subcat": "menus-poisson",
-      "subcatName": "Menus sushis, makis & sashimis"
+      "subcatName": "Menus sushis, makis & sashimis",
+      "allergens": [
+        "Poissons",
+        "Soja",
+        "Œufs",
+        "Moutarde"
+      ]
     },
     {
       "id": "menus-poisson-y",
@@ -747,10 +1084,16 @@
       "pieces": "Assortiment",
       "price": 20.5,
       "img": "img/products/y.png",
-      "desc": "6 California saumon avocat, 6 Sushis saumon + 12 Sashimis saumon. Servi avec 1 soupe, 1 salade et 1 riz.",
+      "desc": "3 Sushis variés, 12 Sashimis variés, 6 Makis (3 saumon, 3 thon). Servi avec 1 soupe miso, 1 salade de choux et 1 bol de riz.",
       "available": true,
       "subcat": "menus-poisson",
-      "subcatName": "Menus sushis, makis & sashimis"
+      "subcatName": "Menus sushis, makis & sashimis",
+      "allergens": [
+        "Poissons",
+        "Soja",
+        "Œufs",
+        "Moutarde"
+      ]
     },
     {
       "id": "menus-poisson-w",
@@ -760,10 +1103,17 @@
       "pieces": "Assortiment",
       "price": 18.9,
       "img": "img/products/w.png",
-      "desc": "6 California saumon avocat, 4 Sushis saumon + 9 Sashimis saumon. Servi avec 1 soupe, 1 salade et 1 riz.",
+      "desc": "10 Sushis variés. Servi avec 1 soupe miso et 1 salade de choux.",
       "available": true,
       "subcat": "menus-poisson",
-      "subcatName": "Menus sushis, makis & sashimis"
+      "subcatName": "Menus sushis, makis & sashimis",
+      "allergens": [
+        "Poissons",
+        "Œufs",
+        "Sésame",
+        "Soja",
+        "Moutarde"
+      ]
     },
     {
       "id": "menus-poisson-z",
@@ -773,10 +1123,16 @@
       "pieces": "Assortiment",
       "price": 23.9,
       "img": "img/products/z.png",
-      "desc": "6 California saumon avocat, 8 Sushis assortis + 15 Sashimis assortis. Servi avec 1 soupe, 1 salade et 1 riz.",
+      "desc": "Grand plateau : 12 California makis, 18 Makis, 12 Sashimis assortis. Servi avec 1 soupe miso, 1 salade de choux et 1 bol de riz.",
       "available": true,
       "subcat": "menus-poisson",
-      "subcatName": "Menus sushis, makis & sashimis"
+      "subcatName": "Menus sushis, makis & sashimis",
+      "allergens": [
+        "Poissons",
+        "Soja",
+        "Œufs",
+        "Moutarde"
+      ]
     },
     {
       "id": "menus-grands-mrb",
@@ -786,10 +1142,21 @@
       "pieces": "Grand plateau",
       "price": 45.9,
       "img": "img/products/mrb.png",
-      "desc": "Menu Duo Brochettes (2 personnes) : 10 Brochettes assorties, 8 Sushis assortis, 12 California, 12 Sashimis. Servi avec 2 soupes, 2 salades et 2 riz.",
+      "desc": "Menu Duo Bateau Royal Brochettes (2 personnes) : Assortiment de sushis, makis et sashimis dans un petit bateau + 8 Brochettes variées (poulet, boulette, thon, saumon, bœuf, bœuf fromage, gambas, St-Jacques) trempées dans la sauce soja sucrée (hors gambas). Servi avec 2 soupes, 2 salades et 2 riz.",
       "available": true,
       "subcat": "menus-grands",
-      "subcatName": "Grands plateaux & bateaux"
+      "subcatName": "Grands plateaux & bateaux",
+      "allergens": [
+        "Gluten",
+        "Œufs",
+        "Lait",
+        "Soja",
+        "Sésame",
+        "Moutarde",
+        "Mollusques",
+        "Crustacés",
+        "Poissons"
+      ]
     },
     {
       "id": "menus-grands-mrs",
@@ -799,10 +1166,21 @@
       "pieces": "Grand plateau",
       "price": 51.9,
       "img": "img/products/mrs.png",
-      "desc": "Menu Duo Poisson (2 personnes) : 14 Sushis assortis, 18 Makis variés, 16 Sashimis assortis. Servi avec 2 soupes, 2 salades et 2 riz.",
+      "desc": "Menu Duo Bateau Royal Sushi Sashimi (2 personnes) : 8 Sushis variés, 24 Sashimis variés, 6 Makis, 6 Makis Arc-en-Ciel. Servi avec 2 soupes miso, 2 salades et 2 riz.",
       "available": true,
       "subcat": "menus-grands",
-      "subcatName": "Grands plateaux & bateaux"
+      "subcatName": "Grands plateaux & bateaux",
+      "allergens": [
+        "Œufs",
+        "Lait",
+        "Soja",
+        "Sésame",
+        "Moutarde",
+        "Céleri",
+        "Mollusques",
+        "Crustacés",
+        "Poissons"
+      ]
     },
     {
       "id": "menus-grands-gf1",
@@ -812,10 +1190,17 @@
       "pieces": "Grand plateau",
       "price": 74.9,
       "img": "img/products/gf1.png",
-      "desc": "Grand Plateau Royal (3 à 4 personnes) : 20 Sushis assortis, 24 Makis variés, 24 Sashimis, 8 Brochettes grillées. Servi avec 4 soupes, 4 salades et 4 riz.",
+      "desc": "Grand Menu Familial (3 personnes) : 18 Sushis variés, 18 Makis variés, 18 Sashimis variés. Servi avec 3 soupes miso, 3 salades de choux et 3 riz.",
       "available": true,
       "subcat": "menus-grands",
-      "subcatName": "Grands plateaux & bateaux"
+      "subcatName": "Grands plateaux & bateaux",
+      "allergens": [
+        "Œufs",
+        "Soja",
+        "Sésame",
+        "Moutarde",
+        "Poissons"
+      ]
     },
     {
       "id": "menus-grands-gf2",
@@ -825,7 +1210,7 @@
       "pieces": "Bateau royal",
       "price": 85.9,
       "img": "img/products/gf2.png",
-      "desc": "Grand Bateau Impérial Prestige (4 personnes) : 24 Sushis variés, 30 Makis signature, 30 Sashimis nobles, 12 Brochettes. Servi avec 4 soupes, 4 salades et 4 riz.",
+      "desc": "Grand Bateau Impérial Prestige (4 personnes) : 24 Sushis variés, 30 Makis signature, 30 Sashimis nobles, 12 Brochettes trempées dans la sauce soja sucrée (hors gambas). Servi avec 4 soupes, 4 salades et 4 riz.",
       "available": true,
       "subcat": "menus-grands",
       "subcatName": "Grands plateaux & bateaux"
@@ -838,10 +1223,17 @@
       "pieces": "Assortiment",
       "price": 14.5,
       "img": "img/products/mt.png",
-      "desc": "Menu Tempura : 5 Beignets de crevettes croustillantes japonaises. Servi avec 1 soupe miso, 1 salade de choux et 1 bol de riz.",
+      "desc": "6 Beignets croustillants de tempura de crevettes. Servi avec 1 soupe miso, 1 salade de choux et 1 bol de riz.",
       "available": true,
       "subcat": "plats-chauds",
-      "subcatName": "Plats chauds & nouilles"
+      "subcatName": "Plats chauds & nouilles",
+      "allergens": [
+        "Gluten",
+        "Crustacés",
+        "Soja",
+        "Œufs",
+        "Moutarde"
+      ]
     },
     {
       "id": "plats-chauds-sr",
@@ -887,7 +1279,10 @@
       "price": 5.4,
       "img": "img/products/39.png",
       "desc": "",
-      "available": true
+      "available": true,
+      "allergens": [
+        "Poissons"
+      ]
     },
     {
       "id": "sushis-45",
@@ -898,7 +1293,10 @@
       "price": 5.5,
       "img": "img/products/45.png",
       "desc": "",
-      "available": true
+      "available": true,
+      "allergens": [
+        "Poissons"
+      ]
     },
     {
       "id": "sushis-46",
@@ -909,7 +1307,12 @@
       "price": 5.3,
       "img": "img/products/46.png",
       "desc": "",
-      "available": true
+      "available": true,
+      "allergens": [
+        "Œufs",
+        "Lait",
+        "Poissons"
+      ]
     },
     {
       "id": "sushis-47",
@@ -920,7 +1323,10 @@
       "price": 5.1,
       "img": "img/products/47.png",
       "desc": "",
-      "available": true
+      "available": true,
+      "allergens": [
+        "Poissons"
+      ]
     },
     {
       "id": "sushis-48",
@@ -931,7 +1337,10 @@
       "price": 5.3,
       "img": "img/products/48.png",
       "desc": "",
-      "available": true
+      "available": true,
+      "allergens": [
+        "Poissons"
+      ]
     },
     {
       "id": "sushis-50",
@@ -942,7 +1351,10 @@
       "price": 6.5,
       "img": "img/products/50.png",
       "desc": "",
-      "available": true
+      "available": true,
+      "allergens": [
+        "Poissons"
+      ]
     },
     {
       "id": "sushis-52",
@@ -953,7 +1365,10 @@
       "price": 5.5,
       "img": "img/products/52.png",
       "desc": "",
-      "available": true
+      "available": true,
+      "allergens": [
+        "Poissons"
+      ]
     },
     {
       "id": "sushis-35",
@@ -975,7 +1390,10 @@
       "price": 5.4,
       "img": "img/products/37.png",
       "desc": "",
-      "available": true
+      "available": true,
+      "allergens": [
+        "Poissons"
+      ]
     },
     {
       "id": "sushis-38",
@@ -986,7 +1404,10 @@
       "price": 5.0,
       "img": "img/products/38.png",
       "desc": "",
-      "available": true
+      "available": true,
+      "allergens": [
+        "Poissons"
+      ]
     },
     {
       "id": "sushis-40",
@@ -997,7 +1418,11 @@
       "price": 5.4,
       "img": "img/products/40.png",
       "desc": "",
-      "available": true
+      "available": true,
+      "allergens": [
+        "Crustacés",
+        "Poissons"
+      ]
     },
     {
       "id": "sushis-41",
@@ -1008,7 +1433,11 @@
       "price": 6.0,
       "img": "img/products/41.png",
       "desc": "",
-      "available": true
+      "available": true,
+      "allergens": [
+        "Soja",
+        "Poissons"
+      ]
     },
     {
       "id": "sushis-42",
@@ -1019,7 +1448,11 @@
       "price": 6.9,
       "img": "img/products/42.png",
       "desc": "",
-      "available": true
+      "available": true,
+      "allergens": [
+        "Crustacés",
+        "Mollusques"
+      ]
     },
     {
       "id": "sushis-43",
@@ -1030,7 +1463,10 @@
       "price": 4.3,
       "img": "img/products/43.png",
       "desc": "",
-      "available": true
+      "available": true,
+      "allergens": [
+        "Œufs"
+      ]
     },
     {
       "id": "sushis-44",
@@ -1041,7 +1477,10 @@
       "price": 5.0,
       "img": "img/products/44.png",
       "desc": "",
-      "available": true
+      "available": true,
+      "allergens": [
+        "Mollusques"
+      ]
     },
     {
       "id": "makis-6",
@@ -1054,7 +1493,10 @@
       "desc": "",
       "available": true,
       "subcat": "makis-classiques",
-      "subcatName": "Makis traditionnels"
+      "subcatName": "Makis traditionnels",
+      "allergens": [
+        "Poissons"
+      ]
     },
     {
       "id": "makis-7",
@@ -1067,7 +1509,10 @@
       "desc": "",
       "available": true,
       "subcat": "makis-classiques",
-      "subcatName": "Makis traditionnels"
+      "subcatName": "Makis traditionnels",
+      "allergens": [
+        "Poissons"
+      ]
     },
     {
       "id": "makis-8",
@@ -1080,7 +1525,11 @@
       "desc": "",
       "available": true,
       "subcat": "makis-classiques",
-      "subcatName": "Makis traditionnels"
+      "subcatName": "Makis traditionnels",
+      "allergens": [
+        "Lait",
+        "Poissons"
+      ]
     },
     {
       "id": "makis-9",
@@ -1457,7 +1906,10 @@
       "desc": "",
       "available": true,
       "subcat": "saumon-rolls",
-      "subcatName": "Saumon rolls"
+      "subcatName": "Saumon rolls",
+      "allergens": [
+        "Poissons"
+      ]
     },
     {
       "id": "saumon-rolls-88",
@@ -1470,7 +1922,10 @@
       "desc": "",
       "available": true,
       "subcat": "saumon-rolls",
-      "subcatName": "Saumon rolls"
+      "subcatName": "Saumon rolls",
+      "allergens": [
+        "Poissons"
+      ]
     },
     {
       "id": "saumon-rolls-89",
@@ -1483,7 +1938,11 @@
       "desc": "",
       "available": true,
       "subcat": "saumon-rolls",
-      "subcatName": "Saumon rolls"
+      "subcatName": "Saumon rolls",
+      "allergens": [
+        "Lait",
+        "Poissons"
+      ]
     },
     {
       "id": "saumon-rolls-89a",
@@ -1496,7 +1955,11 @@
       "desc": "",
       "available": true,
       "subcat": "saumon-rolls",
-      "subcatName": "Saumon rolls"
+      "subcatName": "Saumon rolls",
+      "allergens": [
+        "Lait",
+        "Poissons"
+      ]
     },
     {
       "id": "printemps-maki-96",
@@ -1574,7 +2037,11 @@
       "desc": "",
       "available": true,
       "subcat": "egg-makis",
-      "subcatName": "Egg makis"
+      "subcatName": "Egg makis",
+      "allergens": [
+        "Œufs",
+        "Poissons"
+      ]
     },
     {
       "id": "egg-maki-92",
@@ -1587,7 +2054,12 @@
       "desc": "",
       "available": true,
       "subcat": "egg-makis",
-      "subcatName": "Egg makis"
+      "subcatName": "Egg makis",
+      "allergens": [
+        "Œufs",
+        "Lait",
+        "Poissons"
+      ]
     },
     {
       "id": "egg-maki-92a",
@@ -1600,7 +2072,11 @@
       "desc": "",
       "available": true,
       "subcat": "egg-makis",
-      "subcatName": "Egg makis"
+      "subcatName": "Egg makis",
+      "allergens": [
+        "Œufs",
+        "Lait"
+      ]
     },
     {
       "id": "neige-maki-93",
@@ -1613,7 +2089,10 @@
       "desc": "",
       "available": true,
       "subcat": "neige-makis",
-      "subcatName": "Neige makis"
+      "subcatName": "Neige makis",
+      "allergens": [
+        "Poissons"
+      ]
     },
     {
       "id": "neige-maki-94",
@@ -1678,7 +2157,11 @@
       "desc": "",
       "available": true,
       "subcat": "makis-speciaux",
-      "subcatName": "Makis spéciaux"
+      "subcatName": "Makis spéciaux",
+      "allergens": [
+        "Gluten",
+        "Poissons"
+      ]
     },
     {
       "id": "maki-special-104",
@@ -1691,7 +2174,11 @@
       "desc": "",
       "available": true,
       "subcat": "makis-speciaux",
-      "subcatName": "Makis spéciaux"
+      "subcatName": "Makis spéciaux",
+      "allergens": [
+        "Gluten",
+        "Poissons"
+      ]
     },
     {
       "id": "maki-special-105",
@@ -1704,7 +2191,11 @@
       "desc": "",
       "available": true,
       "subcat": "makis-speciaux",
-      "subcatName": "Makis spéciaux"
+      "subcatName": "Makis spéciaux",
+      "allergens": [
+        "Gluten",
+        "Lait"
+      ]
     },
     {
       "id": "maki-special-106",
@@ -1717,7 +2208,12 @@
       "desc": "",
       "available": true,
       "subcat": "makis-speciaux",
-      "subcatName": "Makis spéciaux"
+      "subcatName": "Makis spéciaux",
+      "allergens": [
+        "Gluten",
+        "Lait",
+        "Poissons"
+      ]
     },
     {
       "id": "maki-special-107",
@@ -1987,7 +2483,7 @@
       "pieces": "2 pièces",
       "price": 4.5,
       "img": "img/products/71.png",
-      "desc": "",
+      "desc": "Grillées et trempées dans la sauce soja sucrée.",
       "available": true,
       "subcat": "yakitori-all",
       "subcatName": "Brochettes yakitori"
@@ -2000,10 +2496,13 @@
       "pieces": "2 pièces",
       "price": 4.5,
       "img": "img/products/72.png",
-      "desc": "",
+      "desc": "Grillées et trempées dans la sauce soja sucrée.",
       "available": true,
       "subcat": "yakitori-all",
-      "subcatName": "Brochettes yakitori"
+      "subcatName": "Brochettes yakitori",
+      "allergens": [
+        "Soja"
+      ]
     },
     {
       "id": "yakitori-73",
@@ -2013,10 +2512,13 @@
       "pieces": "2 pièces",
       "price": 4.5,
       "img": "img/products/73.png",
-      "desc": "",
+      "desc": "Grillées et trempées dans la sauce soja sucrée.",
       "available": true,
       "subcat": "yakitori-all",
-      "subcatName": "Brochettes yakitori"
+      "subcatName": "Brochettes yakitori",
+      "allergens": [
+        "Soja"
+      ]
     },
     {
       "id": "yakitori-75",
@@ -2026,10 +2528,13 @@
       "pieces": "2 pièces",
       "price": 7.0,
       "img": "img/products/75.png",
-      "desc": "",
+      "desc": "Grillées et trempées dans la sauce soja sucrée.",
       "available": true,
       "subcat": "yakitori-all",
-      "subcatName": "Brochettes yakitori"
+      "subcatName": "Brochettes yakitori",
+      "allergens": [
+        "Soja"
+      ]
     },
     {
       "id": "yakitori-77",
@@ -2039,10 +2544,14 @@
       "pieces": "2 pièces",
       "price": 5.3,
       "img": "img/products/77.png",
-      "desc": "",
+      "desc": "Grillées et trempées dans la sauce soja sucrée.",
       "available": true,
       "subcat": "yakitori-all",
-      "subcatName": "Brochettes yakitori"
+      "subcatName": "Brochettes yakitori",
+      "allergens": [
+        "Lait",
+        "Soja"
+      ]
     },
     {
       "id": "yakitori-78",
@@ -2052,10 +2561,14 @@
       "pieces": "2 pièces",
       "price": 4.7,
       "img": "img/products/78.png",
-      "desc": "",
+      "desc": "Grillées et trempées dans la sauce soja sucrée.",
       "available": true,
       "subcat": "yakitori-all",
-      "subcatName": "Brochettes yakitori"
+      "subcatName": "Brochettes yakitori",
+      "allergens": [
+        "Soja",
+        "Crustacés"
+      ]
     },
     {
       "id": "yakitori-79",
@@ -2065,10 +2578,15 @@
       "pieces": "2 pièces",
       "price": 8.0,
       "img": "img/products/79.png",
-      "desc": "",
+      "desc": "Grillées et trempées dans la sauce soja sucrée.",
       "available": true,
       "subcat": "yakitori-all",
-      "subcatName": "Brochettes yakitori"
+      "subcatName": "Brochettes yakitori",
+      "allergens": [
+        "Soja",
+        "Crustacés",
+        "Mollusques"
+      ]
     },
     {
       "id": "yakitori-80",
@@ -2078,10 +2596,14 @@
       "pieces": "2 pièces",
       "price": 6.0,
       "img": "img/products/80.png",
-      "desc": "",
+      "desc": "Grillées et trempées dans la sauce soja sucrée.",
       "available": true,
       "subcat": "yakitori-all",
-      "subcatName": "Brochettes yakitori"
+      "subcatName": "Brochettes yakitori",
+      "allergens": [
+        "Soja",
+        "Poissons"
+      ]
     },
     {
       "id": "yakitori-82",
@@ -2091,10 +2613,14 @@
       "pieces": "2 pièces",
       "price": 6.5,
       "img": "img/products/82.png",
-      "desc": "",
+      "desc": "Grillées et trempées dans la sauce soja sucrée.",
       "available": true,
       "subcat": "yakitori-all",
-      "subcatName": "Brochettes yakitori"
+      "subcatName": "Brochettes yakitori",
+      "allergens": [
+        "Soja",
+        "Poissons"
+      ]
     },
     {
       "id": "yakitori-83",
@@ -2104,7 +2630,7 @@
       "pieces": "2 pièces",
       "price": 6.0,
       "img": "img/products/83.png",
-      "desc": "",
+      "desc": "Gambas grillées.",
       "available": true,
       "subcat": "yakitori-all",
       "subcatName": "Brochettes yakitori"
@@ -2117,7 +2643,7 @@
       "pieces": "2 pièces",
       "price": 4.7,
       "img": "img/products/84.png",
-      "desc": "",
+      "desc": "Grillées et trempées dans la sauce soja sucrée.",
       "available": true,
       "subcat": "yakitori-all",
       "subcatName": "Brochettes yakitori"
@@ -2131,7 +2657,12 @@
       "price": 3.5,
       "img": "img/products/ds3.png",
       "desc": "",
-      "available": true
+      "available": true,
+      "allergens": [
+        "Gluten",
+        "Lait",
+        "Soja"
+      ]
     },
     {
       "id": "desserts-ds4",
@@ -2142,7 +2673,12 @@
       "price": 4.0,
       "img": "img/products/ds4.png",
       "desc": "",
-      "available": true
+      "available": true,
+      "allergens": [
+        "Gluten",
+        "Fruits à coque",
+        "Soja"
+      ]
     },
     {
       "id": "desserts-ds6",
@@ -2153,7 +2689,11 @@
       "price": 4.5,
       "img": "img/products/ds6.png",
       "desc": "",
-      "available": true
+      "available": true,
+      "allergens": [
+        "Gluten",
+        "Œufs"
+      ]
     },
     {
       "id": "desserts-ds22",
@@ -2175,7 +2715,8 @@
       "price": 3.8,
       "img": "img/products/ds1.png",
       "desc": "",
-      "available": true
+      "available": true,
+      "allergens": []
     },
     {
       "id": "desserts-ds2",
@@ -2208,7 +2749,13 @@
       "price": 6.0,
       "img": "img/products/ds7.png",
       "desc": "",
-      "available": true
+      "available": true,
+      "allergens": [
+        "Lait",
+        "Fruits à coque",
+        "Soja",
+        "Œufs"
+      ]
     },
     {
       "id": "desserts-ds8",
@@ -2219,7 +2766,13 @@
       "price": 6.5,
       "img": "img/products/ds8.png",
       "desc": "",
-      "available": true
+      "available": true,
+      "allergens": [
+        "Lait",
+        "Fruits à coque",
+        "Soja",
+        "Œufs"
+      ]
     },
     {
       "id": "desserts-ds9",
