@@ -1,5 +1,14 @@
 import socket
 import unicodedata
+import re
+
+def clean_ticket_item_name(name):
+    if not name:
+        return ""
+    # Nettoyage intelligent : supprime le contenu entre parenthèses pour gagner de la place (ex: "Takoyaki (beignets de poulpe)" -> "Takoyaki")
+    name = re.sub(r'\(.*?\)', '', str(name))
+    name = re.sub(r'\s+', ' ', name).strip()
+    return name
 
 def strip_accents(text):
     if not text:
@@ -128,7 +137,7 @@ def generate_ticket_bytes(order):
         total_line = float(it.get('totalPrice') or it.get('lineTotal') or (price * qty))
         total_cents = int(round(total_line * 100))
         code = str(it.get('code') or '').strip() or '—'
-        name = strip_accents(str(it.get('name') or 'Article')).upper().strip()
+        name = strip_accents(clean_ticket_item_name(str(it.get('name') or 'Article'))).upper().strip()
 
         total_str = format_euro(total_cents)
         code_tag = f"[{code}]"
@@ -258,7 +267,7 @@ def generate_kitchen_ticket_bytes(order):
         qty = int(it.get('qty') or it.get('quantity') or 1)
         total_qty += qty
         code = str(it.get('code') or '').strip() or '—'
-        name = strip_accents(str(it.get('name') or 'Article')).upper().strip()
+        name = strip_accents(clean_ticket_item_name(str(it.get('name') or 'Article'))).upper().strip()
 
         buf.extend(b'\x1d\x21\x01') # Double Height ONLY (Normal Width)
         buf.extend(b'\x1b\x45\x01') # Bold ON
