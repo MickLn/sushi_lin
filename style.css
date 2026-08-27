@@ -196,7 +196,8 @@ img {
 .closure-msg {
   font-size: 14.5px;
   color: var(--text-secondary);
-  line-height: 1.5;
+  line-height: 1.6;
+  white-space: pre-line;
   margin-bottom: 22px;
 }
 
@@ -1657,6 +1658,7 @@ img {
   padding: 56px 20px;
   position: relative;
   z-index: 1;
+  scroll-margin-top: 120px;
 }
 
 .info-container {
@@ -2802,6 +2804,15 @@ img {
 .btn-submit-order:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+.btn-submit-order.disabled-closed {
+  background: #F1F5F9 !important;
+  color: #94A3B8 !important;
+  border-color: #E2E8F0 !important;
+  box-shadow: none !important;
+  opacity: 0.8 !important;
+  cursor: not-allowed !important;
 }
 
 .order-reassurance {

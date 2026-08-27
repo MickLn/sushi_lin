@@ -1,6 +1,6 @@
 {
   "status": "open",
-  "exceptionalMessage": "",
+  "exceptionalMessage": "Le restaurant est exceptionnellement fermé du 28/08/2026 au 16/09/2026.\n\nMerci de votre compréhension.",
   "scheduleText": "7j/7 : 12h00 – 14h30 & 18h30 – 23h00",
   "midiStart": "12:00",
   "midiEnd": "14:30",
@@ -14,5 +14,7 @@
   "phone": "01 30 79 00 88",
   "whatsapp": "33130790088",
   "address": "32 Rue des Dames, 78340 Les Clayes-sous-Bois",
-  "mapsLink": "https://goo.gl/maps/gdgPWQZ2CxFZTC1a7"
+  "mapsLink": "https://goo.gl/maps/gdgPWQZ2CxFZTC1a7",
+  "exceptionalStartDate": "2026-08-28",
+  "exceptionalEndDate": "2026-09-16"
 }

@@ -848,6 +848,45 @@ function updateScheduleTextFromTimes() {
   collectSettingsFromForm();
 }
 
+function toggleExceptionalFieldVisibility() {
+  const isClosed = document.getElementById('status-closed-radio')?.checked;
+  const field = document.getElementById('exceptional-msg-field');
+  if (field) {
+    field.style.display = isClosed ? 'block' : 'none';
+  }
+}
+
+function updateExceptionalMessageFromDates() {
+  const startDateVal = document.getElementById('exceptional-start-date')?.value;
+  const endDateVal = document.getElementById('exceptional-end-date')?.value;
+  const msgInput = document.getElementById('exceptional-msg-input');
+  if (!msgInput) return;
+
+  const formatDateFR = (isoStr) => {
+    if (!isoStr) return '';
+    const parts = isoStr.split('-');
+    if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    return isoStr;
+  };
+
+  if (startDateVal && endDateVal) {
+    const sFR = formatDateFR(startDateVal);
+    const eFR = formatDateFR(endDateVal);
+    if (sFR === eFR) {
+      msgInput.value = `Le restaurant est exceptionnellement fermé le ${sFR}.\nMerci de votre compréhension.`;
+    } else {
+      msgInput.value = `Le restaurant est exceptionnellement fermé du ${sFR} au ${eFR}.\nMerci de votre compréhension.`;
+    }
+  } else if (startDateVal) {
+    const sFR = formatDateFR(startDateVal);
+    msgInput.value = `Le restaurant est exceptionnellement fermé le ${sFR}.\nMerci de votre compréhension.`;
+  } else if (!msgInput.value.trim()) {
+    msgInput.value = `Le restaurant est exceptionnellement fermé.\nMerci de votre compréhension.`;
+  }
+  collectSettingsFromForm();
+  saveSettingsToServer();
+}
+
 function populateSettingsFields() {
   if (ADMIN_SETTINGS.status === 'closed-exceptional') {
     document.getElementById('status-closed-radio').checked = true;
@@ -855,7 +894,18 @@ function populateSettingsFields() {
     document.getElementById('status-open-radio').checked = true;
   }
 
-  document.getElementById('exceptional-msg-input').value = ADMIN_SETTINGS.exceptionalMessage || '';
+  const startDateInput = document.getElementById('exceptional-start-date');
+  if (startDateInput) startDateInput.value = ADMIN_SETTINGS.exceptionalStartDate || '';
+  const endDateInput = document.getElementById('exceptional-end-date');
+  if (endDateInput) endDateInput.value = ADMIN_SETTINGS.exceptionalEndDate || '';
+
+  const msgInput = document.getElementById('exceptional-msg-input');
+  if (msgInput) {
+    msgInput.value = ADMIN_SETTINGS.exceptionalMessage || '';
+  }
+
+  toggleExceptionalFieldVisibility();
+
   document.getElementById('schedule-text-input').value = ADMIN_SETTINGS.scheduleText || '7j/7 : 12h00 – 14h30 & 18h30 – 22h00';
   
   const setSelectTime = (id, val) => {
@@ -895,6 +945,31 @@ function populateSettingsFields() {
   document.getElementById('address-input').value = ADMIN_SETTINGS.address || '32 Rue des Dames, 78340 Les Clayes-sous-Bois';
   document.getElementById('maps-link-input').value = ADMIN_SETTINGS.mapsLink || 'https://goo.gl/maps/gdgPWQZ2CxFZTC1a7';
 
+  // Attach status radio listeners
+  document.querySelectorAll('input[name="restaurant-status"]').forEach(radio => {
+    if (!radio.dataset.statusListenerAttached) {
+      radio.dataset.statusListenerAttached = 'true';
+      radio.addEventListener('change', () => {
+        toggleExceptionalFieldVisibility();
+        if (radio.value === 'closed-exceptional' && !document.getElementById('exceptional-msg-input')?.value.trim()) {
+          updateExceptionalMessageFromDates();
+        }
+        collectSettingsFromForm();
+        saveSettingsToServer();
+      });
+    }
+  });
+
+  // Attach date picker listeners
+  ['exceptional-start-date', 'exceptional-end-date'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && !el.dataset.dateListenerAttached) {
+      el.dataset.dateListenerAttached = 'true';
+      el.addEventListener('change', updateExceptionalMessageFromDates);
+      el.addEventListener('input', updateExceptionalMessageFromDates);
+    }
+  });
+
   // Attach dynamic time auto-updater
   ['midi-start', 'midi-end', 'soir-start', 'soir-end'].forEach(id => {
     const el = document.getElementById(id);
@@ -906,7 +981,7 @@ function populateSettingsFields() {
   });
 
   // Attach auto-save on change for all setting inputs and selects
-  const allSettingInputs = document.querySelectorAll('#pane-hours input, #pane-hours select, #pane-restaurant input, #pane-restaurant select');
+  const allSettingInputs = document.querySelectorAll('#pane-hours input, #pane-hours select, #pane-hours textarea, #pane-restaurant input, #pane-restaurant select');
   allSettingInputs.forEach(inp => {
     if (!inp.dataset.autoSaveAttached) {
       inp.dataset.autoSaveAttached = 'true';
@@ -914,12 +989,20 @@ function populateSettingsFields() {
         collectSettingsFromForm();
         saveSettingsToServer();
       });
+      if (inp.tagName === 'TEXTAREA') {
+        inp.addEventListener('input', () => {
+          collectSettingsFromForm();
+          saveSettingsToServer();
+        });
+      }
     }
   });
 }
 
 function collectSettingsFromForm() {
   ADMIN_SETTINGS.status = document.querySelector('input[name="restaurant-status"]:checked')?.value || 'open';
+  ADMIN_SETTINGS.exceptionalStartDate = document.getElementById('exceptional-start-date')?.value || '';
+  ADMIN_SETTINGS.exceptionalEndDate = document.getElementById('exceptional-end-date')?.value || '';
   ADMIN_SETTINGS.exceptionalMessage = document.getElementById('exceptional-msg-input')?.value.trim() || '';
   ADMIN_SETTINGS.scheduleText = document.getElementById('schedule-text-input')?.value.trim() || '7j/7 : 12h00 – 14h30 & 18h30 – 22h00';
   ADMIN_SETTINGS.midiStart = document.getElementById('midi-start')?.value || '12:00';
@@ -1355,45 +1438,14 @@ async function renderStatsDashboard() {
     }
 
     totalRevenue += orderTotal;
-
-    if (isMidi) {
-      midiRevenue += orderTotal;
-      midiOrdersCount++;
-    } else {
-      soirRevenue += orderTotal;
-      soirOrdersCount++;
-    }
-
-    // Sauces & Baguettes
-    const sauce = (order.sauceChoice || '').toLowerCase();
-    if (sauce.includes('sucr')) saucesCount.sucree++;
-    else if (sauce.includes('sal')) saucesCount.salee++;
-    else saucesCount.none++;
-
-    const bag = (order.baguettesChoice || '').toLowerCase();
-    if (bag.includes('sans') || bag === '0') baguettesCount.no++;
-    else baguettesCount.yes++;
   });
 
   const ordersCount = orders.length;
   const avgTicket = ordersCount > 0 ? (totalRevenue / ordersCount) : 0;
-  const midiAvg = midiOrdersCount > 0 ? (midiRevenue / midiOrdersCount) : 0;
-  const soirAvg = soirOrdersCount > 0 ? (soirRevenue / soirOrdersCount) : 0;
 
   const topItems = Array.from(itemsMap.values())
     .sort((a, b) => b.qty - a.qty)
     .slice(0, 10);
-
-  const topMochis = Array.from(mochiFlavorsMap.entries())
-    .map(([flavor, count]) => ({ flavor, count }))
-    .sort((a, b) => b.count - a.count);
-
-  const sortedCats = Array.from(catRevenueMap.entries())
-    .map(([cat, rev]) => ({ cat, rev, pct: totalRevenue > 0 ? Math.round((rev / totalRevenue) * 100) : 0 }))
-    .sort((a, b) => b.rev - a.rev);
-
-  const midiPct = totalRevenue > 0 ? Math.round((midiRevenue / totalRevenue) * 100) : 50;
-  const soirPct = 100 - midiPct;
 
   container.innerHTML = `
     <!-- 4 KPI CARDS -->
@@ -1439,196 +1491,50 @@ async function renderStatsDashboard() {
       </div>
     </div>
 
-    <!-- COMPARATIF SERVICE DU MIDI vs SERVICE DU SOIR -->
+    <!-- TOP 10 BEST SELLERS EN PLEINE LARGEUR -->
     <div class="stats-section-box mt-20">
       <div class="stats-box-head">
         <div style="display: flex; align-items: center; gap: 8px;">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
-          <h3>Répartition des ventes : Service du Midi vs Soir</h3>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.45 1-1 1H7.5"/><path d="M14 14.66V17c0 .55.45 1 1 1h1.5"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+          <h3>Top 10 des Meilleurs Plats</h3>
         </div>
-      </div>
-      
-      <div class="service-split-bar-wrapper">
-        <div class="service-split-bar">
-          <div class="split-segment midi" style="width: ${midiPct}%;" title="Midi : ${midiPct}%">
-            ${midiPct > 15 ? `<span>Midi (${midiPct}%)</span>` : ''}
-          </div>
-          <div class="split-segment soir" style="width: ${soirPct}%;" title="Soir : ${soirPct}%">
-            ${soirPct > 15 ? `<span>Soir (${soirPct}%)</span>` : ''}
-          </div>
-        </div>
-
-        <div class="service-split-details">
-          <div class="service-col midi">
-            <div class="service-col-title">
-              <span class="service-dot"></span>
-              <span>Service du Midi (12h00 - 14h30)</span>
-            </div>
-            <div class="service-metrics">
-              <div class="service-metric-item">
-                <span class="metric-label">CA Midi :</span>
-                <span class="metric-val">${midiRevenue.toFixed(2).replace('.', ',')} €</span>
-              </div>
-              <div class="service-metric-item">
-                <span class="metric-label">Commandes :</span>
-                <span class="metric-val">${midiOrdersCount}</span>
-              </div>
-              <div class="service-metric-item">
-                <span class="metric-label">Panier moyen :</span>
-                <span class="metric-val">${midiAvg.toFixed(2).replace('.', ',')} €</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="service-col soir">
-            <div class="service-col-title">
-              <span class="service-dot"></span>
-              <span>Service du Soir (18h30 - 22h00)</span>
-            </div>
-            <div class="service-metrics">
-              <div class="service-metric-item">
-                <span class="metric-label">CA Soir :</span>
-                <span class="metric-val">${soirRevenue.toFixed(2).replace('.', ',')} €</span>
-              </div>
-              <div class="service-metric-item">
-                <span class="metric-label">Commandes :</span>
-                <span class="metric-val">${soirOrdersCount}</span>
-              </div>
-              <div class="service-metric-item">
-                <span class="metric-label">Panier moyen :</span>
-                <span class="metric-val">${soirAvg.toFixed(2).replace('.', ',')} €</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 2 COLUMNS: TOP 10 ITEMS + CATEGORIES & MOCHIS -->
-    <div class="stats-two-cols mt-20">
-      
-      <!-- TOP 10 BEST SELLERS -->
-      <div class="stats-section-box">
-        <div class="stats-box-head">
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.45 1-1 1H7.5"/><path d="M14 14.66V17c0 .55.45 1 1 1h1.5"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
-            <h3>Top 10 des Meilleurs Plats</h3>
-          </div>
-          <span style="font-size: 11.5px; font-weight: 700; color: var(--text-secondary);">${topItems.length} plats classés</span>
-        </div>
-
-        <div class="stats-top-table-wrap">
-          <table class="stats-top-table">
-            <thead>
-              <tr>
-                <th style="width: 40px; text-align: center;">Rang</th>
-                <th>Plat</th>
-                <th style="text-align: center;">Ventes</th>
-                <th style="text-align: right;">CA (€)</th>
-                <th style="text-align: right;">Part CA</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${topItems.map((item, idx) => {
-                const pct = totalRevenue > 0 ? Math.round((item.revenue / totalRevenue) * 100) : 0;
-                return `
-                  <tr>
-                    <td style="text-align: center;">
-                      <span class="stats-rank-badge ${idx === 0 ? 'gold' : (idx === 1 ? 'silver' : (idx === 2 ? 'bronze' : ''))}">${idx + 1}</span>
-                    </td>
-                    <td>
-                      <div style="display: flex; align-items: center; gap: 8px;">
-                        ${item.code ? `<span class="stats-code-badge">${item.code}</span>` : ''}
-                        <span style="font-weight: 800; color: var(--indigo-dark);">${item.name}</span>
-                      </div>
-                    </td>
-                    <td style="text-align: center; font-weight: 800; color: var(--sakura-vibrant);">${item.qty}</td>
-                    <td style="text-align: right; font-weight: 800; color: var(--indigo-dark);">${item.revenue.toFixed(2).replace('.', ',')} €</td>
-                    <td style="text-align: right; font-weight: 700; color: var(--text-secondary);">${pct}%</td>
-                  </tr>
-                `;
-              }).join('')}
-            </tbody>
-          </table>
-        </div>
+        <span style="font-size: 11.5px; font-weight: 700; color: var(--text-secondary);">${topItems.length} plats classés</span>
       </div>
 
-      <!-- RIGHT COLUMN: CATEGORIES + MOCHIS + CONSUMABLES -->
-      <div style="display: flex; flex-direction: column; gap: 20px;">
-        
-        <!-- CATÉGORIES -->
-        <div class="stats-section-box">
-          <div class="stats-box-head">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
-              <h3>Répartition par Catégorie</h3>
-            </div>
-          </div>
-
-          <div class="stats-cats-list">
-            ${sortedCats.map(c => `
-              <div class="stats-cat-row">
-                <div class="stats-cat-head">
-                  <span class="cat-name">${c.cat}</span>
-                  <span class="cat-rev">${c.rev.toFixed(2).replace('.', ',')} € <strong>(${c.pct}%)</strong></span>
-                </div>
-                <div class="stats-cat-bar-bg">
-                  <div class="stats-cat-bar-fill" style="width: ${c.pct}%;"></div>
-                </div>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-
-        <!-- TOP PARFUMS MOCHIS (SI VENTES) -->
-        ${topMochis.length > 0 ? `
-        <div class="stats-section-box">
-          <div class="stats-box-head">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/></svg>
-              <h3>Ventes par Parfum de Mochis</h3>
-            </div>
-          </div>
-          <div class="mochi-stats-grid">
-            ${topMochis.map(m => `
-              <div class="mochi-stat-item">
-                <span class="mochi-stat-name">${m.flavor}</span>
-                <span class="mochi-stat-qty">${m.count} vendus</span>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-        ` : ''}
-
-        <!-- CONSOMMABLES (SAUCES & BAGUETTES) -->
-        <div class="stats-section-box">
-          <div class="stats-box-head">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-              <h3>Préférences & Consommables</h3>
-            </div>
-          </div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-            <div style="background: var(--admin-bg); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
-              <div style="font-size: 11.5px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 6px;">Sauces demandées</div>
-              <div style="font-size: 12.5px; font-weight: 700; color: var(--indigo-dark); line-height: 1.6;">
-                <div>• Sucrée : <strong>${saucesCount.sucree}</strong></div>
-                <div>• Salée : <strong>${saucesCount.salee}</strong></div>
-                <div>• Sans sauce : <strong>${saucesCount.none}</strong></div>
-              </div>
-            </div>
-            <div style="background: var(--admin-bg); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
-              <div style="font-size: 11.5px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 6px;">Baguettes</div>
-              <div style="font-size: 12.5px; font-weight: 700; color: var(--indigo-dark); line-height: 1.6;">
-                <div>• Avec baguettes : <strong>${baguettesCount.yes}</strong></div>
-                <div>• Sans baguette : <strong style="color: var(--sakura-vibrant);">${baguettesCount.no}</strong></div>
-              </div>
-            </div>
-          </div>
-        </div>
-
+      <div class="stats-top-table-wrap">
+        <table class="stats-top-table">
+          <thead>
+            <tr>
+              <th style="width: 40px; text-align: center;">Rang</th>
+              <th>Plat</th>
+              <th style="text-align: center;">Ventes</th>
+              <th style="text-align: right;">CA (€)</th>
+              <th style="text-align: right;">Part CA</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${topItems.map((item, idx) => {
+              const pct = totalRevenue > 0 ? Math.round((item.revenue / totalRevenue) * 100) : 0;
+              return `
+                <tr>
+                  <td style="text-align: center;">
+                    <span class="stats-rank-badge ${idx === 0 ? 'gold' : (idx === 1 ? 'silver' : (idx === 2 ? 'bronze' : ''))}">${idx + 1}</span>
+                  </td>
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      ${item.code ? `<span class="stats-code-badge">${item.code}</span>` : ''}
+                      <span style="font-weight: 800; color: var(--indigo-dark);">${item.name}</span>
+                    </div>
+                  </td>
+                  <td style="text-align: center; font-weight: 800; color: var(--sakura-vibrant);">${item.qty}</td>
+                  <td style="text-align: right; font-weight: 800; color: var(--indigo-dark);">${item.revenue.toFixed(2).replace('.', ',')} €</td>
+                  <td style="text-align: right; font-weight: 700; color: var(--text-secondary);">${pct}%</td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
       </div>
-
     </div>
   `;
 }

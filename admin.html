@@ -284,9 +284,21 @@
                   </label>
                 </div>
 
-                <div class="form-field mt-16" id="exceptional-msg-field">
-                  <label for="exceptional-msg-input">Message de fermeture personnalisé à afficher aux clients :</label>
-                  <input type="text" id="exceptional-msg-input" class="admin-input" placeholder="Ex: Restaurant fermé pour congés annuels du 1er au 15 août. Réouverture le 16 août !">
+                <div class="mt-16" id="exceptional-msg-field" style="display: none;">
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                    <div class="form-field">
+                      <label for="exceptional-start-date">Date de début de fermeture :</label>
+                      <input type="date" id="exceptional-start-date" class="admin-input">
+                    </div>
+                    <div class="form-field">
+                      <label for="exceptional-end-date">Date de fin de fermeture :</label>
+                      <input type="date" id="exceptional-end-date" class="admin-input">
+                    </div>
+                  </div>
+                  <div class="form-field">
+                    <label for="exceptional-msg-input">Message de fermeture affiché sur le site (avec saut de ligne) :</label>
+                    <textarea id="exceptional-msg-input" class="admin-input" rows="3" style="resize: vertical; font-family: inherit; font-size: 13.5px; line-height: 1.5; padding: 10px 12px;" placeholder="Le restaurant est exceptionnellement fermé du ... au ...&#10;Merci de votre compréhension."></textarea>
+                  </div>
                 </div>
               </div>
             </div>

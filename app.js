@@ -506,10 +506,12 @@ async function applyAdminSettings() {
   const bannerStatusText = document.getElementById('banner-status-text');
   if (bannerStatusText) {
     if (APP_SETTINGS.status === 'closed-exceptional') {
-      bannerStatusText.textContent = APP_SETTINGS.exceptionalMessage || 'Fermeture exceptionnelle';
+      const formattedMsg = (APP_SETTINGS.exceptionalMessage || 'Fermeture exceptionnelle').replace(/\n/g, ' · ');
+      bannerStatusText.textContent = formattedMsg;
       bannerStatusText.style.color = '#E11D48';
     } else {
       bannerStatusText.textContent = APP_SETTINGS.scheduleText || 'Ouvert 7j/7 · 12h00–14h30 & 18h30–22h00';
+      bannerStatusText.style.color = '';
     }
   }
 
@@ -1308,11 +1310,24 @@ function updateCartUI() {
     updateCartBarVisibility();
   }
 
-  // Drawer Footer Totals
+  // Drawer Footer Totals & Checkout Button Status
   if (summarySubtotal) summarySubtotal.textContent = formatEuro(subtotal);
   if (summaryDiscount) summaryDiscount.textContent = `–${formatEuro(discount)}`;
   if (summaryTotal) summaryTotal.textContent = formatEuro(total);
-  if (btnCheckout) btnCheckout.disabled = totalItemsCount === 0;
+  
+  if (btnCheckout) {
+    if (APP_SETTINGS.status === 'closed-exceptional') {
+      btnCheckout.disabled = true;
+      btnCheckout.classList.add('disabled-closed');
+      btnCheckout.innerHTML = '<span>Restaurant fermé</span>';
+      btnCheckout.title = (APP_SETTINGS.exceptionalMessage || 'Le restaurant est exceptionnellement fermé.').replace(/\n/g, ' ');
+    } else {
+      btnCheckout.classList.remove('disabled-closed');
+      btnCheckout.disabled = totalItemsCount === 0;
+      btnCheckout.innerHTML = '<span>Valider la commande</span>';
+      btnCheckout.title = '';
+    }
+  }
 
   // Synchronise tous les badges des cartes produits immédiatement
   updateAllCardBadgesUI();
@@ -1895,6 +1910,12 @@ function getNextDailyOrderNumber() {
 
 // ---- Validation de commande (Enregistrement en local pour le Panel Admin & Envoi Resend) ----
 function handleOrderCheckout() {
+  if (APP_SETTINGS.status === 'closed-exceptional') {
+    const msg = APP_SETTINGS.exceptionalMessage || "Le restaurant est actuellement exceptionnellement fermé. Les commandes en ligne sont temporairement désactivées.\nMerci de votre compréhension.";
+    alert(msg);
+    return;
+  }
+
   if (cart.length === 0) return;
 
   const { subtotal, discount, total } = calculateCartTotals();
@@ -2268,27 +2289,33 @@ function getRestaurantCurrentStatus() {
 }
 
 function checkClosurePopup() {
-  const statusInfo = getRestaurantCurrentStatus();
-  if (!statusInfo.isOpen) {
-    const backdrop = document.getElementById('closure-modal-backdrop');
-    const msgEl = document.getElementById('closure-modal-msg');
-    const dismissBtn = document.getElementById('closure-btn-dismiss');
+  const backdrop = document.getElementById('closure-modal-backdrop');
+  const msgEl = document.getElementById('closure-modal-msg');
+  const dismissBtn = document.getElementById('closure-btn-dismiss');
+  if (!backdrop) return;
 
-    if (backdrop) {
-      if (msgEl) msgEl.textContent = statusInfo.message;
-      backdrop.classList.add('active');
-      backdrop.setAttribute('aria-hidden', 'false');
-
-      const closePopup = () => {
-        backdrop.classList.remove('active');
-        backdrop.setAttribute('aria-hidden', 'true');
-      };
-
-      dismissBtn?.addEventListener('click', closePopup);
-      backdrop.addEventListener('click', (e) => {
-        if (e.target === backdrop) closePopup();
-      });
+  // La pop-up s'affiche STRICTEMENT UNIQUEMENT sur le bouton "Fermeture exceptionnelle"
+  if (APP_SETTINGS.status === 'closed-exceptional') {
+    if (msgEl) {
+      const rawMsg = APP_SETTINGS.exceptionalMessage || "Le restaurant est exceptionnellement fermé.\nMerci de votre compréhension.";
+      msgEl.innerHTML = rawMsg.replace(/\n/g, '<br>');
     }
+    backdrop.classList.add('active');
+    backdrop.setAttribute('aria-hidden', 'false');
+
+    const closePopup = () => {
+      backdrop.classList.remove('active');
+      backdrop.setAttribute('aria-hidden', 'true');
+    };
+
+    if (dismissBtn) dismissBtn.onclick = closePopup;
+    backdrop.onclick = (e) => {
+      if (e.target === backdrop) closePopup();
+    };
+  } else {
+    // Si "Ouvert normalement", aucune pop-up n'est affichée
+    backdrop.classList.remove('active');
+    backdrop.setAttribute('aria-hidden', 'true');
   }
 }
 
@@ -2296,6 +2323,23 @@ function checkClosurePopup() {
 document.getElementById('hero-order-cta')?.addEventListener('click', (e) => {
   e.preventDefault();
   selectCategoryFilter('entrees', true);
+});
+
+// ---- Hero CTA : Infos & horaires (Défilement fluide parfaitement calé en haut sous le header) ----
+document.querySelectorAll('a[href="#restaurant-info"]').forEach(link => {
+  link.addEventListener('click', (e) => {
+    e.preventDefault();
+    const target = document.getElementById('restaurant-info');
+    if (target) {
+      const headerOffset = window.innerWidth <= 768 ? 100 : 120;
+      const elementPosition = target.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    }
+  });
 });
 
 // ---- Initialization ----
