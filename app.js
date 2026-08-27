@@ -1856,22 +1856,61 @@ function renderUserOrdersHistory() {
     return;
   }
 
-  container.innerHTML = orders.map(ord => `
-    <div class="user-order-card">
-      <div style="line-height: 1.45;">
-        <div style="font-size: 13.5px; color: var(--indigo-dark); display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
-          <strong style="font-weight: 700; font-family: var(--font-heading); font-size: 14px; color: var(--indigo-dark);">${ord.id}</strong>
-          <span style="font-weight: 400; font-size: 12.5px; color: var(--text-secondary);">${ord.dateFormatted || ''}</span>
+  container.innerHTML = orders.map(ord => {
+    const itemsList = ord.items || [];
+    const itemsCount = ord.itemCount || itemsList.reduce((s, i) => s + (i.qty || 1), 0);
+    const totalFormatted = formatEuro(ord.total || 0);
+
+    return `
+      <div class="user-order-card" onclick="toggleOrderDetails(this)">
+        <div class="user-order-summary">
+          <div class="user-order-summary-left">
+            <div style="font-size: 13.5px; color: var(--indigo-dark); display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+              <strong style="font-weight: 800; font-family: var(--font-heading); font-size: 15px; color: var(--indigo-dark);">${ord.id}</strong>
+              <span style="font-weight: 500; font-size: 12.5px; color: var(--text-secondary);">${ord.dateFormatted || ''}</span>
+            </div>
+            <div style="font-size: 12.5px; color: var(--text-secondary); margin-top: 3px;">
+              ${itemsCount} article(s) · <span style="font-weight: 800; color: var(--indigo-dark);">${totalFormatted}</span>
+            </div>
+          </div>
+          <div class="user-order-summary-right">
+            <button type="button" class="btn-reorder-icon" onclick="event.stopPropagation(); reorderPreviousItems('${ord.id}')" title="Recommander cette commande" aria-label="Recommander cette commande">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 9H3.5V3.5"/>
+                <path d="M3.5 9A9 9 0 1 1 6 18.5"/>
+              </svg>
+            </button>
+          </div>
         </div>
-        <div style="font-size: 12.5px; color: var(--text-secondary); margin-top: 3px;">
-          ${ord.itemCount || (ord.items ? ord.items.reduce((s, i) => s + (i.qty || 1), 0) : 1)} article(s) · <span style="font-weight: 700; color: var(--indigo-dark);">${(ord.total || 0).toFixed(2).replace('.', ',')} €</span>
+
+        <div class="user-order-details">
+          <div class="user-order-items-list">
+            ${itemsList.map(i => `
+              <div class="user-order-item-row">
+                <span class="user-order-item-qty">${i.qty || i.totalQuantity || 1}x</span>
+                <span class="user-order-item-name">${i.code ? `[${i.code}] ` : ''}${i.name}</span>
+                <span class="user-order-item-price">${formatEuro((i.price || 0) * (i.qty || i.totalQuantity || 1))}</span>
+              </div>
+            `).join('')}
+          </div>
+          ${(ord.sauceChoice || ord.baguettesChoice) ? `
+            <div class="user-order-meta-info">
+              ${ord.sauceChoice ? `<span>Sauce : <strong>${ord.sauceChoice}</strong></span>` : ''}
+              ${(ord.sauceChoice && ord.baguettesChoice) ? ' · ' : ''}
+              ${ord.baguettesChoice ? `<span>Baguettes : <strong>${ord.baguettesChoice}</strong></span>` : ''}
+            </div>
+          ` : ''}
+          <button type="button" class="btn-reorder-full" onclick="event.stopPropagation(); reorderPreviousItems('${ord.id}')">
+            <span>Commander à nouveau</span>
+          </button>
         </div>
       </div>
-      <button class="btn-user-reorder" onclick="reorderPreviousItems('${ord.id}')">
-        Commander à nouveau
-      </button>
-    </div>
-  `).join('');
+    `;
+  }).join('');
+}
+
+function toggleOrderDetails(cardEl) {
+  cardEl.classList.toggle('expanded');
 }
 
 function reorderPreviousItems(orderId) {
