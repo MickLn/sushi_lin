@@ -2542,9 +2542,19 @@ img {
   align-items: center;
   gap: 8px;
   overflow-x: auto;
-  padding: 2px 2px 6px 2px;
+  padding: 4px 6px 8px 6px;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  /* Par défaut : bord net à gauche, découpe douce et fluide à droite */
+  mask-image: linear-gradient(to right, black calc(100% - 24px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, black calc(100% - 24px), transparent 100%);
+  transition: mask-image 0.2s ease, -webkit-mask-image 0.2s ease;
+}
+
+.cross-selling-chips-track.has-left-scroll {
+  mask-image: linear-gradient(to right, transparent 0%, black 20px, black calc(100% - 24px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 20px, black calc(100% - 24px), transparent 100%);
 }
 
 .cross-selling-chips-track::-webkit-scrollbar {

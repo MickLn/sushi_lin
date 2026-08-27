@@ -1532,6 +1532,9 @@ function renderCartCrossSelling() {
   `;
 
   const track = box.querySelector('.cross-selling-chips-track');
+  track.addEventListener('scroll', () => {
+    track.classList.toggle('has-left-scroll', track.scrollLeft > 6);
+  }, { passive: true });
   prioritized.forEach(cand => {
     const canonical = MENU_DATA.items.find(m => m.id === cand.id || m.code === cand.code || m.name.toLowerCase() === cand.name.toLowerCase()) || cand;
     const chip = document.createElement('div');
