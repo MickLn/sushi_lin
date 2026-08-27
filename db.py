@@ -316,6 +316,48 @@ def update_order_status(order_id, status):
     finally:
         conn.close()
 
+def get_monthly_bestsellers(limit=10):
+    conn = get_connection()
+    if not conn:
+        return []
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT items FROM orders
+                WHERE DATE_TRUNC('month', created_at) = DATE_TRUNC('month', NOW());
+            """)
+            rows = cur.fetchall()
+            counts = {}
+            for row in rows:
+                raw_items = row[0]
+                if isinstance(raw_items, str):
+                    try:
+                        raw_items = json.loads(raw_items)
+                    except Exception:
+                        raw_items = []
+                if isinstance(raw_items, list):
+                    for it in raw_items:
+                        if isinstance(it, dict):
+                            qty = int(it.get('qty') or it.get('quantity') or it.get('totalQuantity') or 1)
+                            key = str(it.get('id') or it.get('code') or it.get('name') or '')
+                            if key:
+                                if key not in counts:
+                                    counts[key] = {
+                                        'id': it.get('id') or '',
+                                        'code': it.get('code') or '',
+                                        'name': it.get('name') or '',
+                                        'qty': 0
+                                    }
+                                counts[key]['qty'] += qty
+            
+            sorted_items = sorted(counts.values(), key=lambda x: x['qty'], reverse=True)
+            return sorted_items[:limit]
+    except Exception as e:
+        print(f"[DB] Erreur get_monthly_bestsellers: {e}", flush=True)
+        return []
+    finally:
+        conn.close()
+
 # --- RÉSERVATIONS (RESERVATIONS) ---
 
 def get_next_daily_reservation_id():

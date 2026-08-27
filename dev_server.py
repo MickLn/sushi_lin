@@ -254,6 +254,15 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
             self.wfile.write(json.dumps({'orderId': next_id or '1'}).encode('utf-8'))
             return
 
+        # --- API : LECTURE DES BEST-SELLERS DU MOIS (PUBLIC) ---
+        if self.path.startswith('/api/bestsellers'):
+            bestsellers = db.get_monthly_bestsellers(limit=10)
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({'bestsellers': bestsellers}, ensure_ascii=False).encode('utf-8'))
+            return
+
         # --- API : LECTURE DES RÉSERVATIONS (PROTÉGÉ RGPD) ---
         if self.path.startswith('/api/reservations'):
             if not self.require_admin_auth():

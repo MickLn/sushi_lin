@@ -582,6 +582,17 @@ async function loadMenuData() {
     MENU_DATA = freshMenu;
     localStorage.setItem('sushilin_admin_menu', JSON.stringify(MENU_DATA));
 
+    // Charger les best-sellers officiels du mois depuis le serveur (PostgreSQL)
+    try {
+      const bsRes = await fetch('/api/bestsellers');
+      if (bsRes.ok) {
+        const bsData = await bsRes.json();
+        if (Array.isArray(bsData.bestsellers)) {
+          SERVER_BEST_SELLERS = bsData.bestsellers;
+        }
+      }
+    } catch (e) {}
+
     loadingState?.remove();
     
     renderCategoryNavigation();
@@ -599,63 +610,84 @@ async function loadMenuData() {
 
 // ---- State for Filtering (Entrées par défaut) ----
 let selectedCategory = 'entrees';
+let SERVER_BEST_SELLERS = [];
 
-// Helper: Calcul des Best-Sellers (Historique réel du mois en cours ou Sélection incontournable - Top 9)
+// Helper: Calcul des Best-Sellers (Synchronisé avec la base de données PostgreSQL / Panel Admin)
 function getBestSellerItems() {
   if (!MENU_DATA || !MENU_DATA.items) return [];
 
-  let orders = [];
-  try {
-    orders = JSON.parse(localStorage.getItem('sushilin_orders') || '[]');
-  } catch (e) {
-    orders = [];
+  const addedIds = new Set();
+  const resolved = [];
+
+  // 1. Priorité aux meilleures ventes officielles du mois renvoyées par le serveur (PostgreSQL)
+  if (Array.isArray(SERVER_BEST_SELLERS) && SERVER_BEST_SELLERS.length > 0) {
+    SERVER_BEST_SELLERS.forEach(s => {
+      const targetId = s.id || s.code || s.name;
+      const item = MENU_DATA.items.find(m => 
+        (s.id && m.id === s.id) || 
+        (s.code && m.code === s.code) || 
+        (s.name && m.name.toLowerCase() === s.name.toLowerCase()) ||
+        m.id === targetId || m.code === targetId
+      );
+      if (item && !addedIds.has(item.id)) {
+        resolved.push(item);
+        addedIds.add(item.id);
+      }
+    });
   }
 
-  const now = new Date();
-  const currentYear = now.getFullYear();
-  const currentMonth = now.getMonth();
-
-  // Filtrage des commandes du mois en cours uniquement
-  const monthlyOrders = orders.filter(ord => {
-    let d = null;
-    if (ord.timestamp) {
-      d = new Date(ord.timestamp);
-    } else if (ord.dateFormatted) {
-      const match = ord.dateFormatted.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-      if (match) {
-        d = new Date(parseInt(match[3], 10), parseInt(match[2], 10) - 1, parseInt(match[1], 10));
-      }
+  // 2. Fallback historique local si serveur non disponible
+  if (resolved.length === 0) {
+    let orders = [];
+    try {
+      orders = JSON.parse(localStorage.getItem('sushilin_orders') || '[]');
+    } catch (e) {
+      orders = [];
     }
-    if (!d || isNaN(d.getTime())) return false;
-    return d.getFullYear() === currentYear && d.getMonth() === currentMonth;
-  });
 
-  const counts = {};
-  monthlyOrders.forEach(ord => {
-    (ord.items || []).forEach(it => {
-      const key = String(it.id || it.code || it.name);
-      counts[key] = (counts[key] || 0) + (it.qty || it.quantity || 1);
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+
+    // Filtrage des commandes du mois en cours uniquement
+    const monthlyOrders = orders.filter(ord => {
+      let d = null;
+      if (ord.timestamp) {
+        d = new Date(ord.timestamp);
+      } else if (ord.dateFormatted) {
+        const match = ord.dateFormatted.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+        if (match) {
+          d = new Date(parseInt(match[3], 10), parseInt(match[2], 10) - 1, parseInt(match[1], 10));
+        }
+      }
+      if (!d || isNaN(d.getTime())) return false;
+      return d.getFullYear() === currentYear && d.getMonth() === currentMonth;
     });
-  });
 
-  // Top 9 incontournables par défaut
+    const counts = {};
+    monthlyOrders.forEach(ord => {
+      (ord.items || []).forEach(it => {
+        const key = String(it.id || it.code || it.name);
+        counts[key] = (counts[key] || 0) + (it.qty || it.quantity || 1);
+      });
+    });
+
+    const sortedKeys = Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
+    sortedKeys.forEach(k => {
+      const item = MENU_DATA.items.find(m => m.id === k || m.code === k || m.name.toLowerCase() === k.toLowerCase());
+      if (item && !addedIds.has(item.id)) {
+        resolved.push(item);
+        addedIds.add(item.id);
+      }
+    });
+  }
+
+  // 3. Top incontournables par défaut si moins de 9 plats
   const defaultTopIds = [
     'menus-chirashi-m1', 'makis-29', 'sushis-33', 'entrees-85',
     'desserts-ds22', 'yakitori-71', 'entrees-b11', 'menus-brochettes-a',
     'menus-poisson-v', 'entrees-1', 'entrees-b3', 'entrees-2'
   ];
-
-  const resolved = [];
-  const addedIds = new Set();
-
-  const sortedKeys = Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
-  sortedKeys.forEach(k => {
-    const item = MENU_DATA.items.find(m => m.id === k || m.code === k || m.name.toLowerCase() === k.toLowerCase());
-    if (item && !addedIds.has(item.id)) {
-      resolved.push(item);
-      addedIds.add(item.id);
-    }
-  });
 
   defaultTopIds.forEach(idOrCode => {
     const item = MENU_DATA.items.find(m => m.id === idOrCode || m.code === idOrCode);
