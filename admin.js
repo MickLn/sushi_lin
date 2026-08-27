@@ -1883,40 +1883,66 @@ function renderSingleOrderCard(order) {
 }
 
 function renderSingleReservationCard(res) {
+  let formattedDate = res.date || '';
+  if (formattedDate.match(/^(\d{4})-(\d{2})-(\d{2})$/)) {
+    const parts = formattedDate.split('-');
+    formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+  } else if (res.timestamp && !formattedDate) {
+    const d = new Date(res.timestamp);
+    if (!isNaN(d.getTime())) {
+      formattedDate = d.toLocaleDateString('fr-FR');
+    }
+  }
+
+  const custName = res.name || res.customer_name || 'Client';
+  const custPhone = res.phone || res.customer_phone || '';
+  const custEmail = res.email || res.customer_email || '';
+  const guestsCount = res.guests || res.guests_count || 2;
+  const serviceTime = res.service || res.service_time || '';
+  const notes = res.notes || res.comment || '';
+  const resIdDisplay = String(res.id || '').startsWith('#') ? res.id : `#${res.id || ''}`;
+
   return `
     <div class="admin-order-card">
       <div class="admin-order-card-header">
         <div>
-          <span class="admin-order-id">${res.name}</span>
-          <div class="admin-order-date">Réservation #${res.id}</div>
-          ${res.email ? `<div class="admin-order-email">${res.email}</div>` : ''}
+          <span class="admin-order-id">${resIdDisplay}</span>
+          <div class="admin-order-date">${formattedDate || 'Aujourd\'hui'}</div>
         </div>
-        <span style="background: rgba(76, 175, 80, 0.12); color: #2E7D32; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 800;">
-          ${res.status === 'confirmed' ? 'Confirmee' : res.status || 'Confirmee'}
+        <span style="background: rgba(76, 175, 80, 0.12); color: #2E7D32; border: 1.5px solid rgba(76, 175, 80, 0.25); padding: 4px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 800; letter-spacing: 0.3px;">
+          ${res.status === 'confirmed' ? 'Confirmée' : (res.status || 'Confirmée')}
         </span>
       </div>
 
       <div class="admin-order-info-box" style="margin-bottom: 16px;">
         <div class="admin-info-row">
-          <span class="admin-info-label">Date :</span>
-          <span class="admin-info-val" style="font-weight: 800; color: var(--indigo-dark);">${res.date}</span>
+          <span class="admin-info-label">Client :</span>
+          <span class="admin-info-val" style="font-weight: 800; color: var(--indigo-dark);">${custName}</span>
         </div>
+        ${custPhone ? `
         <div class="admin-info-row">
-          <span class="admin-info-label">Creneau :</span>
-          <span class="admin-info-val admin-info-highlight">${res.service}</span>
+          <span class="admin-info-label">Téléphone :</span>
+          <span class="admin-info-val"><a href="tel:${custPhone}" style="color: var(--indigo); font-weight: 800; text-decoration: none;">${custPhone}</a></span>
         </div>
+        ` : ''}
+        ${custEmail ? `
         <div class="admin-info-row">
+          <span class="admin-info-label">E-mail :</span>
+          <span class="admin-info-val" style="font-size: 12.5px; word-break: break-all; color: var(--text-secondary);">${custEmail}</span>
+        </div>
+        ` : ''}
+        <div class="admin-info-row">
+          <span class="admin-info-label">Créneau :</span>
+          <span class="admin-info-val admin-info-highlight">${serviceTime || '19h30'}</span>
+        </div>
+        <div class="admin-info-row admin-prefs-divider">
           <span class="admin-info-label">Couverts :</span>
-          <span class="admin-info-val" style="font-weight: 800;">${res.guests} personne(s)</span>
+          <span class="admin-info-val" style="font-weight: 800; color: var(--indigo-dark);">${guestsCount} personne${parseInt(guestsCount, 10) > 1 ? 's' : ''}</span>
         </div>
-        <div class="admin-info-row">
-          <span class="admin-info-label">Telephone :</span>
-          <span class="admin-info-val"><a href="tel:${res.phone}" style="color: var(--indigo); font-weight: 800; text-decoration: none;">${res.phone}</a></span>
-        </div>
-        ${res.notes ? `
-        <div class="admin-info-row admin-note-row" style="margin-top: 6px;">
+        ${notes ? `
+        <div class="admin-info-row admin-note-row">
           <span class="admin-info-label">Remarques :</span>
-          <span class="admin-info-val">${res.notes}</span>
+          <span class="admin-info-val admin-note-val">${notes}</span>
         </div>
         ` : ''}
       </div>
