@@ -600,7 +600,7 @@ async function loadMenuData() {
 // ---- State for Filtering (Entrées par défaut) ----
 let selectedCategory = 'entrees';
 
-// Helper: Calcul des Best-Sellers (Historique réel ou Sélection incontournable)
+// Helper: Calcul des Best-Sellers (Historique réel du mois en cours ou Sélection incontournable - Top 9)
 function getBestSellerItems() {
   if (!MENU_DATA || !MENU_DATA.items) return [];
 
@@ -611,18 +611,38 @@ function getBestSellerItems() {
     orders = [];
   }
 
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth();
+
+  // Filtrage des commandes du mois en cours uniquement
+  const monthlyOrders = orders.filter(ord => {
+    let d = null;
+    if (ord.timestamp) {
+      d = new Date(ord.timestamp);
+    } else if (ord.dateFormatted) {
+      const match = ord.dateFormatted.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+      if (match) {
+        d = new Date(parseInt(match[3], 10), parseInt(match[2], 10) - 1, parseInt(match[1], 10));
+      }
+    }
+    if (!d || isNaN(d.getTime())) return false;
+    return d.getFullYear() === currentYear && d.getMonth() === currentMonth;
+  });
+
   const counts = {};
-  orders.forEach(ord => {
+  monthlyOrders.forEach(ord => {
     (ord.items || []).forEach(it => {
       const key = String(it.id || it.code || it.name);
       counts[key] = (counts[key] || 0) + (it.qty || it.quantity || 1);
     });
   });
 
+  // Top 9 incontournables par défaut
   const defaultTopIds = [
-    'menus-poisson-m1', '29', '85', 'desserts-ds22',
-    'menus-brochette-b3', '71', '1', '2',
-    'menus-poisson-v', '33', '63', '50'
+    'menus-chirashi-m1', 'makis-29', 'sushis-33', 'entrees-85',
+    'desserts-ds22', 'yakitori-71', 'entrees-b11', 'menus-brochettes-a',
+    'menus-poisson-v', 'entrees-1', 'entrees-b3', 'entrees-2'
   ];
 
   const resolved = [];
@@ -645,7 +665,7 @@ function getBestSellerItems() {
     }
   });
 
-  return resolved.slice(0, 12);
+  return resolved.slice(0, 9);
 }
 
 // ---- Render Category Navigation (Sidebar on Desktop & Pills on Mobile) ----
@@ -826,7 +846,10 @@ function renderProductsMenu() {
     const catHeader = document.createElement('div');
     catHeader.className = 'cat-section-header';
     catHeader.innerHTML = `
-      <h2 class="cat-section-title">Les plus vendus</h2>
+      <div>
+        <h2 class="cat-section-title">Les plus vendus</h2>
+        <p class="cat-section-desc">Les plats les plus choisis du mois par nos clients</p>
+      </div>
       <span class="cat-section-count">${bestSellers.length} plats</span>
     `;
     section.appendChild(catHeader);

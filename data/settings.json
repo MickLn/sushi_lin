@@ -1,11 +1,11 @@
 {
   "status": "open",
   "exceptionalMessage": "",
-  "scheduleText": "7j/7 : 12h00 – 14h30 & 18h30 – 22h00",
+  "scheduleText": "7j/7 : 12h00 – 14h30 & 18h30 – 23h00",
   "midiStart": "12:00",
   "midiEnd": "14:30",
   "soirStart": "18:30",
-  "soirEnd": "22:00",
+  "soirEnd": "23:00",
   "maxOrdersPerSlotWeek": 5,
   "maxOrdersPerSlotWeekend": 3,
   "maxOrdersPerSlot": 5,
