@@ -937,7 +937,6 @@ function renderProductsMenu() {
     catHeader.innerHTML = `
       <div>
         <h2 class="cat-section-title">${catLabel}</h2>
-        ${cat.desc ? `<p class="cat-section-desc" style="font-size: 13.5px; color: var(--text-secondary); margin-top: 4px; font-weight: 500;">${cat.desc}</p>` : ''}
       </div>
       <span class="cat-section-count">${items.length} plat${items.length > 1 ? 's' : ''}</span>
     `;
