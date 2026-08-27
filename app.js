@@ -619,16 +619,25 @@ function getBestSellerItems() {
   const addedIds = new Set();
   const resolved = [];
 
-  // 1. Priorité aux meilleures ventes officielles du mois renvoyées par le serveur (PostgreSQL)
+  // 1. Priorité aux meilleures ventes officielles du mois renvoyées par le serveur (PostgreSQL ou fallback local)
   if (Array.isArray(SERVER_BEST_SELLERS) && SERVER_BEST_SELLERS.length > 0) {
     SERVER_BEST_SELLERS.forEach(s => {
-      const targetId = s.id || s.code || s.name;
-      const item = MENU_DATA.items.find(m => 
-        (s.id && m.id === s.id) || 
-        (s.code && m.code === s.code) || 
-        (s.name && m.name.toLowerCase() === s.name.toLowerCase()) ||
-        m.id === targetId || m.code === targetId
-      );
+      const targetId = s.id || '';
+      const targetCode = s.code || '';
+      const targetName = s.name || '';
+      const cleanSName = targetName.toLowerCase().replace(/\s*\(\d+\s*pcs?\)/gi, '').trim();
+
+      const item = MENU_DATA.items.find(m => {
+        const mLower = m.name.toLowerCase();
+        if (targetId && m.id === targetId) return true;
+        if (targetCode && m.code === targetCode) return true;
+        if (targetName && mLower === targetName.toLowerCase()) return true;
+        if (cleanSName && (mLower === cleanSName || mLower.includes(cleanSName) || cleanSName.includes(mLower))) return true;
+        if ((targetId === 'sushis-1' || cleanSName.includes('sushi saumon')) && m.id === 'sushis-33') return true;
+        if ((targetId === 'menus-m1' || cleanSName.includes('yakitori 5')) && m.id === 'menus-brochettes-d') return true;
+        return false;
+      });
+
       if (item && !addedIds.has(item.id)) {
         resolved.push(item);
         addedIds.add(item.id);
@@ -674,7 +683,15 @@ function getBestSellerItems() {
 
     const sortedKeys = Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
     sortedKeys.forEach(k => {
-      const item = MENU_DATA.items.find(m => m.id === k || m.code === k || m.name.toLowerCase() === k.toLowerCase());
+      const cleanK = k.toLowerCase().replace(/\s*\(\d+\s*pcs?\)/gi, '').trim();
+      const item = MENU_DATA.items.find(m => {
+        const mLower = m.name.toLowerCase();
+        if (m.id === k || m.code === k || mLower === k.toLowerCase() || mLower === cleanK) return true;
+        if (cleanK.length > 3 && (mLower.includes(cleanK) || cleanK.includes(mLower))) return true;
+        if ((k === 'sushis-1' || cleanK.includes('sushi saumon')) && m.id === 'sushis-33') return true;
+        if ((k === 'menus-m1' || cleanK.includes('yakitori 5')) && m.id === 'menus-brochettes-d') return true;
+        return false;
+      });
       if (item && !addedIds.has(item.id)) {
         resolved.push(item);
         addedIds.add(item.id);

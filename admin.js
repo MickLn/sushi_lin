@@ -1294,16 +1294,47 @@ async function renderStatsDashboard() {
         const lineTotal = price * qty;
         totalItemsCount += qty;
 
-        // Items map
-        const key = String(item.id || item.code || item.name);
+        // Items map avec résolution robuste et normalisation depuis ADMIN_MENU
+        let itemCode = item.code || '';
+        let itemName = item.name || 'Plat';
+        let itemCat = item.cat || '';
+        let itemId = item.id || '';
+
+        if (ADMIN_MENU && Array.isArray(ADMIN_MENU.items)) {
+          const rawLower = itemName.toLowerCase();
+          const cleanName = rawLower.replace(/\s*\(\d+\s*pcs?\)/gi, '').trim();
+
+          const found = ADMIN_MENU.items.find(m => {
+            const mLower = m.name.toLowerCase();
+            if (itemId && m.id === itemId) return true;
+            if (itemCode && m.code === itemCode) return true;
+            if (mLower === rawLower || mLower === cleanName) return true;
+            if (cleanName.length > 3 && (mLower.includes(cleanName) || cleanName.includes(mLower))) return true;
+            // Alias spécifiques pour données historiques ou tests
+            if ((itemId === 'sushis-1' || cleanName.includes('sushi saumon')) && m.id === 'sushis-33') return true;
+            if ((itemId === 'menus-m1' || cleanName.includes('yakitori 5')) && m.id === 'menus-brochettes-d') return true;
+            return false;
+          });
+
+          if (found) {
+            itemCode = found.code || itemCode;
+            itemName = found.name;
+            itemCat = found.cat || itemCat;
+            itemId = found.id;
+          }
+        }
+
+        const key = String(itemId || itemCode || itemName);
         const existing = itemsMap.get(key) || {
-          id: item.id,
-          code: item.code || '',
-          name: item.name || 'Plat',
-          cat: item.cat || '',
+          id: itemId,
+          code: itemCode,
+          name: itemName,
+          cat: itemCat,
           qty: 0,
           revenue: 0
         };
+        if (!existing.code && itemCode) existing.code = itemCode;
+        if ((existing.name === 'Plat' || existing.name.includes('(2 pcs)')) && itemName) existing.name = itemName;
         existing.qty += qty;
         existing.revenue += lineTotal;
         itemsMap.set(key, existing);
@@ -2374,10 +2405,10 @@ function clearAllOrders() {
 // Simuler une commande test en 1 clic
 function generateTestOrder() {
   const testItems = [
-    { id: 'makis-6', name: 'Maki Saumon (6 pcs)', price: 5.50, qty: 2 },
-    { id: 'sushis-1', name: 'Sushi Saumon (2 pcs)', price: 4.80, qty: 1 },
-    { id: 'menus-m1', name: 'Menu Yakitori 5 Brochettes', price: 14.50, qty: 1 },
-    { id: 'boissons-bo2', name: 'Coca Cola 33cl', price: 3.00, qty: 2 }
+    { id: 'makis-6', code: '6', name: 'Makis saumon', price: 5.50, qty: 2 },
+    { id: 'sushis-33', code: '33', name: 'Sushis saumon', price: 5.10, qty: 1 },
+    { id: 'menus-brochettes-d', code: 'D', name: 'Menu D', price: 14.50, qty: 1 },
+    { id: 'boissons-bo2', code: 'BO2', name: 'Coca Cola 33cl', price: 3.00, qty: 2 }
   ];
 
   const subtotal = testItems.reduce((acc, it) => acc + (it.price * it.qty), 0);

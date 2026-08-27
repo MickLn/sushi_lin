@@ -183,10 +183,41 @@ def get_users(limit=200):
 
 # --- COMMANDES (ORDERS) ---
 
+ORDERS_JSON_PATH = os.path.join(os.path.dirname(__file__), 'data', 'orders.json')
+
+def _load_local_orders():
+    if os.path.exists(ORDERS_JSON_PATH):
+        try:
+            with open(ORDERS_JSON_PATH, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                if isinstance(data, list):
+                    return data
+        except Exception:
+            pass
+    return []
+
+def _save_local_order(order_data):
+    try:
+        os.makedirs(os.path.dirname(ORDERS_JSON_PATH), exist_ok=True)
+        orders = _load_local_orders()
+        order_id = str(order_data.get('id', ''))
+        found_idx = next((i for i, o in enumerate(orders) if str(o.get('id', '')) == order_id), None)
+        if found_idx is not None:
+            orders[found_idx] = order_data
+        else:
+            orders.insert(0, order_data)
+        with open(ORDERS_JSON_PATH, 'w', encoding='utf-8') as f:
+            json.dump(orders, f, ensure_ascii=False, indent=2)
+        return True
+    except Exception as e:
+        print(f"[DB] Erreur save local order: {e}", flush=True)
+        return False
+
 def get_next_daily_order_id():
     conn = get_connection()
     if not conn:
-        return None
+        orders = _load_local_orders()
+        return str(len(orders) + 1)
     try:
         with conn.cursor() as cur:
             cur.execute("""
@@ -203,9 +234,10 @@ def get_next_daily_order_id():
         conn.close()
 
 def save_order(order_data):
+    _save_local_order(order_data)
     conn = get_connection()
     if not conn:
-        return False
+        return True
     try:
         customer_email = (order_data.get('customerEmail') or order_data.get('email') or '').strip().lower()
         total_amount = float(order_data.get('total', 0))
@@ -265,7 +297,7 @@ def save_order(order_data):
 def get_orders(limit=200):
     conn = get_connection()
     if not conn:
-        return []
+        return _load_local_orders()[:limit]
     try:
         import psycopg2.extras
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
@@ -297,7 +329,7 @@ def get_orders(limit=200):
             return rows
     except Exception as e:
         print(f"[DB] Erreur lecture commandes: {e}", flush=True)
-        return []
+        return _load_local_orders()[:limit]
     finally:
         conn.close()
 
@@ -317,46 +349,91 @@ def update_order_status(order_id, status):
         conn.close()
 
 def get_monthly_bestsellers(limit=10):
-    conn = get_connection()
-    if not conn:
-        return []
+    menu_items_map = {}
     try:
-        with conn.cursor() as cur:
-            cur.execute("""
-                SELECT items FROM orders
-                WHERE DATE_TRUNC('month', created_at) = DATE_TRUNC('month', NOW());
-            """)
-            rows = cur.fetchall()
-            counts = {}
-            for row in rows:
-                raw_items = row[0]
-                if isinstance(raw_items, str):
-                    try:
-                        raw_items = json.loads(raw_items)
-                    except Exception:
-                        raw_items = []
-                if isinstance(raw_items, list):
-                    for it in raw_items:
-                        if isinstance(it, dict):
-                            qty = int(it.get('qty') or it.get('quantity') or it.get('totalQuantity') or 1)
-                            key = str(it.get('id') or it.get('code') or it.get('name') or '')
-                            if key:
-                                if key not in counts:
-                                    counts[key] = {
-                                        'id': it.get('id') or '',
-                                        'code': it.get('code') or '',
-                                        'name': it.get('name') or '',
-                                        'qty': 0
-                                    }
-                                counts[key]['qty'] += qty
+        menu_path = os.path.join(os.path.dirname(__file__), 'data', 'menu.json')
+        if os.path.exists(menu_path):
+            with open(menu_path, 'r', encoding='utf-8') as mf:
+                mdata = json.load(mf)
+                for mi in mdata.get('items', []):
+                    if mi.get('id'): menu_items_map[mi['id']] = mi
+                    if mi.get('code'): menu_items_map[mi['code']] = mi
+                    if mi.get('name'): menu_items_map[mi['name'].lower()] = mi
+    except Exception:
+        pass
+
+    order_items_list = []
+    conn = get_connection()
+    if conn:
+        try:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT items FROM orders
+                    WHERE DATE_TRUNC('month', created_at) = DATE_TRUNC('month', NOW());
+                """)
+                rows = cur.fetchall()
+                for row in rows:
+                    raw = row[0]
+                    if isinstance(raw, str):
+                        try: raw = json.loads(raw)
+                        except Exception: raw = []
+                    if isinstance(raw, list):
+                        order_items_list.extend(raw)
+        except Exception as e:
+            print(f"[DB] Erreur get_monthly_bestsellers postgres: {e}", flush=True)
+        finally:
+            conn.close()
+
+    if not order_items_list:
+        local_orders = _load_local_orders()
+        for ord in local_orders:
+            its = ord.get('items', [])
+            if isinstance(its, list):
+                order_items_list.extend(its)
+
+    counts = {}
+    for it in order_items_list:
+        if isinstance(it, dict):
+            qty = int(it.get('qty') or it.get('quantity') or it.get('totalQuantity') or 1)
+            raw_id = it.get('id') or ''
+            raw_code = it.get('code') or ''
+            raw_name = it.get('name') or ''
             
-            sorted_items = sorted(counts.values(), key=lambda x: x['qty'], reverse=True)
-            return sorted_items[:limit]
-    except Exception as e:
-        print(f"[DB] Erreur get_monthly_bestsellers: {e}", flush=True)
-        return []
-    finally:
-        conn.close()
+            clean_name = raw_name.lower().replace('(2 pcs)', '').replace('(6 pcs)', '').strip()
+            canonical = (
+                menu_items_map.get(raw_id) or 
+                menu_items_map.get(raw_code) or 
+                menu_items_map.get(raw_name.lower()) or 
+                menu_items_map.get(clean_name)
+            )
+            if not canonical:
+                if raw_id == 'sushis-1' or 'sushi saumon' in clean_name:
+                    canonical = menu_items_map.get('sushis-33')
+                elif raw_id == 'menus-m1' or 'yakitori 5' in clean_name:
+                    canonical = menu_items_map.get('menus-brochettes-d')
+
+            if canonical:
+                final_id = canonical.get('id') or raw_id
+                final_code = canonical.get('code') or raw_code
+                final_name = canonical.get('name') or raw_name
+            else:
+                final_id = raw_id
+                final_code = raw_code
+                final_name = raw_name
+                
+            key = str(final_id or final_code or final_name)
+            if key:
+                if key not in counts:
+                    counts[key] = {
+                        'id': final_id,
+                        'code': final_code,
+                        'name': final_name,
+                        'qty': 0
+                    }
+                counts[key]['qty'] += qty
+
+    sorted_items = sorted(counts.values(), key=lambda x: x['qty'], reverse=True)
+    return sorted_items[:limit]
 
 # --- RÉSERVATIONS (RESERVATIONS) ---
 
