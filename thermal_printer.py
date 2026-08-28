@@ -5,8 +5,9 @@ import re
 def clean_ticket_item_name(name):
     if not name:
         return ""
-    # Nettoyage intelligent : supprime le contenu entre parenthèses pour gagner de la place (ex: "Takoyaki (beignets de poulpe)" -> "Takoyaki")
-    name = re.sub(r'\(.*?\)', '', str(name))
+    # Nettoyage intelligent : supprime le contenu entre parenthèses et normalise Temaki
+    name = str(name).replace('Témaki', 'Temaki').replace('témaki', 'temaki')
+    name = re.sub(r'\(.*?\)', '', name)
     name = re.sub(r'\s+', ' ', name).strip()
     return name
 
