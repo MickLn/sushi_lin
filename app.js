@@ -554,25 +554,32 @@ async function loadMenuData() {
           freshMenu.items = freshMenu.items.map(item => {
             const override = overrideMap.get(item.id);
             if (override) {
+              const rawName = override.name || item.name || '';
+              const cleanName = rawName.replace(/Témaki/g, 'Temaki').replace(/témaki/g, 'temaki');
               return {
                 ...item,
                 code: override.code !== undefined ? override.code : item.code,
-                name: override.name || item.name,
+                name: cleanName,
                 price: typeof override.price === 'number' ? override.price : item.price,
                 available: typeof override.available === 'boolean' ? override.available : item.available,
                 pieces: override.pieces !== undefined ? override.pieces : item.pieces,
-                desc: item.desc || override.desc || '',
+                desc: (item.desc || override.desc || '').replace(/Témaki/g, 'Temaki').replace(/témaki/g, 'temaki'),
                 allergens: item.allergens !== undefined ? item.allergens : (override.allergens || []),
                 unavailableFlavors: Array.isArray(override.unavailableFlavors) ? override.unavailableFlavors : (item.unavailableFlavors || []),
                 img: item.img || override.img,
-                cat: item.cat || override.cat
+                cat: (item.cat || override.cat || '').replace(/Témaki/g, 'Temaki').replace(/témaki/g, 'temaki'),
+                subcatName: (item.subcatName || override.subcatName || '').replace(/Témaki/g, 'Temaki').replace(/témaki/g, 'temaki')
               };
             }
             return item;
           });
 
           // 2. Conserver les nouveaux plats personnalisés créés dans l'admin
-          const customItems = parsed.items.filter(i => !canonicalIds.has(i.id));
+          const customItems = parsed.items.filter(i => !canonicalIds.has(i.id)).map(i => ({
+            ...i,
+            name: (i.name || '').replace(/Témaki/g, 'Temaki').replace(/témaki/g, 'temaki'),
+            subcatName: (i.subcatName || '').replace(/Témaki/g, 'Temaki').replace(/témaki/g, 'temaki')
+          }));
           if (customItems.length > 0) {
             freshMenu.items = [...freshMenu.items, ...customItems];
           }
@@ -580,6 +587,13 @@ async function loadMenuData() {
       } catch (e) {
         console.error('Erreur fusion sushilin_admin_menu:', e);
       }
+    }
+    if (freshMenu && Array.isArray(freshMenu.categories)) {
+      freshMenu.categories = freshMenu.categories.map(c => ({
+        ...c,
+        name: (c.name || '').replace(/Témaki/g, 'Temaki').replace(/témaki/g, 'temaki'),
+        desc: (c.desc || '').replace(/Témaki/g, 'Temaki').replace(/témaki/g, 'temaki')
+      }));
     }
     MENU_DATA = freshMenu;
     localStorage.setItem('sushilin_admin_menu', JSON.stringify(MENU_DATA));

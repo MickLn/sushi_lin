@@ -76,7 +76,7 @@ CAT_META = {
     "EGG-MAKI": {"id": "egg-maki", "name": "Egg Makis", "desc": "Rouleaux enveloppés d'une fine omelette japonaise dorée"},
     "NEIGE-MAKI": {"id": "neige-maki", "name": "Neige Makis", "desc": "Makis délicatement saupoudrés de fromage ou sésame blanc"},
     "PRINTEMPS-MAKI": {"id": "printemps-maki", "name": "Printemps Makis", "desc": "Feuille de riz translucide garnie de menthe fraîche et légumes croquants"},
-    "TEMAKI": {"id": "temaki", "name": "Témakis", "desc": "Cônes d'algue croustillante préparés minute"},
+    "TEMAKI": {"id": "temaki", "name": "Temakis", "desc": "Cônes d'algue croustillante préparés minute"},
     "SASHIMI": {"id": "sashimi", "name": "Sashimis", "desc": "Découpes nobles de poissons crus de qualité supérieure"},
     "YAKITORI": {"id": "yakitori", "name": "Brochettes Yakitori", "desc": "Brochettes japonaises grillées à la flamme et laquées de sauce tare"},
     "MAKI-SPECIAL": {"id": "maki-special", "name": "Makis Spéciaux", "desc": "Créations signature du chef avec garnitures généreuses"},
