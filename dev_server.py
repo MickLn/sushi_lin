@@ -3,9 +3,11 @@ import re
 import json
 import ssl
 import html
+import time
 import traceback
 import urllib.request
 import urllib.error
+from urllib.parse import urlparse, parse_qs
 from http.server import SimpleHTTPRequestHandler, HTTPServer
 
 import db
@@ -15,6 +17,17 @@ PORT = 3000
 ENV_FILE = os.path.join(os.path.dirname(__file__), '.env')
 
 _MENU_CODE_MAP = None
+_PUBLIC_SUBMISSIONS = {}
+
+def is_public_rate_limited(ip, max_requests=15, window_sec=60):
+    now = time.time()
+    reqs = _PUBLIC_SUBMISSIONS.get(ip, [])
+    recent = [t for t in reqs if now - t < window_sec]
+    _PUBLIC_SUBMISSIONS[ip] = recent
+    if len(recent) >= max_requests:
+        return True
+    _PUBLIC_SUBMISSIONS[ip].append(now)
+    return False
 
 def get_menu_code_map():
     global _MENU_CODE_MAP
@@ -142,7 +155,8 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
     def require_admin_auth(self):
         # Authentification par clé d'agent d'impression sécurisée
         printer_key = self.headers.get('X-Printer-Key', '')
-        if printer_key and printer_key == 'sushilin_secret_printer_2026':
+        expected_printer_key = os.environ.get('PRINTER_SECRET_KEY') or 'sushilin_secret_printer_2026'
+        if printer_key and printer_key == expected_printer_key:
             return True
 
         token = self.get_admin_token()
@@ -167,7 +181,7 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
         # CORS & Cache control
         self.send_header('Access-Control-Allow-Origin', '*')
         self.send_header('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Admin-Token')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Admin-Token, X-Printer-Key')
         self.send_header('Cache-Control', 'no-cache, no-store, must-revalidate')
         self.send_header('Pragma', 'no-cache')
         self.send_header('Expires', '0')
@@ -178,6 +192,27 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
+        # --- PROTECTION ANTI-FUITE : BLOCAGE DES FICHIERS SENSIBLES ET CACHÉS ---
+        clean_path = urlparse(self.path).path
+        forbidden_patterns = [
+            r'(?:^|/)\.',           # Fichiers ou dossiers cachés (.env, .git, .admin_auth.json, etc.)
+            r'\.env',               # Fichiers .env
+            r'\.py$',               # Fichiers sources backend
+            r'\.pyc$',              # Fichiers compilés
+            r'\.sql$',              # Schémas et scripts SQL
+            r'\.ya?ml$',            # Configurations docker-compose / pipelines
+            r'Dockerfile',          # Configuration du conteneur
+            r'\.sh$', r'\.bat$', r'\.command$', r'\.zip$',
+            r'/db/',                # Répertoire de scripts BDD
+            r'__pycache__'
+        ]
+        if any(re.search(pat, clean_path, re.IGNORECASE) for pat in forbidden_patterns):
+            self.send_response(404)
+            self.send_header('Content-Type', 'text/plain; charset=utf-8')
+            self.end_headers()
+            self.wfile.write(b"404 Not Found")
+            return
+
         # --- API : VÉRIFICATION DE SESSION ADMIN ---
         if self.path.startswith('/api/auth/verify'):
             token = self.get_admin_token()
@@ -580,6 +615,14 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
 
         # --- ENDPOINT 1 : ENREGISTREMENT POSTGRESQL & ENVOI EMAIL COMMANDE ---
         if self.path in ('/api/send-order-email', '/api/orders'):
+            client_ip = self.get_client_ip()
+            if is_public_rate_limited(client_ip, max_requests=15, window_sec=60):
+                self.send_response(429)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({'error': 'Trop de requêtes. Veuillez patienter une minute avant de réessayer.'}).encode('utf-8'))
+                return
+
             try:
                 data = json.loads(body)
                 requested_email = str(data.get('toEmail', '') or data.get('customerEmail', '')).strip()
@@ -812,6 +855,14 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
 
         # --- ENDPOINT 2 : ENREGISTREMENT POSTGRESQL & ENVOI EMAIL RÉSERVATION ---
         if self.path in ('/api/send-reservation-email', '/api/reservations'):
+            client_ip = self.get_client_ip()
+            if is_public_rate_limited(client_ip, max_requests=15, window_sec=60):
+                self.send_response(429)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({'error': 'Trop de requêtes. Veuillez patienter une minute avant de réessayer.'}).encode('utf-8'))
+                return
+
             try:
                 data = json.loads(body)
                 requested_email = str(data.get('toEmail', '') or data.get('email', '')).strip()

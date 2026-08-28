@@ -755,15 +755,15 @@ function renderCategoryNavigation() {
     allLink.addEventListener('click', () => selectCategoryFilter('all'));
     sidebarCatList.appendChild(allLink);
 
-    // Sidebar Option "Les plus vendus"
+    // Sidebar Option "Les plus aimés"
     const bsLink = document.createElement('button');
     bsLink.className = `sidebar-link ${selectedCategory === 'bestsellers' ? 'active' : ''}`;
     bsLink.id = 'sidebar-link-bestsellers';
     bsLink.dataset.cat = 'bestsellers';
     bsLink.innerHTML = `
       <span style="display: flex; align-items: center; gap: 7px;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="color: var(--primary);"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-        Les plus vendus
+        Les plus aimés
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" style="color: var(--primary);"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
       </span>
       <span class="sidebar-count">${bestSellers.length}</span>
     `;
@@ -771,7 +771,7 @@ function renderCategoryNavigation() {
     sidebarCatList.appendChild(bsLink);
   }
 
-  // 2. Mobile Pill "Tous les plats" & "Les plus vendus"
+  // 2. Mobile Pill "Tous les plats" & "Les plus aimés"
   if (mobileCatNavInner) {
     const allPill = document.createElement('button');
     allPill.className = `cat-pill ${selectedCategory === 'all' ? 'active' : ''}`;
@@ -785,8 +785,8 @@ function renderCategoryNavigation() {
     bsPill.id = 'mobile-cat-pill-bestsellers';
     bsPill.dataset.cat = 'bestsellers';
     bsPill.innerHTML = `
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="margin-right: 4px; vertical-align: -1px; color: var(--primary);"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-      Les plus vendus
+      <span>Les plus aimés</span>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" style="margin-left: 5px; vertical-align: -1px; color: var(--primary);"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
     `;
     bsPill.addEventListener('click', () => selectCategoryFilter('bestsellers'));
     mobileCatNavInner.appendChild(bsPill);
@@ -912,8 +912,8 @@ function renderProductsMenu() {
     catHeader.className = 'cat-section-header';
     catHeader.innerHTML = `
       <div>
-        <h2 class="cat-section-title">Les plus vendus</h2>
-        <p class="cat-section-desc">Les plats les plus choisis du mois par nos clients</p>
+        <h2 class="cat-section-title">Les plus aimés</h2>
+        <p class="cat-section-desc">Les plats les plus choisis par nos clients</p>
       </div>
       <span class="cat-section-count">${bestSellers.length} plats</span>
     `;

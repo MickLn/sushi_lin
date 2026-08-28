@@ -2708,9 +2708,47 @@ img {
   flex-shrink: 0;
 }
 
-/* Bouton Masquer / Afficher les options (Mobile) */
+/* Bouton Masquer / Afficher les options (Desktop & Mobile) */
 .btn-toggle-options {
-  display: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 42px;
+  height: 28px;
+  background: #FFFFFF;
+  border: 1.5px solid var(--sakura-border-strong);
+  border-radius: 14px;
+  color: var(--indigo-dark);
+  cursor: pointer;
+  z-index: 20;
+  box-shadow: 0 2px 8px rgba(39, 47, 97, 0.14);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 0;
+}
+
+.btn-toggle-options:hover,
+.btn-toggle-options:active {
+  background: var(--sakura-bg-soft);
+  border-color: var(--sakura-vibrant);
+  color: var(--sakura-vibrant);
+  transform: translateX(-50%) translateY(-1px);
+}
+
+.toggle-options-chevron {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+}
+
+.btn-toggle-options.is-collapsed .toggle-options-chevron {
+  transform: rotate(180deg);
+}
+
+.order-customization.is-collapsed {
+  display: none !important;
 }
 
 .order-customization {
@@ -3622,47 +3660,7 @@ img {
     padding: 18px 18px calc(16px + var(--safe-bottom));
   }
 
-  .btn-toggle-options {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    position: absolute;
-    top: -14px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 42px;
-    height: 28px;
-    background: #FFFFFF;
-    border: 1.5px solid var(--sakura-border-strong);
-    border-radius: 14px;
-    color: var(--indigo-dark);
-    cursor: pointer;
-    z-index: 20;
-    box-shadow: 0 2px 8px rgba(39, 47, 97, 0.14);
-    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-    padding: 0;
-  }
 
-  .btn-toggle-options:active,
-  .btn-toggle-options:hover {
-    background: var(--sakura-bg-soft);
-    border-color: var(--sakura-vibrant);
-    color: var(--sakura-vibrant);
-  }
-
-  .toggle-options-chevron {
-    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-    flex-shrink: 0;
-  }
-
-  .btn-toggle-options.is-collapsed .toggle-options-chevron {
-    transform: rotate(180deg);
-  }
-
-  .order-customization.is-collapsed {
-    display: none !important;
-  }
-}
 
 /* --- CTA CONFIRMER MA RÉSERVATION (Design identique à Valider la commande / Voir le panier) --- */
 .btn-submit-reservation {
