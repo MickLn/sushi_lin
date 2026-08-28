@@ -368,6 +368,10 @@ function renderAllAdminUI() {
 
   // Populate Settings fields
   populateSettingsFields();
+
+  // Populate POS Phone tab
+  if (typeof renderPosCategories === 'function') renderPosCategories();
+  if (typeof renderPosProducts === 'function') renderPosProducts();
 }
 
 function renderCategoryOptions() {
@@ -1084,6 +1088,8 @@ function switchAdminTab(tabName) {
 
   if (tabName === 'orders') {
     renderAdminOrders();
+  } else if (tabName === 'pos-phone') {
+    initPosPhoneTab();
   } else if (tabName === 'stats') {
     renderStatsDashboard();
   } else if (tabName === 'reservations') {
@@ -2481,3 +2487,655 @@ function clearAllReservations() {
   updateAdminBadges();
   showToast("Historique des réservations réinitialisé !");
 }
+
+// ==========================================================================
+// POS CAISSE : PRISE DE COMMANDE TÉLÉPHONE
+// ==========================================================================
+let posPhoneCart = [];
+let currentPosCategory = 'all';
+let currentPosSearch = '';
+let selectedPosSauce = 'Salée + Sucrée';
+let selectedPosCartIndex = -1;
+
+function formatEuro(num) {
+  const val = typeof num === 'number' && !isNaN(num) ? num : parseFloat(num) || 0;
+  return val.toFixed(2).replace('.', ',') + ' €';
+}
+
+function initPosPhoneTab() {
+  currentPosCategory = 'all';
+  renderPosCategories();
+  renderPosProducts();
+  renderPosCart();
+  setTimeout(() => {
+    const searchInput = document.getElementById('pos-search-input');
+    if (searchInput) {
+      searchInput.focus();
+      searchInput.select();
+    }
+  }, 60);
+}
+
+function getPosMenuProducts() {
+  if (ADMIN_MENU && Array.isArray(ADMIN_MENU.items) && ADMIN_MENU.items.length > 0) {
+    return ADMIN_MENU.items;
+  }
+  const saved = localStorage.getItem('sushilin_admin_menu');
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      if (parsed && Array.isArray(parsed.items) && parsed.items.length > 0) {
+        return parsed.items;
+      }
+    } catch (e) {}
+  }
+  return [];
+}
+
+function renderPosCategories() {
+  const container = document.getElementById('pos-categories-bar');
+  if (!container) return;
+
+  const categories = [
+    { id: 'all', name: 'Tout le menu' },
+    { id: 'menus', name: 'Menus' },
+    { id: 'chirashi', name: 'Chirashis' },
+    { id: 'sushis', name: 'Sushis' },
+    { id: 'makis', name: 'Makis & Rolls' },
+    { id: 'california', name: 'California' },
+    { id: 'sashimi', name: 'Sashimis' },
+    { id: 'yakitori', name: 'Brochettes' },
+    { id: 'entrees', name: 'Plats & Entrées' },
+    { id: 'boissons', name: 'Boissons' },
+    { id: 'desserts', name: 'Desserts' }
+  ];
+
+  container.innerHTML = categories.map(cat => `
+    <button type="button" class="pos-cat-pill ${currentPosCategory === cat.id ? 'active' : ''}" data-cat="${cat.id}" onclick="setPosCategory('${cat.id}')">
+      ${cat.name}
+    </button>
+  `).join('');
+
+  updatePosCategoriesScrollIndicators();
+  if (!container.dataset.hasScrollListener) {
+    container.addEventListener('scroll', updatePosCategoriesScrollIndicators);
+    container.dataset.hasScrollListener = 'true';
+  }
+}
+
+function updatePosCategoriesScrollIndicators() {
+  const wrapper = document.querySelector('.pos-categories-wrapper');
+  const bar = document.getElementById('pos-categories-bar');
+  if (!wrapper || !bar) return;
+
+  const maxScroll = bar.scrollWidth - bar.clientWidth;
+  if (maxScroll <= 2) {
+    wrapper.classList.remove('has-scroll-left', 'has-scroll-right');
+    return;
+  }
+
+  wrapper.classList.toggle('has-scroll-left', bar.scrollLeft > 4);
+  wrapper.classList.toggle('has-scroll-right', bar.scrollLeft < maxScroll - 4);
+}
+
+function setPosCategory(catId) {
+  currentPosCategory = catId;
+  renderPosCategories();
+  renderPosProducts();
+  const activeBtn = document.querySelector(`.pos-cat-pill[data-cat="${catId}"]`);
+  if (activeBtn) {
+    activeBtn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+  }
+}
+
+function handlePosSearch(val) {
+  currentPosSearch = (val || '').trim().toLowerCase();
+  const clearBtn = document.getElementById('btn-pos-clear-search');
+  if (clearBtn) {
+    clearBtn.style.display = currentPosSearch ? 'flex' : 'none';
+  }
+  renderPosProducts();
+}
+
+function handlePosSearchKeyDown(event) {
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    const query = (event.target.value || '').trim();
+    if (!query) return;
+
+    const cleanQ = query.replace(/[\[\]]/g, '').trim().toLowerCase();
+    const allItems = getPosMenuProducts().filter(i => i.available !== false);
+
+    // 1. Recherche exacte sur le code (ex: "66", "b9", "bi1", "1")
+    let found = allItems.find(i => {
+      const c = String(i.code || '').replace(/[\[\]]/g, '').trim().toLowerCase();
+      return c === cleanQ;
+    });
+
+    // 2. Recherche code commençant par la saisie
+    if (!found) {
+      found = allItems.find(i => {
+        const c = String(i.code || '').replace(/[\[\]]/g, '').trim().toLowerCase();
+        return c && c.startsWith(cleanQ);
+      });
+    }
+
+    // 3. Recherche par nom
+    if (!found) {
+      found = allItems.find(i => String(i.name || '').toLowerCase().includes(cleanQ));
+    }
+
+    if (found) {
+      addPosItemToCart(found.id);
+      showToast(`+1 [${found.code || ''}] ${found.name}`);
+      clearPosSearch();
+    } else {
+      showToast(`Aucun plat trouvé pour le code "${query}"`);
+    }
+  }
+}
+
+function clearPosSearch() {
+  currentPosSearch = '';
+  const input = document.getElementById('pos-search-input');
+  if (input) {
+    input.value = '';
+    input.focus();
+  }
+  const clearBtn = document.getElementById('btn-pos-clear-search');
+  if (clearBtn) clearBtn.style.display = 'none';
+  renderPosProducts();
+}
+
+function renderPosProducts() {
+  const grid = document.getElementById('pos-products-grid');
+  if (!grid) return;
+
+  const allItems = getPosMenuProducts();
+  const cartQtyMap = new Map();
+  posPhoneCart.forEach(item => {
+    cartQtyMap.set(item.id, (cartQtyMap.get(item.id) || 0) + item.qty);
+  });
+
+  const filtered = allItems.filter(item => {
+    if (item.available === false) return false;
+
+    // Si une recherche est en cours, recherche globale dans tout le menu
+    if (currentPosSearch) {
+      const cleanQ = currentPosSearch.replace(/[\[\]]/g, '').trim().toLowerCase();
+      const code = String(item.code || '').replace(/[\[\]]/g, '').trim().toLowerCase();
+      const name = String(item.name || '').toLowerCase();
+      const matchCode = code === cleanQ || code.startsWith(cleanQ) || code.includes(cleanQ);
+      const matchName = name.includes(cleanQ);
+      return matchCode || matchName;
+    }
+
+    // Filtre catégorie
+    if (currentPosCategory !== 'all') {
+      const itemCat = String(item.cat || '').toLowerCase();
+      const itemName = String(item.name || '').toLowerCase();
+
+      if (currentPosCategory === 'chirashi') {
+        if (!itemName.includes('chirashi') && !itemCat.includes('chirashi')) return false;
+      } else if (currentPosCategory === 'menus') {
+        if (!itemCat.includes('menu') || itemName.includes('chirashi')) return false;
+      } else if (currentPosCategory === 'sushis') {
+        if (!itemCat.includes('sushi')) return false;
+      } else if (currentPosCategory === 'makis') {
+        if (!itemCat.includes('maki') && !itemCat.includes('temaki')) return false;
+      } else if (currentPosCategory === 'california') {
+        if (!itemName.includes('california') && !itemName.includes('roll') && !itemName.includes('spring') && !itemName.includes('crunchy') && !itemName.includes('neige') && !itemName.includes('egg')) return false;
+      } else if (currentPosCategory === 'sashimi') {
+        if (!itemCat.includes('sashimi')) return false;
+      } else if (currentPosCategory === 'yakitori') {
+        if (!itemCat.includes('yakitori') && !itemCat.includes('brochette')) return false;
+      } else if (currentPosCategory === 'entrees') {
+        if (!itemCat.includes('entree') && !itemCat.includes('chaud') && !itemCat.includes('plat') && !itemCat.includes('soupe') && !itemCat.includes('salade') && !itemCat.includes('riz')) return false;
+      } else if (currentPosCategory === 'boissons') {
+        if (!itemCat.includes('boisson')) return false;
+      } else if (currentPosCategory === 'desserts') {
+        if (!itemCat.includes('dessert')) return false;
+      }
+    }
+
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `
+      <div style="grid-column: 1 / -1; padding: 30px; text-align: center; color: var(--text-muted);">
+        <p style="font-size: 14px; font-weight: 600;">Aucun plat trouvé pour "${currentPosSearch || currentPosCategory}"</p>
+      </div>
+    `;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(item => {
+    const inCartQty = cartQtyMap.get(item.id) || 0;
+    const priceStr = formatEuro(item.price || 0);
+    const codeTag = item.code ? `<span class="pos-card-code-badge">[${item.code}]</span>` : '';
+    const qtyBadge = inCartQty > 0 ? `<span class="pos-card-qty-badge">${inCartQty}</span>` : '';
+    const imgUrl = item.img ? (item.img.startsWith('http') || item.img.startsWith('/') ? item.img : item.img) : 'img/products/placeholder.jpg';
+
+    return `
+      <div class="pos-product-card" onclick="addPosItemToCart('${item.id}')" title="Cliquer pour ajouter ${item.name}">
+        ${codeTag}
+        ${qtyBadge}
+        <img src="${imgUrl}" alt="${item.name}" class="pos-card-thumb" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'60\\' height=\\'60\\' viewBox=\\'0 0 24 24\\'%3E%3Crect width=\\'100%25\\' height=\\'100%25\\' fill=\\'%23F1E5E8\\'/ %3E%3C/svg%3E'">
+        <div class="pos-card-name">${item.name}</div>
+        <div class="pos-card-price">${priceStr}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function isPosTakeawayDiscountEligible(item) {
+  const code = String(item.code || '').toUpperCase().trim();
+  const name = String(item.name || '').toLowerCase().trim();
+  const cat = String(item.cat || '').toLowerCase().trim();
+  if (code.startsWith('D') && /^\d+$/.test(code.slice(1))) return false;
+  if (code.startsWith('DS')) return false;
+  if (cat.includes('boisson') || cat.includes('dessert')) return false;
+  const excluded = ['coca', 'eau', 'evian', 'san pellegrino', 'biere', 'vin', 'tsingtao', 'asahi', 'kirin', 'mochi', 'dorayaki', 'lychee', 'mystere', 'perle de coco', 'fondant', 'dessert', 'boisson'];
+  if (excluded.some(ex => name.includes(ex))) return false;
+  return true;
+}
+
+function addPosItemToCart(itemId) {
+  const allItems = getPosMenuProducts();
+  const found = allItems.find(i => i.id === itemId);
+  if (!found) return;
+
+  const existingIdx = posPhoneCart.findIndex(i => i.id === itemId);
+  if (existingIdx >= 0) {
+    posPhoneCart[existingIdx].qty += 1;
+    selectedPosCartIndex = existingIdx;
+  } else {
+    posPhoneCart.push({
+      id: found.id,
+      code: found.code || '',
+      name: found.name,
+      price: found.price || 0,
+      qty: 1,
+      cat: found.cat || ''
+    });
+    selectedPosCartIndex = posPhoneCart.length - 1;
+  }
+
+  updatePosCartBadge();
+  renderPosCart();
+  renderPosProducts();
+  scrollPosCartToBottom();
+}
+
+function scrollPosCartToBottom() {
+  setTimeout(() => {
+    const list = document.getElementById('pos-cart-items-list');
+    if (list) {
+      list.scrollTo({ top: list.scrollHeight, behavior: 'smooth' });
+    }
+  }, 30);
+}
+
+function updatePosItemQty(index, delta) {
+  if (!posPhoneCart[index]) return;
+  posPhoneCart[index].qty += delta;
+  if (posPhoneCart[index].qty <= 0) {
+    posPhoneCart.splice(index, 1);
+    if (selectedPosCartIndex >= posPhoneCart.length) {
+      selectedPosCartIndex = posPhoneCart.length - 1;
+    }
+  } else {
+    selectedPosCartIndex = index;
+  }
+  updatePosCartBadge();
+  renderPosCart();
+  renderPosProducts();
+}
+
+function removePosItem(index) {
+  if (!posPhoneCart[index]) return;
+  posPhoneCart.splice(index, 1);
+  if (selectedPosCartIndex >= posPhoneCart.length) {
+    selectedPosCartIndex = posPhoneCart.length - 1;
+  }
+  updatePosCartBadge();
+  renderPosCart();
+  renderPosProducts();
+}
+
+function selectPosCartRow(idx) {
+  if (idx >= 0 && idx < posPhoneCart.length) {
+    selectedPosCartIndex = idx;
+  } else {
+    selectedPosCartIndex = -1;
+  }
+  uncheckPosPrintBtn();
+  renderPosCart();
+}
+
+function focusSelectedCartRow() {
+  uncheckPosPrintBtn();
+  if (selectedPosCartIndex >= 0 && selectedPosCartIndex < posPhoneCart.length) {
+    const row = document.querySelector(`.pos-cart-item-row[data-idx="${selectedPosCartIndex}"]`);
+    if (row) {
+      row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+  }
+}
+
+function focusPosPrintBtn() {
+  selectedPosCartIndex = 'print';
+  renderPosCart();
+  const printBtn = document.getElementById('btn-pos-print');
+  if (printBtn) {
+    printBtn.classList.add('focused');
+    printBtn.focus();
+  }
+}
+
+function uncheckPosPrintBtn() {
+  const printBtn = document.getElementById('btn-pos-print');
+  if (printBtn) {
+    printBtn.classList.remove('focused');
+    printBtn.blur();
+  }
+}
+
+function updatePosCartBadge() {
+  const countSpan = document.getElementById('pos-cart-items-count');
+  const totalQty = posPhoneCart.reduce((sum, i) => sum + i.qty, 0);
+  if (countSpan) {
+    countSpan.textContent = totalQty;
+  }
+}
+
+function renderPosCart() {
+  const listContainer = document.getElementById('pos-cart-items-list');
+  const subtotalElem = document.getElementById('pos-subtotal-display');
+  const discountLine = document.getElementById('pos-discount-line');
+  const discountElem = document.getElementById('pos-discount-display');
+  const totalElem = document.getElementById('pos-total-display');
+
+  if (!listContainer) return;
+
+  if (selectedPosCartIndex !== 'print') {
+    uncheckPosPrintBtn();
+  }
+
+  if (posPhoneCart.length === 0) {
+    if (selectedPosCartIndex !== 'print') selectedPosCartIndex = -1;
+    listContainer.innerHTML = `
+      <div class="pos-cart-empty">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <p>Cliquez sur un plat à gauche ou tapez un code pour commander.</p>
+      </div>
+    `;
+    if (subtotalElem) subtotalElem.textContent = '0,00 €';
+    if (discountLine) discountLine.style.display = 'none';
+    if (totalElem) totalElem.textContent = '0,00 €';
+    return;
+  }
+
+  let subtotal = 0;
+  let discountEligibleTotal = 0;
+
+  listContainer.innerHTML = posPhoneCart.map((item, idx) => {
+    const lineTotal = item.price * item.qty;
+    subtotal += lineTotal;
+    if (isPosTakeawayDiscountEligible(item)) {
+      discountEligibleTotal += lineTotal;
+    }
+
+    const codeBadge = item.code ? `<span class="pos-cart-item-code">[${item.code}]</span>` : '';
+    const isSelected = idx === selectedPosCartIndex;
+
+    return `
+      <div class="pos-cart-item-row ${isSelected ? 'selected' : ''}" data-idx="${idx}" onclick="selectPosCartRow(${idx})">
+        <div class="pos-cart-item-info">
+          <div class="pos-cart-item-name">${codeBadge}${item.name}</div>
+          <div class="pos-cart-item-price">${formatEuro(item.price)} / unité</div>
+        </div>
+        <div class="pos-cart-item-actions" onclick="event.stopPropagation()">
+          <button type="button" class="btn-pos-qty" onclick="updatePosItemQty(${idx}, -1)">–</button>
+          <span class="pos-cart-qty-num">${item.qty}</span>
+          <button type="button" class="btn-pos-qty" onclick="updatePosItemQty(${idx}, 1)">+</button>
+          <div class="pos-cart-item-total">${formatEuro(lineTotal)}</div>
+          <button type="button" class="btn-pos-item-del" onclick="removePosItem(${idx})" title="Supprimer (Suppr)">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  const discount = Math.round(discountEligibleTotal * 0.10 * 100) / 100;
+  const finalTotal = Math.max(0, subtotal - discount);
+
+  if (subtotalElem) subtotalElem.textContent = formatEuro(subtotal);
+  if (discountLine) {
+    if (discount > 0) {
+      discountLine.style.display = 'flex';
+      if (discountElem) discountElem.textContent = `-${formatEuro(discount)}`;
+    } else {
+      discountLine.style.display = 'none';
+    }
+  }
+  if (totalElem) totalElem.textContent = formatEuro(finalTotal);
+}
+
+function selectPosSauce(btn) {
+  document.querySelectorAll('#pos-sauce-group .pos-option-pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedPosSauce = btn.getAttribute('data-val') || 'Salée + Sucrée';
+}
+
+function resetPosPhoneCart() {
+  posPhoneCart = [];
+  selectedPosCartIndex = -1;
+  uncheckPosPrintBtn();
+  const nameInput = document.getElementById('pos-customer-name');
+  if (nameInput) nameInput.value = '';
+
+  // Reset sauces to default
+  const defaultSauce = document.querySelector('#pos-sauce-group .pos-option-pill[data-val="Salée + Sucrée"]');
+  if (defaultSauce) selectPosSauce(defaultSauce);
+
+  updatePosCartBadge();
+  renderPosCart();
+  renderPosProducts();
+  setTimeout(() => {
+    const searchInput = document.getElementById('pos-search-input');
+    if (searchInput) searchInput.focus();
+  }, 50);
+}
+
+function getNextPosPhoneOrderNumber() {
+  const today = new Date().toISOString().slice(0, 10);
+  try {
+    const raw = localStorage.getItem('sushilin_daily_pos_counter');
+    let nextNum = 1;
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed.date === today && typeof parsed.count === 'number') {
+        nextNum = parsed.count + 1;
+      }
+    }
+    localStorage.setItem('sushilin_daily_pos_counter', JSON.stringify({ date: today, count: nextNum }));
+    return `TEL-${nextNum}`;
+  } catch {
+    return `TEL-${Math.floor(100 + Math.random() * 900)}`;
+  }
+}
+
+async function submitPosPhoneOrder() {
+  if (posPhoneCart.length === 0) {
+    showToast('Veuillez ajouter au moins un plat à la commande.');
+    return;
+  }
+
+  const nameInput = document.getElementById('pos-customer-name');
+  const custName = nameInput && nameInput.value.trim() ? nameInput.value.trim() : 'Client à emporter';
+
+  let subtotal = 0;
+  let discountEligibleTotal = 0;
+  posPhoneCart.forEach(it => {
+    const line = it.price * it.qty;
+    subtotal += line;
+    if (isPosTakeawayDiscountEligible(it)) {
+      discountEligibleTotal += line;
+    }
+  });
+  const discount = Math.round(discountEligibleTotal * 0.10 * 100) / 100;
+  const total = Math.max(0, subtotal - discount);
+
+  const orderId = getNextPosPhoneOrderNumber();
+  const dateFormatted = new Date().toLocaleDateString('fr-FR');
+
+  const orderPayload = {
+    id: orderId,
+    source: 'telephone',
+    type: 'telephone',
+    customerName: custName,
+    sauceChoice: selectedPosSauce,
+    items: posPhoneCart.map(it => ({
+      id: it.id,
+      code: it.code || '',
+      name: it.name,
+      qty: it.qty,
+      price: it.price,
+      totalPrice: it.price * it.qty
+    })),
+    subtotal: subtotal,
+    discount: discount,
+    total: total,
+    dateFormatted: dateFormatted
+  };
+
+  const submitBtn = document.getElementById('btn-pos-print');
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `<span>Impression en cours...</span>`;
+  }
+
+  try {
+    const res = await fetch('/api/print-pos-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(orderPayload)
+    });
+    const result = await res.json();
+
+    if (result.success) {
+      showToast(`Commande #${orderId} (${custName}) imprimée avec succès !`);
+      resetPosPhoneCart();
+    } else {
+      showToast(`Erreur impression : ${result.error || 'Vérifiez l\'imprimante'}`);
+    }
+  } catch (err) {
+    console.error('Erreur API print-pos-order:', err);
+    showToast(`Erreur de connexion : ${err.message}`);
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = `<span>Valider & Imprimer le ticket</span>`;
+    }
+  }
+}
+
+// NAVIGATION CLAVIER DU PANIER POS
+document.addEventListener('keydown', function(e) {
+  const posPane = document.getElementById('pane-pos-phone');
+  if (!posPane || !posPane.classList.contains('active')) return;
+
+  const tag = (e.target && e.target.tagName ? e.target.tagName.toLowerCase() : '');
+  const isInput = tag === 'input' || tag === 'textarea';
+
+  // Si on est dans le champ de recherche
+  if (isInput && e.target.id === 'pos-search-input') {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (posPhoneCart.length > 0) {
+        selectedPosCartIndex = 0;
+        renderPosCart();
+        focusSelectedCartRow();
+        document.getElementById('pos-cart-items-list')?.focus();
+      } else {
+        focusPosPrintBtn();
+      }
+    }
+    return;
+  }
+
+  // Si on est dans un autre champ texte, on n'intercepte pas
+  if (isInput) return;
+
+  // Si le focus est sur le bouton imprimer
+  if (selectedPosCartIndex === 'print') {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      submitPosPhoneOrder();
+      return;
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      uncheckPosPrintBtn();
+      if (posPhoneCart.length > 0) {
+        selectedPosCartIndex = posPhoneCart.length - 1;
+        renderPosCart();
+        focusSelectedCartRow();
+      } else {
+        selectedPosCartIndex = -1;
+        renderPosCart();
+        document.getElementById('pos-search-input')?.focus();
+      }
+      return;
+    }
+  }
+
+  if (posPhoneCart.length === 0) return;
+
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    if (typeof selectedPosCartIndex === 'number' && selectedPosCartIndex < posPhoneCart.length - 1) {
+      selectedPosCartIndex++;
+      renderPosCart();
+      focusSelectedCartRow();
+    } else if (selectedPosCartIndex === posPhoneCart.length - 1) {
+      focusPosPrintBtn();
+    } else if (selectedPosCartIndex < 0) {
+      selectedPosCartIndex = 0;
+      renderPosCart();
+      focusSelectedCartRow();
+    }
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (typeof selectedPosCartIndex === 'number' && selectedPosCartIndex > 0) {
+      selectedPosCartIndex--;
+      renderPosCart();
+      focusSelectedCartRow();
+    } else if (selectedPosCartIndex === 0) {
+      selectedPosCartIndex = -1;
+      renderPosCart();
+      const searchInput = document.getElementById('pos-search-input');
+      if (searchInput) searchInput.focus();
+    }
+  } else if (e.key === 'Delete' || e.key === 'Backspace') {
+    if (typeof selectedPosCartIndex === 'number' && selectedPosCartIndex >= 0 && selectedPosCartIndex < posPhoneCart.length) {
+      e.preventDefault();
+      const removedItem = posPhoneCart[selectedPosCartIndex];
+      removePosItem(selectedPosCartIndex);
+      showToast(`${removedItem.name} retiré du panier`);
+    }
+  } else if (e.key === '+' || e.key === '=' || e.key === 'ArrowRight') {
+    if (typeof selectedPosCartIndex === 'number' && selectedPosCartIndex >= 0 && selectedPosCartIndex < posPhoneCart.length) {
+      e.preventDefault();
+      updatePosItemQty(selectedPosCartIndex, 1);
+    }
+  } else if (e.key === '-' || e.key === '_' || e.key === 'ArrowLeft') {
+    if (typeof selectedPosCartIndex === 'number' && selectedPosCartIndex >= 0 && selectedPosCartIndex < posPhoneCart.length) {
+      e.preventDefault();
+      updatePosItemQty(selectedPosCartIndex, -1);
+    }
+  }
+});
+

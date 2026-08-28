@@ -88,10 +88,11 @@ def generate_ticket_bytes(order):
     cust_name = str(order.get('customerName') or order.get('name') or 'Client Sushi Lin')
     buf.extend(f"Nom client :    {strip_accents(cust_name)}\n".encode('cp858', errors='replace'))
 
-    cust_phone = str(order.get('customerPhone') or order.get('phone') or '06 00 00 00 00')
-    buf.extend(b'\x1b\x45\x01')
-    buf.extend(f"Telephone :     {strip_accents(cust_phone)}\n".encode('cp858', errors='replace'))
-    buf.extend(b'\x1b\x45\x00')
+    cust_phone = str(order.get('customerPhone') or order.get('phone') or '').strip()
+    if cust_phone:
+        buf.extend(b'\x1b\x45\x01')
+        buf.extend(f"Telephone :     {strip_accents(cust_phone)}\n".encode('cp858', errors='replace'))
+        buf.extend(b'\x1b\x45\x00')
 
     cust_email = str(order.get('customerEmail') or order.get('email') or '').strip()
     if cust_email:
@@ -118,7 +119,10 @@ def generate_ticket_bytes(order):
     buf.extend(b"------------------------------------------------\n")
     buf.extend(b'\x1b\x61\x01') # Center
     buf.extend(b'\x1b\x45\x01')
-    buf.extend(b"A EMPORTER\n")
+    if order.get('source') == 'telephone' or order.get('type') == 'telephone':
+        buf.extend(b"COMMANDE TELEPHONE - A EMPORTER\n")
+    else:
+        buf.extend(b"A EMPORTER\n")
     buf.extend(b'\x1b\x45\x00')
     buf.extend(b'\x1b\x61\x00') # Left
     buf.extend(b"------------------------------------------------\n")
@@ -228,8 +232,9 @@ def generate_kitchen_ticket_bytes(order):
     buf.extend(b'\x1b\x45\x01') # Bold ON
     buf.extend(f"COMMANDE #{order_num}\n".encode('cp858', errors='replace'))
     
-    pickup_time = str(order.get('pickupTime') or '19h30')
-    buf.extend(f"RETRAIT : {strip_accents(pickup_time)}\n".encode('cp858', errors='replace'))
+    pickup_time = str(order.get('pickupTime') or '').strip()
+    if pickup_time:
+        buf.extend(f"RETRAIT : {strip_accents(pickup_time)}\n".encode('cp858', errors='replace'))
     buf.extend(b'\x1d\x21\x00') # Normal Size
     buf.extend(b'\x1b\x45\x00') # Bold OFF
     buf.extend(b'\x1b\x61\x00') # Left

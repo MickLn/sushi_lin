@@ -548,6 +548,36 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
                 self.wfile.write(json.dumps({'error': str(e)}).encode('utf-8'))
             return
 
+        # --- ENDPOINT : IMPRESSION DIRECTE COMMANDE TÉLÉPHONE (SANS SAUVEGARDE DB) ---
+        if self.path == '/api/print-pos-order':
+            try:
+                data = json.loads(body)
+                order = data.get('order', data)
+                order_id_clean = html.escape(str(order.get('id', 'TEL-001')).strip())
+                print(f"[POS TÉLÉPHONE] 📞 Prise de commande #{order_id_clean} pour {order.get('customerName', 'Client')} ({len(order.get('items', []))} article(s))", flush=True)
+
+                # Impression automatique directe du ticket thermique (IP: 192.168.1.210)
+                print_success = False
+                try:
+                    import threading
+                    import thermal_printer
+                    threading.Thread(target=thermal_printer.send_to_thermal_printer, args=(order, "192.168.1.210", 9100), daemon=True).start()
+                    print(f"[PRINT] 🖨️ Déclenchement automatique de l'impression commande téléphone #{order_id_clean} vers 192.168.1.210...", flush=True)
+                    print_success = True
+                except Exception as p_err:
+                    print(f"[PRINT] Erreur déclenchement impression: {p_err}", flush=True)
+
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({'success': True, 'message': 'Ticket envoyé à l\'imprimante', 'print_success': print_success}).encode('utf-8'))
+            except Exception as e:
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({'success': False, 'error': str(e)}).encode('utf-8'))
+            return
+
         # --- ENDPOINT 1 : ENREGISTREMENT POSTGRESQL & ENVOI EMAIL COMMANDE ---
         if self.path in ('/api/send-order-email', '/api/orders'):
             try:
