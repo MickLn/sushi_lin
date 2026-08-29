@@ -31,7 +31,7 @@ function isMochiItem(item) {
 
 function openMochiModal(item) {
   currentMochiItem = item || {
-    id: 'D28',
+    id: 'desserts-ds22',
     code: 'D28',
     name: 'Mochis glacés',
     price: 2.80,
@@ -44,23 +44,53 @@ function openMochiModal(item) {
     mochiSelection[flavor] = 0;
   });
 
-  renderMochiFlavorsList();
-  updateMochiModalTotals();
+  try {
+    renderMochiFlavorsList();
+    updateMochiModalTotals();
+  } catch (err) {
+    console.error('Erreur rendu mochis:', err);
+  }
 
   const mochiModal = document.getElementById('mochi-modal');
   const mochiOverlay = document.getElementById('mochi-overlay');
-  mochiModal?.classList.add('open');
-  mochiOverlay?.classList.add('active');
-  mochiOverlay?.setAttribute('aria-hidden', 'false');
+  if (mochiModal) {
+    mochiModal.style.display = 'flex';
+    mochiModal.style.visibility = 'visible';
+    mochiModal.style.opacity = '1';
+    mochiModal.style.pointerEvents = 'all';
+    mochiModal.classList.add('open');
+  }
+  if (mochiOverlay) {
+    mochiOverlay.style.display = 'block';
+    mochiOverlay.style.visibility = 'visible';
+    mochiOverlay.style.opacity = '1';
+    mochiOverlay.style.pointerEvents = 'all';
+    mochiOverlay.classList.add('active');
+    mochiOverlay.classList.add('open');
+    mochiOverlay.setAttribute('aria-hidden', 'false');
+  }
   document.body.style.overflow = 'hidden';
 }
 
 function closeMochiModal() {
   const mochiModal = document.getElementById('mochi-modal');
   const mochiOverlay = document.getElementById('mochi-overlay');
-  mochiModal?.classList.remove('open');
-  mochiOverlay?.classList.remove('active');
-  mochiOverlay?.setAttribute('aria-hidden', 'true');
+  if (mochiModal) {
+    mochiModal.classList.remove('open');
+    mochiModal.style.display = 'none';
+    mochiModal.style.visibility = 'hidden';
+    mochiModal.style.opacity = '0';
+    mochiModal.style.pointerEvents = 'none';
+  }
+  if (mochiOverlay) {
+    mochiOverlay.classList.remove('active');
+    mochiOverlay.classList.remove('open');
+    mochiOverlay.style.display = 'none';
+    mochiOverlay.style.visibility = 'hidden';
+    mochiOverlay.style.opacity = '0';
+    mochiOverlay.style.pointerEvents = 'none';
+    mochiOverlay.setAttribute('aria-hidden', 'true');
+  }
   document.body.style.overflow = '';
 }
 
@@ -1614,6 +1644,10 @@ function closeCartPanel() {
 
 // ---- Product Modal Details ----
 function openProductModal(item) {
+  if (isMochiItem(item)) {
+    openMochiModal(item);
+    return;
+  }
   currentModalItem = item;
   modalQuantity = 1;
 

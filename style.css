@@ -2879,13 +2879,36 @@ img {
   z-index: 400;
   opacity: 0;
   pointer-events: none;
+  visibility: hidden;
+  display: none;
   transition: opacity 0.25s ease;
   backdrop-filter: blur(8px);
 }
 
-.modal-backdrop.active {
-  opacity: 1;
-  pointer-events: all;
+.modal-backdrop.active,
+.modal-backdrop.open {
+  display: block !important;
+  opacity: 1 !important;
+  pointer-events: all !important;
+  visibility: visible !important;
+}
+
+.product-modal,
+.auth-modal,
+.mochi-modal {
+  display: none;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.product-modal:not(.open),
+.auth-modal:not(.open),
+.mochi-modal:not(.open) {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
 .product-modal {
@@ -2901,8 +2924,6 @@ img {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-elevated);
   z-index: 450;
-  opacity: 0;
-  pointer-events: none;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   overflow-y: auto;
 }
@@ -2921,17 +2942,44 @@ img {
   border-radius: var(--radius-xl);
   box-shadow: 0 20px 60px rgba(39, 47, 97, 0.18), 0 2px 8px rgba(255, 193, 215, 0.4);
   z-index: 450;
-  opacity: 0;
-  pointer-events: none;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   overflow-y: auto;
 }
 
+.mochi-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -45%) scale(0.96);
+  width: 92%;
+  max-width: 480px;
+  max-height: 88dvh;
+  background: #FFFFFF;
+  border: 2px solid var(--sakura-border);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 20px 60px rgba(39, 47, 97, 0.2), 0 4px 16px rgba(255, 193, 215, 0.4);
+  z-index: 460;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .product-modal.open,
 .auth-modal.open {
+  display: block !important;
   transform: translate(-50%, -50%) scale(1);
-  opacity: 1;
-  pointer-events: all;
+  opacity: 1 !important;
+  pointer-events: all !important;
+  visibility: visible !important;
+}
+
+.mochi-modal.open {
+  display: flex !important;
+  transform: translate(-50%, -50%) scale(1) !important;
+  opacity: 1 !important;
+  pointer-events: all !important;
+  visibility: visible !important;
 }
 
 .modal-close-icon {
@@ -3659,6 +3707,7 @@ img {
   .panel-footer {
     padding: 18px 18px calc(16px + var(--safe-bottom));
   }
+}
 
 
 
@@ -3721,33 +3770,6 @@ input[type="date"]::-webkit-date-and-time-value {
 /* ==========================================================================
    MOCHI FLAVORS SELECTION MODAL
    ========================================================================== */
-.mochi-modal {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -45%) scale(0.96);
-  width: 92%;
-  max-width: 480px;
-  max-height: 88dvh;
-  background: #FFFFFF;
-  border: 2px solid var(--sakura-border);
-  border-radius: var(--radius-xl);
-  box-shadow: 0 20px 60px rgba(39, 47, 97, 0.2), 0 4px 16px rgba(255, 193, 215, 0.4);
-  z-index: 460;
-  opacity: 0;
-  pointer-events: none;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.mochi-modal.open {
-  transform: translate(-50%, -50%) scale(1);
-  opacity: 1;
-  pointer-events: all;
-}
-
 .mochi-modal-header {
   padding: 24px 24px 16px;
   border-bottom: 1px solid var(--sakura-border);

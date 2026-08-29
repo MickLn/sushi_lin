@@ -4,11 +4,12 @@ import json
 import ssl
 import html
 import time
+import datetime
 import traceback
 import urllib.request
 import urllib.error
 from urllib.parse import urlparse, parse_qs
-from http.server import SimpleHTTPRequestHandler, HTTPServer
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
 import db
 import auth
@@ -311,8 +312,6 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
 
         # --- API : FICHIER CALENDRIER ICS NATIVE APPLE / OUTLOOK ---
         if self.path.startswith('/api/reservation-calendar.ics'):
-            from urllib.parse import urlparse, parse_qs
-            import datetime
             query = parse_qs(urlparse(self.path).query)
             res_date = query.get('date', ['2026-08-24'])[0]
             res_service = query.get('service', ['19h00'])[0]
@@ -1047,6 +1046,6 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
 
 if __name__ == '__main__':
     db.init_db()
-    server = HTTPServer(('0.0.0.0', PORT), SushiLinHandler)
+    server = ThreadingHTTPServer(('0.0.0.0', PORT), SushiLinHandler)
     print(f"Serveur Sushi Lin prêt sur http://0.0.0.0:{PORT}", flush=True)
     server.serve_forever()
