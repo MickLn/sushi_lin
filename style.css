@@ -3773,10 +3773,11 @@ input[type="date"]::-webkit-date-and-time-value {
 }
 
 .mochi-modal.open {
-  transform: translate(-50%, -50%) scale(1);
-  opacity: 1;
-  pointer-events: all;
-  visibility: visible;
+  display: flex !important;
+  transform: translate(-50%, -50%) scale(1) !important;
+  opacity: 1 !important;
+  pointer-events: all !important;
+  visibility: visible !important;
 }
 
 .mochi-modal-header {

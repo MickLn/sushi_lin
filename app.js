@@ -51,6 +51,7 @@ function openMochiModal(item) {
   const mochiOverlay = document.getElementById('mochi-overlay');
   mochiModal?.classList.add('open');
   mochiOverlay?.classList.add('active');
+  mochiOverlay?.classList.add('open');
   mochiOverlay?.setAttribute('aria-hidden', 'false');
   document.body.style.overflow = 'hidden';
 }
@@ -60,6 +61,7 @@ function closeMochiModal() {
   const mochiOverlay = document.getElementById('mochi-overlay');
   mochiModal?.classList.remove('open');
   mochiOverlay?.classList.remove('active');
+  mochiOverlay?.classList.remove('open');
   mochiOverlay?.setAttribute('aria-hidden', 'true');
   document.body.style.overflow = '';
 }
@@ -1614,6 +1616,10 @@ function closeCartPanel() {
 
 // ---- Product Modal Details ----
 function openProductModal(item) {
+  if (isMochiItem(item)) {
+    openMochiModal(item);
+    return;
+  }
   currentModalItem = item;
   modalQuantity = 1;
 
