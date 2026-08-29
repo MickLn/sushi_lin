@@ -38,31 +38,45 @@ function openMochiModal(item) {
     cat: 'desserts'
   };
 
-  // Réinitialisation de tous les compteurs à 0
+  const mochiModal = document.getElementById('mochi-modal');
+  const mochiOverlay = document.getElementById('mochi-overlay');
+  if (!mochiModal || !mochiOverlay) {
+    console.error('[Mochi] Modal or overlay element not found', { mochiModal, mochiOverlay });
+    return;
+  }
+  mochiModal.classList.add('open');
+  mochiOverlay.classList.add('active');
+  mochiOverlay.classList.add('open');
+  mochiOverlay.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+
+  // Réinitialisation de tous les compteurs à 0 — after visibility to avoid throw hiding modal
   mochiSelection = {};
   MOCHI_FLAVORS.forEach(flavor => {
     mochiSelection[flavor] = 0;
   });
 
-  renderMochiFlavorsList();
-  updateMochiModalTotals();
-
-  const mochiModal = document.getElementById('mochi-modal');
-  const mochiOverlay = document.getElementById('mochi-overlay');
-  mochiModal?.classList.add('open');
-  mochiOverlay?.classList.add('active');
-  mochiOverlay?.classList.add('open');
-  mochiOverlay?.setAttribute('aria-hidden', 'false');
-  document.body.style.overflow = 'hidden';
+  try {
+    renderMochiFlavorsList();
+  } catch (e) {
+    console.error('[Mochi] renderMochiFlavorsList failed', e);
+  }
+  try {
+    updateMochiModalTotals();
+  } catch (e) {
+    console.error('[Mochi] updateMochiModalTotals failed', e);
+  }
 }
 
 function closeMochiModal() {
   const mochiModal = document.getElementById('mochi-modal');
   const mochiOverlay = document.getElementById('mochi-overlay');
-  mochiModal?.classList.remove('open');
-  mochiOverlay?.classList.remove('active');
-  mochiOverlay?.classList.remove('open');
-  mochiOverlay?.setAttribute('aria-hidden', 'true');
+  if (mochiModal) mochiModal.classList.remove('open');
+  if (mochiOverlay) {
+    mochiOverlay.classList.remove('active');
+    mochiOverlay.classList.remove('open');
+    mochiOverlay.setAttribute('aria-hidden', 'true');
+  }
   document.body.style.overflow = '';
 }
 
