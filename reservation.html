@@ -8,12 +8,12 @@
   <meta name="theme-color" content="#FFC1D7">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%23E11D48'/><circle cx='50' cy='50' r='20' fill='%23FFFFFF'/></svg>">
   
-  <!-- Google Fonts: Shippori Mincho + Outfit + Plus Jakarta Sans -->
+  <!-- Google Fonts: Shippori Mincho (Marque) + Outfit (Formulaires & UI) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Shippori+Mincho:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Shippori+Mincho:wght@500;600;700;800&display=swap" rel="stylesheet">
   
-  <link rel="stylesheet" href="style.css?v=20260822_d">
+  <link rel="stylesheet" href="style.css?v=20260903_typo_v2">
   <style>
     html, body {
       overflow-x: hidden !important;
@@ -195,21 +195,27 @@
 
     .res-page-container {
       max-width: 860px;
-      margin: 40px auto 80px;
-      padding: 0 20px;
+      margin: 0 auto;
+      padding: 32px 20px 48px;
       flex: 1;
       width: 100%;
+      min-height: calc(100vh - 72px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
       position: relative;
       z-index: 2;
+      box-sizing: border-box;
     }
     .res-hero-card {
       background: #FFFFFF !important;
       border: 1.5px solid var(--sakura-border);
       border-radius: var(--radius-xl);
-      padding: 44px 40px;
+      padding: 36px 36px;
       box-shadow: 0 12px 36px rgba(39, 47, 97, 0.08), 0 2px 8px rgba(39, 47, 97, 0.04);
       position: relative;
       z-index: 2;
+      margin: auto 0;
     }
     .res-input {
       width: 100%;
@@ -230,8 +236,16 @@
       box-shadow: 0 0 0 3px rgba(240, 98, 146, 0.18);
     }
     @media (max-width: 768px) {
-      .res-page-container { margin: 20px auto 60px; padding: 0 14px; }
-      .res-hero-card { padding: 24px 18px; }
+      .res-page-container { 
+        min-height: auto;
+        margin: 20px auto 40px; 
+        padding: 0 14px; 
+        justify-content: flex-start;
+      }
+      .res-hero-card { 
+        padding: 24px 18px; 
+        margin: 0;
+      }
     }
   
     /* Grid & Input Mobile Fit Fix */
@@ -495,10 +509,6 @@
   <main class="res-page-container">
     <div class="res-hero-card">
       <div class="reservation-header" style="text-align: center; margin-bottom: 32px;">
-        <div class="reservation-badge" style="margin: 0 auto 12px;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          <span>Sur place</span>
-        </div>
         <h1 class="reservation-title" style="font-size: 32px;">Réserver une table</h1>
         <p class="reservation-sub">Pour le déjeuner ou le dîner · Confirmation directe par le restaurant</p>
       </div>
