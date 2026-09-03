@@ -669,13 +669,13 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
 
                     rows.append(f"""<tr class="border-row" style="border-bottom: 1px solid #F5E6EA;">
                         <td style="padding: 11px 0; vertical-align: middle;">
-                          <div class="text-main" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Source Sans 3', sans-serif; font-size: 13.5px; color: #0D1127; line-height: 1.4;">
+                          <div class="text-main" style="font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 13.5px; color: #0D1127; line-height: 1.4;">
                             <span style="font-weight: 700; margin-right: 4px;">{qty}x</span>{code_badge}{name}
                             {details_str}
                           </div>
                         </td>
                         <td style="padding: 11px 0; text-align: right; vertical-align: middle; white-space: nowrap;">
-                          <span class="text-main" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Source Sans 3', sans-serif; font-size: 13.5px; font-weight: 600; color: #0D1127;">{format_euro_fr(item_total)}</span>
+                          <span class="text-main" style="font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 13.5px; font-weight: 600; color: #0D1127;">{format_euro_fr(item_total)}</span>
                         </td>
                     </tr>""")
 
@@ -715,16 +715,19 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="light dark">
   <meta name="supported-color-schemes" content="light dark">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Shippori+Mincho:wght@700&display=swap" rel="stylesheet">
   <title>Confirmation de commande - Sushi Lin</title>
   <style>
     :root {{ color-scheme: light dark; supported-color-schemes: light dark; }}
-    body, .email-body {{ background-color: #FFF5F8 !important; color: #0D1127 !important; }}
+    body, .email-body {{ background-color: #FFF5F8 !important; color: #0D1127 !important; font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important; }}
     .email-card {{ background-color: #FFFFFF !important; border: 1.5px solid #FFD6DF !important; }}
-    .email-title {{ color: #1E244D !important; }}
+    .email-title {{ color: #1E244D !important; font-family: 'Shippori Mincho', 'Times New Roman', serif !important; }}
     .email-subtitle {{ color: #F06292 !important; }}
     .email-meta-box {{ background-color: #FFF5F8 !important; border: 1px solid #FFE4E8 !important; }}
-    .text-main {{ color: #0D1127 !important; }}
-    .text-muted {{ color: #64748B !important; }}
+    .text-main {{ color: #0D1127 !important; font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important; }}
+    .text-muted {{ color: #64748B !important; font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important; }}
     .text-discount {{ color: #059669 !important; }}
     .text-total {{ color: #E11D48 !important; }}
     .border-row {{ border-color: #F5E6EA !important; }}
@@ -739,7 +742,6 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
       .email-meta-box {{ background-color: #1C2038 !important; border: 1px solid #2C3358 !important; }}
       .text-main {{ color: #F0F2FF !important; }}
       .text-muted {{ color: #A0AEC0 !important; }}
-      .text-discount {{ color: #34D399 !important; }}
       .text-total {{ color: #FF80AB !important; }}
       .border-row {{ border-color: #24294A !important; }}
       .code-pill {{ background-color: #381224 !important; color: #FF80AB !important; border: 1px solid #5C1E3A !important; }}
@@ -747,7 +749,7 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
     }}
   </style>
 </head>
-<body style="margin: 0; padding: 24px 12px; background-color: #FFF5F8; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Source Sans 3', sans-serif;" class="email-body">
+<body style="margin: 0; padding: 24px 12px; background-color: #FFF5F8; font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;" class="email-body">
   <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="max-width: 460px; margin: 0 auto; background-color: #FFFFFF; border-radius: 20px; border: 1.5px solid #FFD6DF; box-shadow: 0 4px 25px rgba(30, 36, 77, 0.06); overflow: hidden;" class="email-card">
     <tr>
       <td style="padding: 28px 24px;">
@@ -755,7 +757,7 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
           <tr>
             <td style="text-align: center; padding-bottom: 22px;">
               <h1 class="email-title" style="font-family: 'Shippori Mincho', 'Times New Roman', serif; font-size: 26px; font-weight: 700; letter-spacing: 5px; color: #1E244D; margin: 0; text-transform: uppercase;">SUSHI LIN</h1>
-              <p class="email-subtitle" style="font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: #F06292; margin: 6px 0 0;">Restaurant Japonais</p>
+              <p class="email-subtitle" style="font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: #F06292; margin: 6px 0 0;">Restaurant japonais</p>
               <p class="text-muted" style="font-size: 13px; color: #64748B; margin: 12px 0 0;">Confirmation de commande à emporter</p>
             </td>
           </tr>
@@ -916,16 +918,18 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="light dark">
   <meta name="supported-color-schemes" content="light dark">
-  <title>Confirmation de réservation - Sushi Lin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Shippori+Mincho:wght@700&display=swap" rel="stylesheet">
   <style>
     :root {{ color-scheme: light dark; supported-color-schemes: light dark; }}
-    body, .email-body {{ background-color: #FFF5F8 !important; color: #0D1127 !important; }}
+    body, .email-body {{ background-color: #FFF5F8 !important; color: #0D1127 !important; font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important; }}
     .email-card {{ background-color: #FFFFFF !important; border: 1.5px solid #FFD6DF !important; }}
-    .email-title {{ color: #1E244D !important; }}
+    .email-title {{ color: #1E244D !important; font-family: 'Shippori Mincho', 'Times New Roman', serif !important; }}
     .email-subtitle {{ color: #F06292 !important; }}
     .email-meta-box {{ background-color: #FFF5F8 !important; border: 1px solid #FFE4E8 !important; }}
-    .text-main {{ color: #0D1127 !important; }}
-    .text-muted {{ color: #64748B !important; }}
+    .text-main {{ color: #0D1127 !important; font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important; }}
+    .text-muted {{ color: #64748B !important; font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important; }}
     .text-status {{ color: #059669 !important; }}
     .border-row {{ border-color: #F5E6EA !important; }}
     .link-phone {{ color: #F06292 !important; }}
@@ -944,7 +948,7 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
     }}
   </style>
 </head>
-<body style="margin: 0; padding: 24px 12px; background-color: #FFF5F8; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Source Sans 3', sans-serif;" class="email-body">
+<body style="margin: 0; padding: 24px 12px; background-color: #FFF5F8; font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;" class="email-body">
   <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="max-width: 460px; margin: 0 auto; background-color: #FFFFFF; border-radius: 20px; border: 1.5px solid #FFD6DF; box-shadow: 0 4px 25px rgba(30, 36, 77, 0.06); overflow: hidden;" class="email-card">
     <tr>
       <td style="padding: 28px 24px;">
@@ -952,7 +956,7 @@ class SushiLinHandler(SimpleHTTPRequestHandler):
           <tr>
             <td style="text-align: center; padding-bottom: 22px;">
               <h1 class="email-title" style="font-family: 'Shippori Mincho', 'Times New Roman', serif; font-size: 26px; font-weight: 700; letter-spacing: 5px; color: #1E244D; margin: 0; text-transform: uppercase;">SUSHI LIN</h1>
-              <p class="email-subtitle" style="font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: #F06292; margin: 6px 0 0;">Restaurant Japonais</p>
+              <p class="email-subtitle" style="font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: #F06292; margin: 6px 0 0;">Restaurant japonais</p>
               <p class="text-muted" style="font-size: 13px; color: #64748B; margin: 12px 0 0;">Confirmation de votre réservation de table</p>
             </td>
           </tr>
