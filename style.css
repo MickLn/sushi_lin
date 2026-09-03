@@ -46,17 +46,17 @@
   --warning: #D97706;
   --error: #E11D48;
 
-  /* Typographies */
+  /* Typographies - Duo Officiel Sushi Lin */
   --font-logo: 'Shippori Mincho', serif;
-  /* Titres Sushi Lin, menu header */
-  --font-product: 'Fraunces', Georgia, serif;
-  /* Noms des produits */
-  --font-body: 'Source Sans 3', system-ui, sans-serif;
-  /* Prix, descriptions */
-  --font-heading: 'Outfit', system-ui, sans-serif;
-  /* UI, boutons, navigation */
+  /* Titres Sushi Lin, marque */
+  --font-product: 'Outfit', system-ui, -apple-system, sans-serif;
+  /* Noms des plats et spécialités (Outfit avec graisse) */
+  --font-body: 'Outfit', system-ui, -apple-system, sans-serif;
+  /* Corps de texte, descriptions, détails */
+  --font-heading: 'Outfit', system-ui, -apple-system, sans-serif;
+  /* UI, boutons, navigation, formulaires, chiffres & prix */
   --font-asian: 'Shippori Mincho', serif;
-  /* Kanji, accents japonais */
+  /* Accents et kanjis japonais */
 
   /* Ombres & Rayons */
   --radius-sm: 8px;
@@ -618,22 +618,34 @@ img {
 .brand-text {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  text-align: center;
+  width: max-content;
 }
 
 .brand-title {
   font-family: var(--font-logo);
   font-size: 20px;
   font-weight: 700;
-  letter-spacing: 1px;
+  letter-spacing: 2px;
+  text-indent: 2px;
   color: var(--indigo-dark);
   line-height: 1.1;
+  text-align: center;
+  display: block;
 }
 
 .brand-subtitle {
-  font-size: 11.5px;
+  font-family: var(--font-heading);
+  font-size: 10.5px;
   color: var(--sakura-vibrant);
   font-weight: 700;
-  letter-spacing: 0.4px;
+  letter-spacing: 1.6px;
+  text-indent: 1.6px;
+  text-align: center;
+  margin-top: 2px;
+  display: block;
+  width: 100%;
 }
 
 .header-actions {
@@ -1546,12 +1558,13 @@ img {
 }
 
 .product-name {
-  font-family: var(--font-product);
-  font-size: 16px;
-  font-weight: 500;
+  font-family: var(--font-heading);
+  font-size: 15.5px;
+  font-weight: 700;
   color: var(--indigo-dark);
   margin-bottom: 6px;
   line-height: 1.35;
+  letter-spacing: -0.15px;
 }
 
 .product-desc {
@@ -3649,6 +3662,7 @@ img {
 
   .product-name {
     font-size: 14px;
+    font-weight: 700;
     line-height: 1.35;
     min-height: 38px;
     display: -webkit-box;

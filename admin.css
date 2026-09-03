@@ -22,8 +22,8 @@
   --success-bg: #ECFDF5;
   --error: #EF4444;
   --error-bg: #FEF2F2;
-  --font-main: 'Plus Jakarta Sans', system-ui, sans-serif;
-  --font-heading: 'Outfit', system-ui, sans-serif;
+  --font-main: 'Outfit', system-ui, -apple-system, sans-serif;
+  --font-heading: 'Outfit', system-ui, -apple-system, sans-serif;
   --radius-sm: 8px;
   --radius-md: 14px;
   --radius-lg: 20px;
